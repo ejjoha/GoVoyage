@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f1e9;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--background);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
