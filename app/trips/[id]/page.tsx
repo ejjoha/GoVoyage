@@ -705,70 +705,80 @@ export default function TripPage() {
         </div>
       )}
 
-      {showTripForm && (
-        <form
-          onSubmit={handleSaveTrip}
-          className="mb-6 space-y-3 rounded-2xl border border-stone-200 bg-white p-4"
-        >
-          <h2 className="text-lg font-semibold">Edit trip</h2>
+{showTripForm && (
+  <form
+    onSubmit={handleSaveTrip}
+    className="mb-6 space-y-3 rounded-2xl border border-stone-200 bg-white p-4"
+  >
+    <h2 className="text-lg font-semibold">Edit trip</h2>
 
-          <input
-            type="text"
-            placeholder="Trip title"
-            value={editTripTitle}
-            onChange={(e) => setEditTripTitle(e.target.value)}
-            className="w-full rounded border p-2"
-          />
+    <input
+      type="text"
+      placeholder="Trip title"
+      value={editTripTitle}
+      onChange={(e) => setEditTripTitle(e.target.value)}
+      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+    />
 
-          <input
-            type="text"
-            placeholder="Destination"
-            value={editTripDestination}
-            onChange={(e) => setEditTripDestination(e.target.value)}
-            className="w-full rounded border p-2"
-          />
+    <input
+      type="text"
+      placeholder="Destination"
+      value={editTripDestination}
+      onChange={(e) => setEditTripDestination(e.target.value)}
+      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+    />
 
-          <input
-            type="text"
-            placeholder="Image URL"
-            value={editTripImageUrl}
-            onChange={(e) => setEditTripImageUrl(e.target.value)}
-            className="w-full rounded border p-2"
-          />
+    <input
+      type="text"
+      placeholder="Image URL"
+      value={editTripImageUrl}
+      onChange={(e) => setEditTripImageUrl(e.target.value)}
+      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+    />
 
-          <input
-            type="date"
-            value={editTripStartDate}
-            onChange={(e) => setEditTripStartDate(e.target.value)}
-            className="w-full rounded border p-2"
-          />
+    <div className="space-y-1.5">
+      <label className="text-sm font-medium text-stone-700">
+        Start date
+      </label>
+      <input
+        type="date"
+        value={editTripStartDate}
+        onChange={(e) => setEditTripStartDate(e.target.value)}
+        className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
+      />
+    </div>
 
-          <input
-            type="date"
-            value={editTripEndDate}
-            onChange={(e) => setEditTripEndDate(e.target.value)}
-            className="w-full rounded border p-2"
-          />
+    <div className="space-y-1.5">
+      <label className="text-sm font-medium text-stone-700">
+        End date
+      </label>
+      <input
+        type="date"
+        value={editTripEndDate}
+        onChange={(e) => setEditTripEndDate(e.target.value)}
+        className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
+      />
+    </div>
 
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-green-500 px-5 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-green-600 hover:shadow-lg active:scale-[0.97]"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">✓</span>
-              Update trip
-            </span>
-          </button>
+    <button
+      type="submit"
+      className="w-full rounded-xl bg-green-500 px-5 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-green-600 hover:shadow-lg active:scale-[0.97]"
+    >
+      <span className="flex items-center justify-center gap-2">
+        <span className="text-lg">✓</span>
+        Update trip
+      </span>
+    </button>
 
-          <button
-            type="button"
-            onClick={handleDeleteTrip}
-            className="w-full rounded-xl bg-red-50 px-5 py-3 text-sm font-medium text-red-500 shadow-sm transition-all duration-200 hover:bg-red-100 hover:shadow-md active:scale-[0.97]"
-          >
-            Delete trip
-          </button>
-        </form>
-      )}
+    <button
+      type="button"
+      onClick={handleDeleteTrip}
+      className="w-full rounded-xl bg-red-50 px-5 py-3 text-sm font-medium text-red-500 shadow-sm transition-all duration-200 hover:bg-red-100 hover:shadow-md active:scale-[0.97]"
+    >
+      Delete trip
+    </button>
+  </form>
+)}
 
       {successMessage && (
         <div className="mb-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
@@ -813,7 +823,7 @@ export default function TripPage() {
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value as BookingType)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
               >
                 <option value="flight">Flight</option>
                 <option value="hotel">Hotel</option>
@@ -867,7 +877,7 @@ export default function TripPage() {
                     type="datetime-local"
                     value={newStartTime}
                     onChange={(e) => setNewStartTime(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                   />
                 </div>
 
@@ -879,7 +889,7 @@ export default function TripPage() {
                     type="datetime-local"
                     value={newEndTime}
                     onChange={(e) => setNewEndTime(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                   />
                 </div>
 
@@ -936,7 +946,7 @@ export default function TripPage() {
                     type="datetime-local"
                     value={newStartTime}
                     onChange={(e) => setNewStartTime(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                   />
                 </div>
 
@@ -948,7 +958,7 @@ export default function TripPage() {
                     type="datetime-local"
                     value={newEndTime}
                     onChange={(e) => setNewEndTime(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                   />
                 </div>
               </div>
@@ -1080,7 +1090,7 @@ export default function TripPage() {
                     type="datetime-local"
                     value={newStartTime}
                     onChange={(e) => setNewStartTime(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                   />
                 </div>
 
@@ -1092,7 +1102,7 @@ export default function TripPage() {
                     type="datetime-local"
                     value={newEndTime}
                     onChange={(e) => setNewEndTime(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                   />
                 </div>
               </div>
@@ -1156,7 +1166,7 @@ export default function TripPage() {
                         type="datetime-local"
                         value={newStartTime}
                         onChange={(e) => setNewStartTime(e.target.value)}
-                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                        className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                       />
                     </div>
                   </div>
@@ -1215,7 +1225,7 @@ export default function TripPage() {
                     type="datetime-local"
                     value={newStartTime}
                     onChange={(e) => setNewStartTime(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                   />
                 </div>
 
@@ -1227,7 +1237,7 @@ export default function TripPage() {
                     type="datetime-local"
                     value={newEndTime}
                     onChange={(e) => setNewEndTime(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
                   />
                 </div>
               </div>
