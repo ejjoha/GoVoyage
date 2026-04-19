@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -94,26 +93,26 @@ export default function TripCostSharingPage() {
       tripMembers.find((member) => member.id === memberId)?.name || "Unknown"
     );
   }
-  
+
   async function fetchTrip() {
     setIsLoadingTrip(true);
 
     const { data, error } = await supabase
-        .from("trips")
-        .select("*")
-        .eq("id", id)
-        .single();
+      .from("trips")
+      .select("*")
+      .eq("id", id)
+      .single();
 
     if (error) {
-        console.error("Error loading trip:", error);
-        setTrip(null);
-        setIsLoadingTrip(false);
-        return;
+      console.error("Error loading trip:", error);
+      setTrip(null);
+      setIsLoadingTrip(false);
+      return;
     }
 
     setTrip(data as Trip);
     setIsLoadingTrip(false);
-    }
+  }
 
   async function fetchTripMembers() {
     setIsLoadingMembers(true);
@@ -216,13 +215,13 @@ export default function TripCostSharingPage() {
     setIsLoadingExpenses(false);
   }
 
-useEffect(() => {
-  if (!Number.isFinite(id)) return;
+  useEffect(() => {
+    if (!Number.isFinite(id)) return;
 
-  fetchTrip();
-  fetchTripMembers();
-  fetchExpenses();
-}, [id]);
+    fetchTrip();
+    fetchTripMembers();
+    fetchExpenses();
+  }, [id]);
 
   function resetForm() {
     setTitle("");
@@ -557,44 +556,32 @@ useEffect(() => {
 
   const travellerSummary = useMemo(() => {
     if (tripMembers.length === 0) return "No travellers yet";
-    if (tripMembers.length === 1) return `1 traveller on this trip: ${tripMembers[0].name}`;
+    if (tripMembers.length === 1) {
+      return `1 traveller on this trip: ${tripMembers[0].name}`;
+    }
     return `${tripMembers.length} travellers on this trip: ${tripMembers
       .map((member) => member.name)
       .join(", ")}`;
   }, [tripMembers]);
 
   if (isLoadingTrip) {
-  return <div className="p-8">Loading trip...</div>;
-}
+    return <div className="p-8">Loading trip...</div>;
+  }
 
-if (!trip) {
-  return <div className="p-8">Trip not found</div>;
-}
+  if (!trip) {
+    return <div className="p-8">Trip not found</div>;
+  }
 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-      <Link
-        href={`/trips/${id}`}
-        className="mb-5 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-600 shadow-sm transition-all duration-200 hover:border-stone-300 hover:bg-white hover:text-stone-800"
-      >
-        <span className="text-base leading-none">←</span>
-        <span>Back to trip</span>
-      </Link>
-
       <div className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          <span>💸</span>
-          <span>Cost sharing</span>
-        </div>
-
         <TripHero
-        title="Trip cost sharing"
-        subtitle="Travel expenses"
-        eyebrow={trip.destination}
-        imageUrl={trip.image_url}
+          title="Trip cost sharing"
+          subtitle="Travel expenses"
+          eyebrow={trip.destination}
+          imageUrl={trip.image_url}
+          backHref={`/trips/${id}`}
         />
-
-        <p className="mt-3 text-stone-500">Shared expenses for this trip.</p>
 
         <div className="mt-6 rounded-2xl bg-stone-50 px-4 py-3 text-sm text-stone-700">
           {isLoadingMembers ? "Loading travellers..." : travellerSummary}
@@ -609,10 +596,6 @@ if (!trip) {
               <h2 className="text-lg font-semibold text-stone-900">
                 {editingExpenseId ? "Edit expense" : "Add expense"}
               </h2>
-              <p className="mt-1 text-sm text-stone-500">
-                Add one expense at a time and keep the calculation inside that
-                currency.
-              </p>
             </div>
 
             {editingExpenseId && (
@@ -676,7 +659,9 @@ if (!trip) {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">Paid by</label>
+              <label className="text-sm font-medium text-stone-700">
+                Paid by
+              </label>
               <select
                 value={paidByMemberId ?? ""}
                 onChange={(e) =>

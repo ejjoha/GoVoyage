@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -503,21 +502,12 @@ export default function TripPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
-      {!showBookingForm && (
-        <Link
-          href="/"
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-4 py-2.5 text-sm font-medium text-stone-600 shadow-sm backdrop-blur transition-all duration-200 hover:border-stone-300 hover:bg-white hover:text-stone-800 hover:shadow-md active:scale-[0.98]"
-        >
-          <span className="text-base leading-none">←</span>
-          <span>Back to trips</span>
-        </Link>
-      )}
-
       <TripHero
         title={trip.title}
         subtitle={formatTripDateRange(trip.start_date, trip.end_date)}
         eyebrow={trip.destination}
         imageUrl={trip.image_url}
+        backHref="/"
         onEdit={() => {
           if (showTripForm) {
             resetTripFormFromTrip();
@@ -527,60 +517,60 @@ export default function TripPage() {
         }}
       />
 
-    {!showBookingForm && !showTripForm && (
-      <div className="mb-5 space-y-3">
-        <button
-          onClick={openNewBookingForm}
-          className="w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-stone-800 hover:shadow-md active:scale-[0.98]"
-        >
-          <span className="flex items-center justify-center gap-2">
-            <span className="text-lg">＋</span>
-            Add booking
-          </span>
-        </button>
-
-        <div className="grid grid-cols-1">
-          <Link
-            href={`/trips/${trip.id}/cost-sharing`}
-            className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700 shadow-sm transition-all duration-200 hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900 active:scale-[0.98]"
+      {!showBookingForm && !showTripForm && (
+        <div className="mb-5 space-y-3">
+          <button
+            onClick={openNewBookingForm}
+            className="w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-stone-800 hover:shadow-md active:scale-[0.98]"
           >
             <span className="flex items-center justify-center gap-2">
-              <span className="text-base">💸</span>
-              Shared costs
+              <span className="text-lg">＋</span>
+              Add booking
             </span>
-          </Link>
-        </div>
-      </div>
-    )}
+          </button>
 
-    {!showBookingForm && !showTripForm && bookings.length > 0 && (
-      <div className="mb-6 w-full">
-        <div className="grid w-full grid-cols-4 gap-2 rounded-[1.75rem] bg-stone-100 p-2">
-          {filterOptions.map((filter) => {
-            const isActive = activeFilter === filter;
-
-            return (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => setActiveFilter(filter)}
-                aria-label={getFilterLabel(filter)}
-                className={`flex h-12 items-center justify-center rounded-2xl text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                    : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
-                }`}
-              >
-                {filter === "all" && <span>All</span>}
-                {filter === "flight" && <span className="text-lg">✈️</span>}
-                {filter === "hotel" && <span className="text-lg">🏨</span>}
-                {filter === "plans" && <span className="text-lg">🗺️</span>}
-              </button>
-            );
-          })}
+          <div className="grid grid-cols-1">
+            <a
+              href={`/trips/${trip.id}/cost-sharing`}
+              className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700 shadow-sm transition-all duration-200 hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900 active:scale-[0.98]"
+            >
+              <span className="flex items-center justify-center gap-2">
+                <span className="text-base">💸</span>
+                Shared costs
+              </span>
+            </a>
+          </div>
         </div>
-      </div>
-    )}
+      )}
+
+      {!showBookingForm && !showTripForm && bookings.length > 0 && (
+        <div className="mb-6 w-full">
+          <div className="grid w-full grid-cols-4 gap-2 rounded-[1.75rem] bg-stone-100 p-2">
+            {filterOptions.map((filter) => {
+              const isActive = activeFilter === filter;
+
+              return (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setActiveFilter(filter)}
+                  aria-label={getFilterLabel(filter)}
+                  className={`flex h-12 items-center justify-center rounded-2xl text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                      : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
+                  }`}
+                >
+                  {filter === "all" && <span>All</span>}
+                  {filter === "flight" && <span className="text-lg">✈️</span>}
+                  {filter === "hotel" && <span className="text-lg">🏨</span>}
+                  {filter === "plans" && <span className="text-lg">🗺️</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {tripSuccessMessage && (
         <div className="mb-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
