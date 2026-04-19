@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import TripHero from "../components/TripHero";
+import type { Trip } from "../types";
 
 type Currency = "NOK" | "GBP" | "USD" | "THB" | "SDG" | "IDR" | "EUR";
 
@@ -68,25 +70,50 @@ export default function TripCostSharingPage() {
 
   const [tripMembers, setTripMembers] = useState<TripMember[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-
+  const [trip, setTrip] = useState<Trip | null>(null);
+  const [isLoadingTrip, setIsLoadingTrip] = useState(true);
   const [isLoadingMembers, setIsLoadingMembers] = useState(true);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(true);
-
-  const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<Currency>("NOK");
   const [date, setDate] = useState(getTodayDateString());
   const [paidByMemberId, setPaidByMemberId] = useState<number | null>(null);
-  const [selectedParticipantIds, setSelectedParticipantIds] = useState<number[]>([]);
+  const [selectedParticipantIds, setSelectedParticipantIds] = useState<number[]>(
+    []
+  );
 
   const [successMessage, setSuccessMessage] = useState("");
   const [editingExpenseId, setEditingExpenseId] = useState<number | null>(null);
 
+  const [showExpenses, setShowExpenses] = useState(false);
+
   function getMemberName(memberId: number) {
-    return tripMembers.find((member) => member.id === memberId)?.name || "Unknown";
+    return (
+      tripMembers.find((member) => member.id === memberId)?.name || "Unknown"
+    );
   }
+  
+  async function fetchTrip() {
+    setIsLoadingTrip(true);
+
+    const { data, error } = await supabase
+        .from("trips")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+    if (error) {
+        console.error("Error loading trip:", error);
+        setTrip(null);
+        setIsLoadingTrip(false);
+        return;
+    }
+
+    setTrip(data as Trip);
+    setIsLoadingTrip(false);
+    }
 
   async function fetchTripMembers() {
     setIsLoadingMembers(true);
@@ -189,11 +216,13 @@ export default function TripCostSharingPage() {
     setIsLoadingExpenses(false);
   }
 
-  useEffect(() => {
-    if (!Number.isFinite(id)) return;
-    fetchTripMembers();
-    fetchExpenses();
-  }, [id]);
+useEffect(() => {
+  if (!Number.isFinite(id)) return;
+
+  fetchTrip();
+  fetchTripMembers();
+  fetchExpenses();
+}, [id]);
 
   function resetForm() {
     setTitle("");
@@ -203,18 +232,6 @@ export default function TripCostSharingPage() {
     setPaidByMemberId(null);
     setSelectedParticipantIds(tripMembers.map((member) => member.id));
     setEditingExpenseId(null);
-    setShowExpenseForm(false);
-  }
-
-  function openNewExpenseForm() {
-    setEditingExpenseId(null);
-    setTitle("");
-    setAmount("");
-    setCurrency("NOK");
-    setDate(getTodayDateString());
-    setPaidByMemberId(null);
-    setSelectedParticipantIds(tripMembers.map((member) => member.id));
-    setShowExpenseForm(true);
   }
 
   function toggleParticipant(memberId: number) {
@@ -236,7 +253,11 @@ export default function TripCostSharingPage() {
     setSelectedParticipantIds(
       expense.participants.map((participant) => participant.member_id)
     );
-    setShowExpenseForm(true);
+    setShowExpenses(true);
+
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   function handleCancelEdit() {
@@ -300,7 +321,10 @@ export default function TripCostSharingPage() {
         .eq("expense_id", editingExpenseId);
 
       if (deleteParticipantsError) {
-        console.error("Error replacing expense participants:", deleteParticipantsError);
+        console.error(
+          "Error replacing expense participants:",
+          deleteParticipantsError
+        );
         alert("Expense updated, but participants could not be updated");
         return;
       }
@@ -315,7 +339,10 @@ export default function TripCostSharingPage() {
         .insert(participantRows);
 
       if (insertParticipantsError) {
-        console.error("Error adding expense participants:", insertParticipantsError);
+        console.error(
+          "Error adding expense participants:",
+          insertParticipantsError
+        );
         alert("Expense updated, but participants could not be saved");
         return;
       }
@@ -344,7 +371,10 @@ export default function TripCostSharingPage() {
         .insert(participantRows);
 
       if (participantInsertError) {
-        console.error("Error saving expense participants:", participantInsertError);
+        console.error(
+          "Error saving expense participants:",
+          participantInsertError
+        );
         alert("Expense saved, but participants could not be saved");
         return;
       }
@@ -354,6 +384,7 @@ export default function TripCostSharingPage() {
 
     await fetchExpenses();
     resetForm();
+    setShowExpenses(true);
 
     setTimeout(() => {
       setSuccessMessage("");
@@ -477,19 +508,21 @@ export default function TripCostSharingPage() {
     const processedPairs = new Set<string>();
 
     for (const debt of rawDebts.values()) {
-      const pairKey = `${debt.currency}__${Math.min(debt.fromId, debt.toId)}__${Math.max(
+      const pairKey = `${debt.currency}__${Math.min(
         debt.fromId,
         debt.toId
-      )}`;
+      )}__${Math.max(debt.fromId, debt.toId)}`;
 
       if (processedPairs.has(pairKey)) continue;
       processedPairs.add(pairKey);
 
       const forwardAmount =
-        rawDebts.get(`${debt.currency}__${debt.fromId}__${debt.toId}`)?.amount || 0;
+        rawDebts.get(`${debt.currency}__${debt.fromId}__${debt.toId}`)?.amount ||
+        0;
 
       const backwardAmount =
-        rawDebts.get(`${debt.currency}__${debt.toId}__${debt.fromId}`)?.amount || 0;
+        rawDebts.get(`${debt.currency}__${debt.toId}__${debt.fromId}`)?.amount ||
+        0;
 
       const netAmount = forwardAmount - backwardAmount;
 
@@ -522,6 +555,22 @@ export default function TripCostSharingPage() {
     return grouped;
   }, [expenses, tripMembers]);
 
+  const travellerSummary = useMemo(() => {
+    if (tripMembers.length === 0) return "No travellers yet";
+    if (tripMembers.length === 1) return `1 traveller on this trip: ${tripMembers[0].name}`;
+    return `${tripMembers.length} travellers on this trip: ${tripMembers
+      .map((member) => member.name)
+      .join(", ")}`;
+  }, [tripMembers]);
+
+  if (isLoadingTrip) {
+  return <div className="p-8">Loading trip...</div>;
+}
+
+if (!trip) {
+  return <div className="p-8">Trip not found</div>;
+}
+
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
       <Link
@@ -538,168 +587,174 @@ export default function TripCostSharingPage() {
           <span>Cost sharing</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-stone-900">
-          Trip cost sharing
-        </h1>
+        <TripHero
+        title="Trip cost sharing"
+        subtitle="Travel expenses"
+        eyebrow={trip.destination}
+        imageUrl={trip.image_url}
+        />
 
         <p className="mt-3 text-stone-500">Shared expenses for this trip.</p>
 
-        {!isLoadingMembers && tripMembers.length > 0 && (
-          <div className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-sm text-stone-600">
-            {tripMembers.length} traveller{tripMembers.length === 1 ? "" : "s"} on this trip:{" "}
-            <span className="font-medium text-stone-800">
-              {tripMembers.map((member) => member.name).join(", ")}
-            </span>
-          </div>
-        )}
+        <div className="mt-6 rounded-2xl bg-stone-50 px-4 py-3 text-sm text-stone-700">
+          {isLoadingMembers ? "Loading travellers..." : travellerSummary}
+        </div>
 
-        <div className="mt-6 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+        <form
+          onSubmit={handleSaveExpense}
+          className="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-stone-50 p-4"
+        >
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-stone-900">
                 {editingExpenseId ? "Edit expense" : "Add expense"}
               </h2>
               <p className="mt-1 text-sm text-stone-500">
-                Add one expense at a time and keep the calculation inside that currency.
+                Add one expense at a time and keep the calculation inside that
+                currency.
               </p>
             </div>
 
-            {!showExpenseForm && (
+            {editingExpenseId && (
               <button
                 type="button"
-                onClick={openNewExpenseForm}
-                disabled={tripMembers.length === 0}
-                className="shrink-0 rounded-xl bg-green-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-stone-300"
+                onClick={handleCancelEdit}
+                className="shrink-0 text-sm text-stone-500 underline"
               >
-                Add expense
+                Cancel
               </button>
             )}
           </div>
 
-          {isLoadingMembers ? (
-            <div className="mt-4 text-sm text-stone-500">Loading travellers...</div>
-          ) : tripMembers.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-dashed border-stone-300 bg-white p-4 text-sm text-stone-500">
-              Add travellers to the trip before using cost sharing.
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="Expense title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+              disabled={tripMembers.length === 0}
+            />
+
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Expense amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+              disabled={tripMembers.length === 0}
+            />
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-stone-700">
+                Expense currency
+              </label>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value as Currency)}
+                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                disabled={tripMembers.length === 0}
+              >
+                {currencyOptions.map((currencyCode) => (
+                  <option key={currencyCode} value={currencyCode}>
+                    {currencyCode}
+                  </option>
+                ))}
+              </select>
             </div>
-          ) : showExpenseForm ? (
-            <form onSubmit={handleSaveExpense} className="mt-4 space-y-4">
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Expense title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-                />
 
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Expense amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="no-spinner w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-                />
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-stone-700">Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                disabled={tripMembers.length === 0}
+              />
+            </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-stone-700">
-                    Expense currency
-                  </label>
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value as Currency)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                  >
-                    {currencyOptions.map((currencyCode) => (
-                      <option key={currencyCode} value={currencyCode}>
-                        {currencyCode}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-stone-700">Paid by</label>
+              <select
+                value={paidByMemberId ?? ""}
+                onChange={(e) =>
+                  setPaidByMemberId(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                disabled={tripMembers.length === 0}
+              >
+                <option value="">Choose traveller</option>
+                {tripMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-stone-700">Date</label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                  />
-                </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <label className="text-sm font-medium text-stone-700">
+                  Shared between
+                </label>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-stone-700">Paid by</label>
-                  <select
-                    value={paidByMemberId ?? ""}
-                    onChange={(e) =>
-                      setPaidByMemberId(e.target.value ? Number(e.target.value) : null)
+                {tripMembers.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedParticipantIds(
+                        tripMembers.map((member) => member.id)
+                      )
                     }
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    className="text-sm font-medium text-stone-500 underline"
                   >
-                    <option value="">Select traveller</option>
-                    {tripMembers.map((member) => (
-                      <option key={member.id} value={member.id}>
-                        {member.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-stone-700">
-                    Shared between
-                  </label>
-
-                  <div className="space-y-2">
-                    {tripMembers.map((member) => {
-                      const checked = selectedParticipantIds.includes(member.id);
-
-                      return (
-                        <label
-                          key={member.id}
-                          className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-sm text-stone-800"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => toggleParticipant(member.id)}
-                          />
-                          <span>{member.name}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
+                    Select all
+                  </button>
+                )}
               </div>
 
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  className={`flex-1 rounded-2xl px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 active:scale-[0.97] ${
-                    editingExpenseId
-                      ? "bg-amber-500 hover:bg-amber-600 hover:shadow-lg"
-                      : "bg-green-500 hover:bg-green-600 hover:shadow-lg"
-                  }`}
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="text-lg">✓</span>
-                    {editingExpenseId ? "Update expense" : "Add expense"}
-                  </span>
-                </button>
+              <div className="space-y-2">
+                {tripMembers.map((member) => {
+                  const checked = selectedParticipantIds.includes(member.id);
 
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="rounded-2xl border border-stone-300 bg-white px-5 py-3.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100"
-                >
-                  Cancel
-                </button>
+                  return (
+                    <label
+                      key={member.id}
+                      className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-sm text-stone-800"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleParticipant(member.id)}
+                        disabled={tripMembers.length === 0}
+                      />
+                      <span>{member.name}</span>
+                    </label>
+                  );
+                })}
               </div>
-            </form>
-          ) : null}
-        </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={tripMembers.length === 0}
+            className={`w-full rounded-2xl px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 active:scale-[0.97] ${
+              editingExpenseId
+                ? "bg-amber-500 hover:bg-amber-600 hover:shadow-lg"
+                : "bg-green-500 hover:bg-green-600 hover:shadow-lg"
+            } disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none`}
+          >
+            <span className="flex items-center justify-center gap-2">
+              <span className="text-lg">✓</span>
+              {editingExpenseId ? "Update expense" : "Add expense"}
+            </span>
+          </button>
+        </form>
 
         {successMessage && (
           <div className="mt-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
@@ -707,9 +762,11 @@ export default function TripCostSharingPage() {
           </div>
         )}
 
-        {currentPreview && showExpenseForm && (
+        {currentPreview && (
           <div className="mt-6 space-y-3 rounded-2xl bg-blue-50 p-4">
-            <h2 className="text-lg font-semibold text-blue-800">Current preview</h2>
+            <h2 className="text-lg font-semibold text-blue-800">
+              Current preview
+            </h2>
 
             <p className="text-sm text-blue-700">
               Each person pays: {formatAmount(currentPreview.sharePerPerson)}{" "}
@@ -743,80 +800,102 @@ export default function TripCostSharingPage() {
           </div>
         )}
 
-        <div className="mt-6 space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-stone-900">Expenses</h2>
-            <p className="mt-1 text-sm text-stone-500">
-              Shared expenses for this trip.
-            </p>
-          </div>
-
-          {isLoadingExpenses ? (
-            <div className="rounded-2xl border border-stone-200 bg-white p-6 text-sm text-stone-500">
-              Loading expenses...
+        <div className="mt-8">
+          <button
+            type="button"
+            onClick={() => setShowExpenses((current) => !current)}
+            className="flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-left transition hover:bg-stone-100"
+          >
+            <div>
+              <h2 className="text-lg font-semibold text-stone-900">Expenses</h2>
+              <p className="mt-1 text-sm text-stone-500">
+                {showExpenses
+                  ? "Hide the expense list"
+                  : "Show all saved expenses"}
+              </p>
             </div>
-          ) : sortedExpenses.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
-              <p className="text-sm text-stone-500">No expenses added yet.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sortedExpenses.map((expense) => {
-                const participantNames = expense.participants.map((participant) =>
-                  getMemberName(participant.member_id)
-                );
 
-                const sharePerPerson =
-                  expense.participants.length > 0
-                    ? Number(expense.amount) / expense.participants.length
-                    : 0;
+            <span
+              className={`text-xl text-stone-400 transition-transform ${
+                showExpenses ? "rotate-180" : "rotate-0"
+              }`}
+            >
+              ⌄
+            </span>
+          </button>
 
-                return (
-                  <div
-                    key={expense.id}
-                    className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="text-base font-semibold text-stone-900">
-                          {expense.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-stone-500">
-                          {formatAmount(Number(expense.amount))} {expense.currency} ·{" "}
-                          {formatExpenseDate(expense.expense_date)}
-                        </p>
-                        <p className="mt-1 text-sm text-stone-500">
-                          Paid by: {getMemberName(expense.paid_by_member_id)}
-                        </p>
-                        <p className="mt-1 text-sm text-stone-500">
-                          Shared between: {participantNames.join(", ")}
-                        </p>
-                        <p className="mt-2 text-sm font-medium text-stone-700">
-                          Each person pays: {formatAmount(sharePerPerson)} {expense.currency}
-                        </p>
+          {showExpenses && (
+            <div className="mt-4">
+              {isLoadingExpenses ? (
+                <div className="rounded-2xl border border-stone-200 bg-white p-6 text-sm text-stone-500">
+                  Loading expenses...
+                </div>
+              ) : sortedExpenses.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
+                  <p className="text-sm text-stone-500">No expenses added yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {sortedExpenses.map((expense) => {
+                    const participantNames = expense.participants.map(
+                      (participant) => getMemberName(participant.member_id)
+                    );
+
+                    const sharePerPerson =
+                      expense.participants.length > 0
+                        ? Number(expense.amount) / expense.participants.length
+                        : 0;
+
+                    return (
+                      <div
+                        key={expense.id}
+                        className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <h3 className="text-base font-semibold text-stone-900">
+                              {expense.title}
+                            </h3>
+                            <p className="mt-1 text-sm text-stone-500">
+                              {formatAmount(Number(expense.amount))}{" "}
+                              {expense.currency} ·{" "}
+                              {formatExpenseDate(expense.expense_date)}
+                            </p>
+                            <p className="mt-2 text-sm text-stone-500">
+                              Paid by: {getMemberName(expense.paid_by_member_id)}
+                            </p>
+                            <p className="mt-1 text-sm text-stone-500">
+                              Shared between: {participantNames.join(", ")}
+                            </p>
+                            <p className="mt-3 text-sm font-medium text-stone-700">
+                              Each person pays: {formatAmount(sharePerPerson)}{" "}
+                              {expense.currency}
+                            </p>
+                          </div>
+
+                          <div className="flex shrink-0 items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEditExpense(expense)}
+                              className="rounded-full bg-amber-50 px-3 py-2 text-sm font-medium text-amber-600 transition hover:bg-amber-100"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteExpense(expense.id)}
+                              className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
                       </div>
-
-                      <div className="flex shrink-0 items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleEditExpense(expense)}
-                          className="rounded-full bg-amber-50 px-3 py-2 text-sm font-medium text-amber-600 transition hover:bg-amber-100"
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteExpense(expense.id)}
-                          className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -833,7 +912,9 @@ export default function TripCostSharingPage() {
 
           {expenses.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
-              <p className="text-sm text-stone-500">Add expenses to see the summary.</p>
+              <p className="text-sm text-stone-500">
+                Add expenses to see the summary.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">

@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import BookingTimeline from "./components/BookingTimeline";
 import BookingForm from "./components/BookingForm";
+import TripHero from "./components/TripHero";
 import type {
   Trip,
   TripMember,
@@ -502,26 +503,7 @@ export default function TripPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
-      {trip.image_url && (
-        <div className="relative mb-6 w-full overflow-hidden rounded-3xl shadow-md">
-          <img
-            src={trip.image_url}
-            alt={trip.title}
-            className="h-56 w-full object-cover sm:h-72"
-          />
-
-          <div className="absolute bottom-5 left-5 right-5 min-w-0 rounded-3xl border border-white/30 bg-black/5 p-3 text-white backdrop-blur-sm sm:p-4">
-            <h1 className="text-3xl font-bold leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
-              {trip.title}
-            </h1>
-            <p className="mt-1 text-sm text-white/90">
-              {formatTripDateRange(trip.start_date, trip.end_date)}
-            </p>
-            <p className="text-xs text-white/80">{trip.destination}</p>
-          </div>
-        </div>
-      )}
-
+      
       {!showBookingForm && (
         <Link
           href="/"
@@ -531,6 +513,13 @@ export default function TripPage() {
           <span>Back to trips</span>
         </Link>
       )}
+
+<TripHero
+  title={trip.title}
+  subtitle={formatTripDateRange(trip.start_date, trip.end_date)}
+  eyebrow={trip.destination}
+  imageUrl={trip.image_url}
+/>
 
       {!showBookingForm && (
         <div className="mb-5 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
