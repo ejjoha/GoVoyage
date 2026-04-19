@@ -17,7 +17,7 @@ type ExpenseParticipant = {
   member_id: number;
 };
 
-type ExpenseRow = {
+type Expense = {
   id: number;
   trip_id: number;
   title: string;
@@ -25,9 +25,6 @@ type ExpenseRow = {
   currency: Currency;
   expense_date: string;
   paid_by_member_id: number;
-};
-
-type Expense = ExpenseRow & {
   participants: ExpenseParticipant[];
 };
 
@@ -47,7 +44,6 @@ function formatAmount(value: number) {
 
 function formatExpenseDate(value?: string) {
   if (!value) return "";
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
@@ -75,6 +71,8 @@ export default function TripCostSharingPage() {
 
   const [isLoadingMembers, setIsLoadingMembers] = useState(true);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(true);
+
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -113,7 +111,7 @@ export default function TripCostSharingPage() {
       if (current && members.some((member) => member.id === current)) {
         return current;
       }
-      return members.length > 0 ? members[0].id : null;
+      return null;
     });
 
     setSelectedParticipantIds((current) => {
@@ -122,8 +120,7 @@ export default function TripCostSharingPage() {
       );
 
       if (validIds.length > 0) return validIds;
-      if (members.length > 0) return [members[0].id];
-      return [];
+      return members.map((member) => member.id);
     });
 
     setIsLoadingMembers(false);
@@ -146,7 +143,7 @@ export default function TripCostSharingPage() {
       return;
     }
 
-    const expenseRows = (data || []) as ExpenseRow[];
+    const expenseRows = (data || []) as Omit<Expense, "participants">[];
 
     if (expenseRows.length === 0) {
       setExpenses([]);
@@ -178,11 +175,7 @@ export default function TripCostSharingPage() {
     for (const row of participantData || []) {
       const expenseId = Number(row.expense_id);
       const current = participantsByExpenseId.get(expenseId) || [];
-
-      current.push({
-        member_id: Number(row.member_id),
-      });
-
+      current.push({ member_id: Number(row.member_id) });
       participantsByExpenseId.set(expenseId, current);
     }
 
@@ -198,7 +191,6 @@ export default function TripCostSharingPage() {
 
   useEffect(() => {
     if (!Number.isFinite(id)) return;
-
     fetchTripMembers();
     fetchExpenses();
   }, [id]);
@@ -208,9 +200,21 @@ export default function TripCostSharingPage() {
     setAmount("");
     setCurrency("NOK");
     setDate(getTodayDateString());
-    setPaidByMemberId(tripMembers.length > 0 ? tripMembers[0].id : null);
-    setSelectedParticipantIds(tripMembers.length > 0 ? [tripMembers[0].id] : []);
+    setPaidByMemberId(null);
+    setSelectedParticipantIds(tripMembers.map((member) => member.id));
     setEditingExpenseId(null);
+    setShowExpenseForm(false);
+  }
+
+  function openNewExpenseForm() {
+    setEditingExpenseId(null);
+    setTitle("");
+    setAmount("");
+    setCurrency("NOK");
+    setDate(getTodayDateString());
+    setPaidByMemberId(null);
+    setSelectedParticipantIds(tripMembers.map((member) => member.id));
+    setShowExpenseForm(true);
   }
 
   function toggleParticipant(memberId: number) {
@@ -218,7 +222,6 @@ export default function TripCostSharingPage() {
       if (current.includes(memberId)) {
         return current.filter((id) => id !== memberId);
       }
-
       return [...current, memberId];
     });
   }
@@ -233,6 +236,7 @@ export default function TripCostSharingPage() {
     setSelectedParticipantIds(
       expense.participants.map((participant) => participant.member_id)
     );
+    setShowExpenseForm(true);
   }
 
   function handleCancelEdit() {
@@ -296,10 +300,7 @@ export default function TripCostSharingPage() {
         .eq("expense_id", editingExpenseId);
 
       if (deleteParticipantsError) {
-        console.error(
-          "Error replacing expense participants:",
-          deleteParticipantsError
-        );
+        console.error("Error replacing expense participants:", deleteParticipantsError);
         alert("Expense updated, but participants could not be updated");
         return;
       }
@@ -314,10 +315,7 @@ export default function TripCostSharingPage() {
         .insert(participantRows);
 
       if (insertParticipantsError) {
-        console.error(
-          "Error adding expense participants:",
-          insertParticipantsError
-        );
+        console.error("Error adding expense participants:", insertParticipantsError);
         alert("Expense updated, but participants could not be saved");
         return;
       }
@@ -346,10 +344,7 @@ export default function TripCostSharingPage() {
         .insert(participantRows);
 
       if (participantInsertError) {
-        console.error(
-          "Error saving expense participants:",
-          participantInsertError
-        );
+        console.error("Error saving expense participants:", participantInsertError);
         alert("Expense saved, but participants could not be saved");
         return;
       }
@@ -482,21 +477,19 @@ export default function TripCostSharingPage() {
     const processedPairs = new Set<string>();
 
     for (const debt of rawDebts.values()) {
-      const pairKey = `${debt.currency}__${Math.min(
+      const pairKey = `${debt.currency}__${Math.min(debt.fromId, debt.toId)}__${Math.max(
         debt.fromId,
         debt.toId
-      )}__${Math.max(debt.fromId, debt.toId)}`;
+      )}`;
 
       if (processedPairs.has(pairKey)) continue;
       processedPairs.add(pairKey);
 
       const forwardAmount =
-        rawDebts.get(`${debt.currency}__${debt.fromId}__${debt.toId}`)?.amount ||
-        0;
+        rawDebts.get(`${debt.currency}__${debt.fromId}__${debt.toId}`)?.amount || 0;
 
       const backwardAmount =
-        rawDebts.get(`${debt.currency}__${debt.toId}__${debt.fromId}`)?.amount ||
-        0;
+        rawDebts.get(`${debt.currency}__${debt.toId}__${debt.fromId}`)?.amount || 0;
 
       const netAmount = forwardAmount - backwardAmount;
 
@@ -549,172 +542,164 @@ export default function TripCostSharingPage() {
           Trip cost sharing
         </h1>
 
-        <p className="mt-3 text-stone-500">Shared expenses for this trip</p>
+        <p className="mt-3 text-stone-500">Shared expenses for this trip.</p>
+
+        {!isLoadingMembers && tripMembers.length > 0 && (
+          <div className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-sm text-stone-600">
+            {tripMembers.length} traveller{tripMembers.length === 1 ? "" : "s"} on this trip:{" "}
+            <span className="font-medium text-stone-800">
+              {tripMembers.map((member) => member.name).join(", ")}
+            </span>
+          </div>
+        )}
 
         <div className="mt-6 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-          <div>
-            <h2 className="text-lg font-semibold text-stone-900">Travellers</h2>
-            <p className="mt-1 text-sm text-stone-500">
-              These travellers were added when the trip was created.
-            </p>
-          </div>
-
-          {isLoadingMembers ? (
-            <div className="mt-4 text-sm text-stone-500">Loading travellers...</div>
-          ) : tripMembers.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-dashed border-stone-300 bg-white p-4 text-sm text-stone-500">
-              No travellers found for this trip yet.
-            </div>
-          ) : (
-            <div className="mt-4 space-y-2">
-              {tripMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="rounded-xl bg-white px-3 py-3 text-sm text-stone-800"
-                >
-                  {member.name}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <form
-          onSubmit={handleSaveExpense}
-          className="mt-6 space-y-4 rounded-2xl border border-stone-200 bg-stone-50 p-4"
-        >
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-stone-900">
                 {editingExpenseId ? "Edit expense" : "Add expense"}
               </h2>
               <p className="mt-1 text-sm text-stone-500">
-                Add one expense at a time and keep the calculation inside that
-                currency.
+                Add one expense at a time and keep the calculation inside that currency.
               </p>
             </div>
 
-            {editingExpenseId && (
+            {!showExpenseForm && (
               <button
                 type="button"
-                onClick={handleCancelEdit}
-                className="shrink-0 text-sm text-stone-500 underline"
+                onClick={openNewExpenseForm}
+                disabled={tripMembers.length === 0}
+                className="shrink-0 rounded-xl bg-green-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-stone-300"
               >
-                Cancel
+                Add expense
               </button>
             )}
           </div>
 
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Expense title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              disabled={tripMembers.length === 0}
-            />
-
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Expense amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              disabled={tripMembers.length === 0}
-            />
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Expense currency
-              </label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value as Currency)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                disabled={tripMembers.length === 0}
-              >
-                {currencyOptions.map((currencyCode) => (
-                  <option key={currencyCode} value={currencyCode}>
-                    {currencyCode}
-                  </option>
-                ))}
-              </select>
+          {isLoadingMembers ? (
+            <div className="mt-4 text-sm text-stone-500">Loading travellers...</div>
+          ) : tripMembers.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-dashed border-stone-300 bg-white p-4 text-sm text-stone-500">
+              Add travellers to the trip before using cost sharing.
             </div>
+          ) : showExpenseForm ? (
+            <form onSubmit={handleSaveExpense} className="mt-4 space-y-4">
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Expense title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                />
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">Date</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                disabled={tripMembers.length === 0}
-              />
-            </div>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Expense amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="no-spinner w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                />
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Paid by
-              </label>
-              <select
-                value={paidByMemberId ?? ""}
-                onChange={(e) => setPaidByMemberId(Number(e.target.value))}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                disabled={tripMembers.length === 0}
-              >
-                {tripMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-stone-700">
+                    Expense currency
+                  </label>
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value as Currency)}
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                  >
+                    {currencyOptions.map((currencyCode) => (
+                      <option key={currencyCode} value={currencyCode}>
+                        {currencyCode}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-700">
-                Shared between
-              </label>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-stone-700">Date</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                {tripMembers.map((member) => {
-                  const checked = selectedParticipantIds.includes(member.id);
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-stone-700">Paid by</label>
+                  <select
+                    value={paidByMemberId ?? ""}
+                    onChange={(e) =>
+                      setPaidByMemberId(e.target.value ? Number(e.target.value) : null)
+                    }
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                  >
+                    <option value="">Select traveller</option>
+                    {tripMembers.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                  return (
-                    <label
-                      key={member.id}
-                      className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-sm text-stone-800"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleParticipant(member.id)}
-                        disabled={tripMembers.length === 0}
-                      />
-                      <span>{member.name}</span>
-                    </label>
-                  );
-                })}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-stone-700">
+                    Shared between
+                  </label>
+
+                  <div className="space-y-2">
+                    {tripMembers.map((member) => {
+                      const checked = selectedParticipantIds.includes(member.id);
+
+                      return (
+                        <label
+                          key={member.id}
+                          className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-sm text-stone-800"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleParticipant(member.id)}
+                          />
+                          <span>{member.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={tripMembers.length === 0}
-            className={`w-full rounded-2xl px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 active:scale-[0.97] ${
-              editingExpenseId
-                ? "bg-amber-500 hover:bg-amber-600 hover:shadow-lg"
-                : "bg-green-500 hover:bg-green-600 hover:shadow-lg"
-            } disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">✓</span>
-              {editingExpenseId ? "Update expense" : "Add expense"}
-            </span>
-          </button>
-        </form>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className={`flex-1 rounded-2xl px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 active:scale-[0.97] ${
+                    editingExpenseId
+                      ? "bg-amber-500 hover:bg-amber-600 hover:shadow-lg"
+                      : "bg-green-500 hover:bg-green-600 hover:shadow-lg"
+                  }`}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="text-lg">✓</span>
+                    {editingExpenseId ? "Update expense" : "Add expense"}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="rounded-2xl border border-stone-300 bg-white px-5 py-3.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : null}
+        </div>
 
         {successMessage && (
           <div className="mt-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
@@ -722,11 +707,9 @@ export default function TripCostSharingPage() {
           </div>
         )}
 
-        {currentPreview && (
+        {currentPreview && showExpenseForm && (
           <div className="mt-6 space-y-3 rounded-2xl bg-blue-50 p-4">
-            <h2 className="text-lg font-semibold text-blue-800">
-              Current preview
-            </h2>
+            <h2 className="text-lg font-semibold text-blue-800">Current preview</h2>
 
             <p className="text-sm text-blue-700">
               Each person pays: {formatAmount(currentPreview.sharePerPerson)}{" "}
@@ -794,16 +777,13 @@ export default function TripCostSharingPage() {
                     className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
+                      <div className="min-w-0">
                         <h3 className="text-base font-semibold text-stone-900">
                           {expense.title}
                         </h3>
                         <p className="mt-1 text-sm text-stone-500">
-                          Amount: {formatAmount(Number(expense.amount))}{" "}
-                          {expense.currency}
-                        </p>
-                        <p className="mt-1 text-sm text-stone-500">
-                          Date: {formatExpenseDate(expense.expense_date)}
+                          {formatAmount(Number(expense.amount))} {expense.currency} ·{" "}
+                          {formatExpenseDate(expense.expense_date)}
                         </p>
                         <p className="mt-1 text-sm text-stone-500">
                           Paid by: {getMemberName(expense.paid_by_member_id)}
@@ -812,8 +792,7 @@ export default function TripCostSharingPage() {
                           Shared between: {participantNames.join(", ")}
                         </p>
                         <p className="mt-2 text-sm font-medium text-stone-700">
-                          Each person pays: {formatAmount(sharePerPerson)}{" "}
-                          {expense.currency}
+                          Each person pays: {formatAmount(sharePerPerson)} {expense.currency}
                         </p>
                       </div>
 
@@ -854,9 +833,7 @@ export default function TripCostSharingPage() {
 
           {expenses.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
-              <p className="text-sm text-stone-500">
-                Add expenses to see the summary.
-              </p>
+              <p className="text-sm text-stone-500">Add expenses to see the summary.</p>
             </div>
           ) : (
             <div className="space-y-4">
