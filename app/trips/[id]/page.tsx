@@ -503,7 +503,6 @@ export default function TripPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
-      
       {!showBookingForm && (
         <Link
           href="/"
@@ -514,81 +513,74 @@ export default function TripPage() {
         </Link>
       )}
 
-<TripHero
-  title={trip.title}
-  subtitle={formatTripDateRange(trip.start_date, trip.end_date)}
-  eyebrow={trip.destination}
-  imageUrl={trip.image_url}
-/>
+      <TripHero
+        title={trip.title}
+        subtitle={formatTripDateRange(trip.start_date, trip.end_date)}
+        eyebrow={trip.destination}
+        imageUrl={trip.image_url}
+        onEdit={() => {
+          if (showTripForm) {
+            resetTripFormFromTrip();
+          } else {
+            setShowTripForm(true);
+          }
+        }}
+      />
 
-      {!showBookingForm && (
-        <div className="mb-5 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
-          <button
-            onClick={() => {
-              if (showTripForm) {
-                resetTripFormFromTrip();
-              } else {
-                setShowTripForm(true);
-              }
-            }}
-            className="rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-rose-600 hover:shadow-lg active:scale-[0.97] active:shadow-sm"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">✎</span>
-              {showTripForm ? "Close" : "Edit trip"}
-            </span>
-          </button>
+    {!showBookingForm && !showTripForm && (
+      <div className="mb-5 space-y-3">
+        <button
+          onClick={openNewBookingForm}
+          className="w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-stone-800 hover:shadow-md active:scale-[0.98]"
+        >
+          <span className="flex items-center justify-center gap-2">
+            <span className="text-lg">＋</span>
+            Add booking
+          </span>
+        </button>
 
-          <button
-            onClick={openNewBookingForm}
-            className="w-full rounded-xl bg-sky-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-800 active:scale-[0.98]"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">＋</span>
-              Add booking
-            </span>
-          </button>
-
+        <div className="grid grid-cols-1">
           <Link
             href={`/trips/${trip.id}/cost-sharing`}
-            className="w-full rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98]"
+            className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700 shadow-sm transition-all duration-200 hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900 active:scale-[0.98]"
           >
             <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">💸</span>
+              <span className="text-base">💸</span>
               Shared costs
             </span>
           </Link>
         </div>
-      )}
+      </div>
+    )}
 
-      {!showBookingForm && bookings.length > 0 && (
-        <div className="mb-6 w-full">
-          <div className="grid w-full grid-cols-4 gap-2 rounded-[1.75rem] bg-stone-100 p-2">
-            {filterOptions.map((filter) => {
-              const isActive = activeFilter === filter;
+    {!showBookingForm && !showTripForm && bookings.length > 0 && (
+      <div className="mb-6 w-full">
+        <div className="grid w-full grid-cols-4 gap-2 rounded-[1.75rem] bg-stone-100 p-2">
+          {filterOptions.map((filter) => {
+            const isActive = activeFilter === filter;
 
-              return (
-                <button
-                  key={filter}
-                  type="button"
-                  onClick={() => setActiveFilter(filter)}
-                  aria-label={getFilterLabel(filter)}
-                  className={`flex h-12 items-center justify-center rounded-2xl text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                      : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
-                  }`}
-                >
-                  {filter === "all" && <span>All</span>}
-                  {filter === "flight" && <span className="text-lg">✈️</span>}
-                  {filter === "hotel" && <span className="text-lg">🏨</span>}
-                  {filter === "plans" && <span className="text-lg">🗺️</span>}
-                </button>
-              );
-            })}
-          </div>
+            return (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setActiveFilter(filter)}
+                aria-label={getFilterLabel(filter)}
+                className={`flex h-12 items-center justify-center rounded-2xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                    : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
+                }`}
+              >
+                {filter === "all" && <span>All</span>}
+                {filter === "flight" && <span className="text-lg">✈️</span>}
+                {filter === "hotel" && <span className="text-lg">🏨</span>}
+                {filter === "plans" && <span className="text-lg">🗺️</span>}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
+    )}
 
       {tripSuccessMessage && (
         <div className="mb-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
