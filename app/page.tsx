@@ -14,6 +14,11 @@ type Trip = {
   image_url?: string;
 };
 
+type NewTraveller = {
+  id: number;
+  name: string;
+};
+
 function formatTripDateRange(start?: string, end?: string) {
   if (!start || !end) return "";
 
@@ -105,6 +110,8 @@ export default function HomePage() {
   const [newStartDate, setNewStartDate] = useState("");
   const [newEndDate, setNewEndDate] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [travellerName, setTravellerName] = useState("");
+  const [newTravellers, setNewTravellers] = useState<NewTraveller[]>([]);
 
   async function fetchTrips() {
     setIsLoading(true);
@@ -143,43 +150,101 @@ export default function HomePage() {
     fetchTrips();
   }, []);
 
-  async function handleCreateTrip() {
+    function handleAddTraveller() {
+    if (!travellerName.trim()) {
+      alert("Please enter a traveller name");
+      return;
+    }
+    if (
+      newTravellers.some(
+        (traveller) =>
+        traveller.name.trim().toLowerCase() === travellerName.trim().toLowerCase()
+        )
+      ) {
+        alert("That traveller is already added");
+        return;
+      }
+
+    const newTraveller: NewTraveller = {
+      id: Date.now(),
+      name: travellerName.trim(),
+    };
+
+    setNewTravellers((current) => [...current, newTraveller]);
+    setTravellerName("");
+  }
+
+  function handleRemoveTraveller(travellerId: number) {
+    setNewTravellers((current) =>
+      current.filter((traveller) => traveller.id !== travellerId)
+    );
+  }
+  
+    async function handleCreateTrip() {
     if (!newTitle.trim() || !newDestination.trim() || !newStartDate || !newEndDate) {
       alert("Please fill in Title, Destination, Start date, and End date");
       return;
+
     }
 
-    const { data, error } = await supabase
-      .from("trips")
-      .insert({
-        title: newTitle.trim(),
-        destination: newDestination.trim(),
-        image_url: newImageUrl.trim() || null,
-        start_date: newStartDate,
-        end_date: newEndDate,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error(error);
-      alert("Failed to create trip");
+    if (newEndDate < newStartDate) {
+      alert("End date cannot be before start date");
+      return;
+    }
+    if (newTravellers.length === 0) {
+      alert("Please add at least one traveller");
       return;
     }
 
-    setNewTitle("");
-    setNewDestination("");
-    setNewImageUrl("");
-    setNewStartDate("");
-    setNewEndDate("");
-    setShowForm(false);
+    try {
+      const { data, error } = await supabase
+        .from("trips")
+        .insert({
+          title: newTitle.trim(),
+          destination: newDestination.trim(),
+          image_url: newImageUrl.trim() || null,
+          start_date: newStartDate,
+          end_date: newEndDate,
+        })
+        .select()
+        .single();
 
-    if (data?.id) {
+      if (error || !data) {
+        console.error(error);
+        alert("Failed to create trip");
+        return;
+      }
+
+      if (newTravellers.length > 0) {
+        const travellerRows = newTravellers.map((traveller) => ({
+          trip_id: data.id,
+          name: traveller.name,
+        }));
+
+        const { error: memberError } = await supabase
+          .from("trip_members")
+          .insert(travellerRows);
+
+        if (memberError) {
+          console.error("Error saving travellers:", memberError);
+          alert("Trip created, but travellers could not be saved");
+        }
+      }
+
+      setNewTitle("");
+      setNewDestination("");
+      setNewImageUrl("");
+      setNewStartDate("");
+      setNewEndDate("");
+      setTravellerName("");
+      setNewTravellers([]);
+      setShowForm(false);
+
       router.push(`/trips/${data.id}`);
-      return;
+    } catch (err) {
+      console.error("Unexpected error creating trip:", err);
+      alert("Failed to create trip");
     }
-
-    await fetchTrips();
   }
 
   const { upcomingTrips, pastTrips } = useMemo(() => {
@@ -237,7 +302,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="space-y-3">
+           <div className="space-y-3">
             <input
               type="text"
               placeholder="Trip title"
@@ -276,6 +341,60 @@ export default function HomePage() {
                 onChange={(e) => setNewEndDate(e.target.value)}
                 className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
               />
+            </div>
+
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <div>
+                <h3 className="text-sm font-semibold text-stone-900">
+                  Travellers
+                </h3>
+                <p className="mt-1 text-sm text-stone-500">
+                  Add the people going on this trip.
+                </p>
+              </div>
+
+              <div className="mt-3 flex gap-3">
+                <input
+                  type="text"
+                  placeholder="Traveller name"
+                  value={travellerName}
+                  onChange={(e) => setTravellerName(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleAddTraveller}
+                  className="shrink-0 rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                  Add
+                </button>
+              </div>
+
+              {newTravellers.length === 0 ? (
+                <p className="mt-3 text-sm text-stone-500">
+                  No travellers added yet.
+                </p>
+              ) : (
+                <div className="mt-3 space-y-2">
+                  {newTravellers.map((traveller) => (
+                    <div
+                      key={traveller.id}
+                      className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-3 text-sm text-stone-800"
+                    >
+                      <span>{traveller.name}</span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTraveller(traveller.id)}
+                        className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
