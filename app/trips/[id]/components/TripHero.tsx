@@ -31,13 +31,13 @@ export default function TripHero({
         <Link
           href={backHref}
           aria-label="Back to trip"
-          className="absolute left-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white shadow-[0_4px_14px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-black/35 active:scale-95"
+          className="absolute left-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white shadow-[0_4px_14px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-black/35 active:scale-95 sm:left-4 sm:top-4"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            strokeWidth={2.5}   // 👈 THIS controls thickness
+            strokeWidth={2.5}
             stroke="currentColor"
             className="h-5 w-5"
           >
@@ -50,7 +50,7 @@ export default function TripHero({
         </Link>
       )}
 
-      <div className="absolute bottom-5 left-5 right-5 min-w-0 rounded-3xl border border-white/30 bg-black/20 p-4 text-white backdrop-blur-md sm:p-5">
+      <div className="absolute bottom-4 left-3 right-3 min-w-0 rounded-3xl border border-white/30 bg-black/20 p-4 text-white backdrop-blur-md sm:bottom-5 sm:left-5 sm:right-5 sm:p-5">
         {onEdit && (
           <button
             type="button"
