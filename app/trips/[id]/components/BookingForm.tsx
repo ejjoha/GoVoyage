@@ -91,11 +91,7 @@ export default function BookingForm({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2
-            className={`text-lg font-semibold ${
-              editingBookingId ? "text-amber-600" : "text-green-600"
-            }`}
-          >
+          <h2 className="text-lg font-semibold text-rose-600">
             {editingBookingId ? "Editing booking" : "New booking"}
           </h2>
           <p className="mt-1 text-sm text-stone-500">
@@ -583,7 +579,7 @@ export default function BookingForm({
       <div className="sticky bottom-0 left-0 right-0 z-10 -mx-4 border-t border-stone-200 bg-white/95 p-4 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
         <button
           type="submit"
-          className="w-full rounded-2xl bg-green-500 px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-green-600 hover:shadow-lg active:scale-[0.97]"
+          className="w-full rounded-2xl bg-rose-500 px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-rose-600 hover:shadow-lg active:scale-[0.97]"
         >
           <span className="flex items-center justify-center gap-2">
             <span className="text-lg">✓</span>

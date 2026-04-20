@@ -400,7 +400,7 @@ export default function HomePage() {
 
           <button
             onClick={handleCreateTrip}
-            className="w-full rounded-2xl bg-green-500 px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-green-600 hover:shadow-lg active:scale-[0.97]"
+            className="w-full rounded-2xl bg-rose-500 px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-rose-600 hover:shadow-lg active:scale-[0.97]"
           >
             <span className="flex items-center justify-center gap-2">
               <span className="text-lg">✓</span>

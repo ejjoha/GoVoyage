@@ -70,9 +70,9 @@ export default function BookingTimeline({
             </div>
 
             {new Date(date).toDateString() === new Date().toDateString() && (
-              <span className="rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold text-pink-600">
-                Today
-              </span>
+            <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-600">
+              Today
+            </span>
             )}
           </div>
 

@@ -2,66 +2,36 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import {
+  fetchTripById,
+  fetchTripMembersByTripId,
+  fetchExpensesByTripId,
+  createExpense,
+  updateExpense,
+  deleteExpenseById,
+} from "./api";
 import TripHero from "../components/TripHero";
 import type { Trip } from "../types";
-
-type Currency = "NOK" | "GBP" | "USD" | "THB" | "SDG" | "IDR" | "EUR";
-
-type TripMember = {
-  id: number;
-  trip_id: number;
-  name: string;
-};
-
-type ExpenseParticipant = {
-  member_id: number;
-};
-
-type Expense = {
-  id: number;
-  trip_id: number;
-  title: string;
-  amount: number;
-  currency: Currency;
-  expense_date: string;
-  paid_by_member_id: number;
-  participants: ExpenseParticipant[];
-};
+import type { Currency, Expense, TripMember } from "./types";
+import {
+  calculateExpensePreview,
+  calculateGroupedSummary,
+} from "./calculations";
+import {
+  formatAmount,
+  formatExpenseDate,
+  getTodayDateString,
+} from "./formatters";
 
 const currencyOptions: Currency[] = [
-  "NOK",
-  "GBP",
-  "USD",
-  "THB",
-  "SDG",
-  "IDR",
   "EUR",
+  "GBP",
+  "IDR",
+  "NOK",
+  "SDG",
+  "THB",
+  "USD",
 ];
-
-function formatAmount(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(2);
-}
-
-function formatExpenseDate(value?: string) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function getTodayDateString() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 export default function TripCostSharingPage() {
   const params = useParams();
@@ -97,40 +67,16 @@ export default function TripCostSharingPage() {
   async function fetchTrip() {
     setIsLoadingTrip(true);
 
-    const { data, error } = await supabase
-      .from("trips")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const data = await fetchTripById(id);
+    setTrip(data);
 
-    if (error) {
-      console.error("Error loading trip:", error);
-      setTrip(null);
-      setIsLoadingTrip(false);
-      return;
-    }
-
-    setTrip(data as Trip);
     setIsLoadingTrip(false);
   }
 
   async function fetchTripMembers() {
     setIsLoadingMembers(true);
 
-    const { data, error } = await supabase
-      .from("trip_members")
-      .select("*")
-      .eq("trip_id", id)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Error loading trip members:", error);
-      setTripMembers([]);
-      setIsLoadingMembers(false);
-      return;
-    }
-
-    const members = (data || []) as TripMember[];
+    const members = await fetchTripMembersByTripId(id);
     setTripMembers(members);
 
     setPaidByMemberId((current) => {
@@ -155,62 +101,8 @@ export default function TripCostSharingPage() {
   async function fetchExpenses() {
     setIsLoadingExpenses(true);
 
-    const { data, error } = await supabase
-      .from("expenses")
-      .select("*")
-      .eq("trip_id", id)
-      .order("expense_date", { ascending: false })
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error loading expenses:", error);
-      setExpenses([]);
-      setIsLoadingExpenses(false);
-      return;
-    }
-
-    const expenseRows = (data || []) as Omit<Expense, "participants">[];
-
-    if (expenseRows.length === 0) {
-      setExpenses([]);
-      setIsLoadingExpenses(false);
-      return;
-    }
-
-    const expenseIds = expenseRows.map((expense) => expense.id);
-
-    const { data: participantData, error: participantError } = await supabase
-      .from("expense_participants")
-      .select("expense_id, member_id")
-      .in("expense_id", expenseIds);
-
-    if (participantError) {
-      console.error("Error loading expense participants:", participantError);
-      setExpenses(
-        expenseRows.map((expense) => ({
-          ...expense,
-          participants: [],
-        }))
-      );
-      setIsLoadingExpenses(false);
-      return;
-    }
-
-    const participantsByExpenseId = new Map<number, ExpenseParticipant[]>();
-
-    for (const row of participantData || []) {
-      const expenseId = Number(row.expense_id);
-      const current = participantsByExpenseId.get(expenseId) || [];
-      current.push({ member_id: Number(row.member_id) });
-      participantsByExpenseId.set(expenseId, current);
-    }
-
-    setExpenses(
-      expenseRows.map((expense) => ({
-        ...expense,
-        participants: participantsByExpenseId.get(expense.id) || [],
-      }))
-    );
+    const data = await fetchExpensesByTripId(id);
+    setExpenses(data);
 
     setIsLoadingExpenses(false);
   }
@@ -293,93 +185,35 @@ export default function TripCostSharingPage() {
       return;
     }
 
-    const expensePayload = {
-      trip_id: id,
-      title: title.trim(),
-      amount: parsedAmount,
-      currency,
-      expense_date: date,
-      paid_by_member_id: paidByMemberId,
-    };
+    const participantIds = [...new Set(selectedParticipantIds)];
 
-    if (editingExpenseId) {
-      const { error: updateError } = await supabase
-        .from("expenses")
-        .update(expensePayload)
-        .eq("id", editingExpenseId);
+    const result = editingExpenseId
+      ? await updateExpense({
+        expenseId: editingExpenseId,
+        tripId: id,
+        title: title.trim(),
+        amount: parsedAmount,
+        currency,
+        expenseDate: date,
+        paidByMemberId,
+        participantIds,
+      })
+      : await createExpense({
+        tripId: id,
+        title: title.trim(),
+        amount: parsedAmount,
+        currency,
+        expenseDate: date,
+        paidByMemberId,
+        participantIds,
+      });
 
-      if (updateError) {
-        console.error("Error updating expense:", updateError);
-        alert("Could not update expense");
-        return;
-      }
-
-      const { error: deleteParticipantsError } = await supabase
-        .from("expense_participants")
-        .delete()
-        .eq("expense_id", editingExpenseId);
-
-      if (deleteParticipantsError) {
-        console.error(
-          "Error replacing expense participants:",
-          deleteParticipantsError
-        );
-        alert("Expense updated, but participants could not be updated");
-        return;
-      }
-
-      const participantRows = selectedParticipantIds.map((memberId) => ({
-        expense_id: editingExpenseId,
-        member_id: memberId,
-      }));
-
-      const { error: insertParticipantsError } = await supabase
-        .from("expense_participants")
-        .insert(participantRows);
-
-      if (insertParticipantsError) {
-        console.error(
-          "Error adding expense participants:",
-          insertParticipantsError
-        );
-        alert("Expense updated, but participants could not be saved");
-        return;
-      }
-
-      setSuccessMessage("Expense updated");
-    } else {
-      const { data, error: insertError } = await supabase
-        .from("expenses")
-        .insert(expensePayload)
-        .select()
-        .single();
-
-      if (insertError || !data) {
-        console.error("Error saving expense:", insertError);
-        alert("Could not save expense");
-        return;
-      }
-
-      const participantRows = selectedParticipantIds.map((memberId) => ({
-        expense_id: data.id,
-        member_id: memberId,
-      }));
-
-      const { error: participantInsertError } = await supabase
-        .from("expense_participants")
-        .insert(participantRows);
-
-      if (participantInsertError) {
-        console.error(
-          "Error saving expense participants:",
-          participantInsertError
-        );
-        alert("Expense saved, but participants could not be saved");
-        return;
-      }
-
-      setSuccessMessage("Expense added");
+    if (!result.success) {
+      alert(result.message);
+      return;
     }
+
+    setSuccessMessage(editingExpenseId ? "Expense updated" : "Expense added");
 
     await fetchExpenses();
     resetForm();
@@ -394,14 +228,10 @@ export default function TripCostSharingPage() {
     const shouldDelete = confirm("Delete this expense?");
     if (!shouldDelete) return;
 
-    const { error } = await supabase
-      .from("expenses")
-      .delete()
-      .eq("id", expenseId);
+    const result = await deleteExpenseById(expenseId);
 
-    if (error) {
-      console.error("Error deleting expense:", error);
-      alert("Could not delete expense");
+    if (!result.success) {
+      alert(result.message);
       return;
     }
 
@@ -413,36 +243,13 @@ export default function TripCostSharingPage() {
   }
 
   const currentPreview = useMemo(() => {
-    const parsedAmount = Number(amount);
-
-    if (
-      !parsedAmount ||
-      parsedAmount <= 0 ||
-      selectedParticipantIds.length === 0 ||
-      !paidByMemberId
-    ) {
-      return null;
-    }
-
-    const sharePerPerson = parsedAmount / selectedParticipantIds.length;
-    const payerName = getMemberName(paidByMemberId);
-    const payerIncluded = selectedParticipantIds.includes(paidByMemberId);
-
-    const oweLines = selectedParticipantIds
-      .filter((memberId) => memberId !== paidByMemberId)
-      .map((memberId) => ({
-        from: getMemberName(memberId),
-        to: payerName,
-        amount: sharePerPerson,
-        currency,
-      }));
-
-    return {
-      sharePerPerson,
-      payerIncluded,
-      oweLines,
+    return calculateExpensePreview({
+      amount,
       currency,
-    };
+      paidByMemberId,
+      selectedParticipantIds,
+      getMemberName,
+    });
   }, [amount, currency, paidByMemberId, selectedParticipantIds, tripMembers]);
 
   const sortedExpenses = useMemo(() => {
@@ -453,105 +260,11 @@ export default function TripCostSharingPage() {
   }, [expenses]);
 
   const groupedSummary = useMemo(() => {
-    const rawDebts = new Map<
-      string,
-      {
-        fromId: number;
-        toId: number;
-        currency: Currency;
-        amount: number;
-      }
-    >();
-
-    for (const expense of expenses) {
-      const participantIds = expense.participants.map(
-        (participant) => participant.member_id
-      );
-
-      if (participantIds.length === 0) continue;
-
-      const sharePerPerson = Number(expense.amount) / participantIds.length;
-
-      for (const participantId of participantIds) {
-        if (participantId === expense.paid_by_member_id) continue;
-
-        const key = `${expense.currency}__${participantId}__${expense.paid_by_member_id}`;
-        const existing = rawDebts.get(key);
-
-        if (existing) {
-          existing.amount += sharePerPerson;
-        } else {
-          rawDebts.set(key, {
-            fromId: participantId,
-            toId: expense.paid_by_member_id,
-            currency: expense.currency,
-            amount: sharePerPerson,
-          });
-        }
-      }
-    }
-
-    const grouped: Record<
-      Currency,
-      { from: string; to: string; currency: Currency; amount: number }[]
-    > = {
-      NOK: [],
-      GBP: [],
-      USD: [],
-      THB: [],
-      SDG: [],
-      IDR: [],
-      EUR: [],
-    };
-
-    const processedPairs = new Set<string>();
-
-    for (const debt of rawDebts.values()) {
-      const pairKey = `${debt.currency}__${Math.min(
-        debt.fromId,
-        debt.toId
-      )}__${Math.max(debt.fromId, debt.toId)}`;
-
-      if (processedPairs.has(pairKey)) continue;
-      processedPairs.add(pairKey);
-
-      const forwardAmount =
-        rawDebts.get(`${debt.currency}__${debt.fromId}__${debt.toId}`)?.amount ||
-        0;
-
-      const backwardAmount =
-        rawDebts.get(`${debt.currency}__${debt.toId}__${debt.fromId}`)?.amount ||
-        0;
-
-      const netAmount = forwardAmount - backwardAmount;
-
-      if (Math.abs(netAmount) < 0.001) continue;
-
-      if (netAmount > 0) {
-        grouped[debt.currency].push({
-          from: getMemberName(debt.fromId),
-          to: getMemberName(debt.toId),
-          currency: debt.currency,
-          amount: netAmount,
-        });
-      } else {
-        grouped[debt.currency].push({
-          from: getMemberName(debt.toId),
-          to: getMemberName(debt.fromId),
-          currency: debt.currency,
-          amount: Math.abs(netAmount),
-        });
-      }
-    }
-
-    for (const currencyCode of currencyOptions) {
-      grouped[currencyCode].sort((a, b) => {
-        if (a.to === b.to) return a.from.localeCompare(b.from);
-        return a.to.localeCompare(b.to);
-      });
-    }
-
-    return grouped;
+    return calculateGroupedSummary({
+      expenses,
+      currencies: currencyOptions,
+      getMemberName,
+    });
   }, [expenses, tripMembers]);
 
   const travellerSummary = useMemo(() => {
@@ -727,11 +440,7 @@ export default function TripCostSharingPage() {
         <button
           type="submit"
           disabled={tripMembers.length === 0}
-          className={`w-full rounded-2xl px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 active:scale-[0.97] ${
-            editingExpenseId
-              ? "bg-amber-500 hover:bg-amber-600 hover:shadow-lg"
-              : "bg-green-500 hover:bg-green-600 hover:shadow-lg"
-          } disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none`}
+          className="w-full rounded-2xl px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 active:scale-[0.97] bg-rose-500 hover:bg-rose-600 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none"
         >
           <span className="flex items-center justify-center gap-2">
             <span className="text-lg">✓</span>
@@ -747,12 +456,12 @@ export default function TripCostSharingPage() {
       )}
 
       {currentPreview && (
-        <div className="mt-6 space-y-3 rounded-3xl bg-blue-50 p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-blue-800">
+        <div className="mt-6 space-y-3 rounded-3xl bg-rose-50 p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-rose-800">
             Current preview
           </h2>
 
-          <p className="text-sm text-blue-700">
+          <p className="text-sm text-rose-700">
             Each person pays: {formatAmount(currentPreview.sharePerPerson)}{" "}
             {currentPreview.currency}
           </p>
@@ -772,11 +481,17 @@ export default function TripCostSharingPage() {
                   key={index}
                   className="rounded-xl bg-white px-3 py-3 text-sm text-stone-700"
                 >
-                  <span className="font-medium">{item.from}</span> owes{" "}
-                  <span className="font-medium">{item.to}</span>:{" "}
-                  <span className="font-medium">
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-600">
+                    <span className="font-semibold text-stone-900">{item.from}</span>
+                    {" → "}
+                    <span className="font-semibold text-stone-900">{item.to}</span>
+                  </span>
+
+                  <span className="font-semibold text-blue-700">
                     {formatAmount(item.amount)} {item.currency}
                   </span>
+                </div>
                 </div>
               ))}
             </div>
@@ -800,9 +515,8 @@ export default function TripCostSharingPage() {
           </div>
 
           <span
-            className={`text-xl text-stone-400 transition-transform ${
-              showExpenses ? "rotate-180" : "rotate-0"
-            }`}
+            className={`text-xl text-stone-400 transition-transform ${showExpenses ? "rotate-180" : "rotate-0"
+              }`}
           >
             ⌄
           </span>
@@ -920,13 +634,19 @@ export default function TripCostSharingPage() {
                     {items.map((item, index) => (
                       <div
                         key={`${currencyCode}-${index}`}
-                        className="rounded-xl bg-white px-3 py-3 text-sm text-stone-700"
+                        className="rounded-xl bg-white px-3 py-3 text-sm text-stone-700 border border-stone-100"
                       >
-                        <span className="font-medium">{item.from}</span> owes{" "}
-                        <span className="font-medium">{item.to}</span>:{" "}
-                        <span className="font-medium">
-                          {formatAmount(item.amount)} {item.currency}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-stone-600">
+                            <span className="font-semibold text-stone-900">{item.from}</span>
+                            {" → "}
+                            <span className="font-semibold text-stone-900">{item.to}</span>
+                          </span>
+
+                          <span className="font-semibold text-rose-700">
+                            {formatAmount(item.amount)} {item.currency}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
