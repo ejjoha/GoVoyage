@@ -54,19 +54,75 @@ function TripCard({ trip }: { trip: Trip }) {
   return (
     <Link
       href={`/trips/${trip.id}`}
-      className="block overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.985] active:bg-stone-50"
+      className="group block overflow-hidden rounded-[2rem] border border-stone-200/70 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] active:scale-[0.985]"
     >
       {trip.image_url ? (
-        <div className="relative h-52 w-full overflow-hidden">
+        <div className="relative h-56 w-full overflow-hidden">
           <img
             src={trip.image_url}
             alt={trip.title}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
 
-          <div className="absolute bottom-4 left-4 right-4">
-            <div className="inline-flex rounded-full bg-white/85 px-3 py-1 text-xs font-medium text-stone-700 backdrop-blur-sm">
+          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
+            <div className="inline-flex rounded-full border border-white/40 bg-white/85 px-3 py-1.5 text-xs font-semibold text-stone-700 backdrop-blur-sm">
+              {trip.destination}
+            </div>
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-stone-700 shadow-sm backdrop-blur-sm transition-transform duration-300 group-hover:translate-x-0.5">
+              →
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="border-b border-stone-100 bg-gradient-to-r from-stone-50 to-stone-100/70 px-5 py-5">
+          <div className="inline-flex rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-sm">
+            {trip.destination}
+          </div>
+        </div>
+      )}
+
+      <div className="p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="truncate text-[1.35rem] font-semibold tracking-[-0.02em] text-stone-900">
+              {trip.title}
+            </h2>
+
+            <p className="mt-2 text-sm font-medium text-stone-500">
+              {formatTripDateRange(trip.start_date, trip.end_date)}
+            </p>
+          </div>
+
+          {!trip.image_url && (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-400 transition-colors duration-200 group-hover:bg-stone-900 group-hover:text-white">
+              →
+            </div>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function PastTripCard({ trip }: { trip: Trip }) {
+  return (
+    <Link
+      href={`/trips/${trip.id}`}
+      className="group block overflow-hidden rounded-[1.75rem] border border-stone-200/60 bg-white/90 shadow-[0_6px_20px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] active:scale-[0.985]"
+    >
+      {trip.image_url ? (
+        <div className="relative h-44 w-full overflow-hidden">
+          <img
+            src={trip.image_url}
+            alt={trip.title}
+            className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:opacity-100"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+
+          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+            <div className="inline-flex rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-stone-700 backdrop-blur-sm">
               {trip.destination}
             </div>
           </div>
@@ -82,15 +138,18 @@ function TripCard({ trip }: { trip: Trip }) {
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="truncate text-xl font-semibold text-stone-900">
+            <h2 className="truncate text-lg font-medium text-stone-800">
               {trip.title}
             </h2>
-            <p className="mt-2 text-sm font-medium text-stone-500">
+
+            <p className="mt-1 text-sm text-stone-500">
               {formatTripDateRange(trip.start_date, trip.end_date)}
             </p>
           </div>
 
-          <div className="shrink-0 text-stone-300">→</div>
+          <div className="shrink-0 text-stone-300 transition-colors group-hover:text-stone-500">
+            →
+          </div>
         </div>
       </div>
     </Link>
@@ -150,7 +209,7 @@ export default function HomePage() {
     fetchTrips();
   }, []);
 
-    function handleAddTraveller() {
+  function handleAddTraveller() {
     if (!travellerName.trim()) {
       alert("Please enter a traveller name");
       return;
@@ -158,12 +217,12 @@ export default function HomePage() {
     if (
       newTravellers.some(
         (traveller) =>
-        traveller.name.trim().toLowerCase() === travellerName.trim().toLowerCase()
-        )
-      ) {
-        alert("That traveller is already added");
-        return;
-      }
+          traveller.name.trim().toLowerCase() === travellerName.trim().toLowerCase()
+      )
+    ) {
+      alert("That traveller is already added");
+      return;
+    }
 
     const newTraveller: NewTraveller = {
       id: Date.now(),
@@ -179,12 +238,11 @@ export default function HomePage() {
       current.filter((traveller) => traveller.id !== travellerId)
     );
   }
-  
-    async function handleCreateTrip() {
+
+  async function handleCreateTrip() {
     if (!newTitle.trim() || !newDestination.trim() || !newStartDate || !newEndDate) {
       alert("Please fill in Title, Destination, Start date, and End date");
       return;
-
     }
 
     if (newEndDate < newStartDate) {
@@ -263,29 +321,33 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mb-8 rounded-[2rem] border border-stone-200/80 bg-white/80 p-6 shadow-sm backdrop-blur-sm sm:p-7">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          <span>✈️</span>
+      <section className="mb-5 overflow-hidden rounded-[2rem] border border-stone-200/60 bg-gradient-to-br from-white via-stone-50/90 to-rose-50/40 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] backdrop-blur sm:p-7">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-500 shadow-sm">
+          <span className="text-sm">✈️</span>
           <span>Travel Organizer</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-          From here to there
-        </h1>
+        <div className="space-y-3">
+          <h1 className="max-w-md text-3xl font-bold tracking-[-0.03em] text-stone-900 sm:text-4xl">
+            From here to there
+          </h1>
 
-        <p className="mt-3 max-w-xl text-stone-500">
-          Plan, view, and manage your journeys — from hotel stays and flights to
-          dining plans and the little details in between.
-        </p>
-      </div>
+          <p className="max-w-lg text-[15px] leading-7 text-stone-600 sm:text-base">
+            Plan, view, and manage every part of your trip — from flights and stays
+            to dining plans and the details in between.
+          </p>
+        </div>
+      </section>
 
-      <div className="mb-6">
+      <div className="mb-8">
         <button
           onClick={() => setShowForm(!showForm)}
-          className="w-full rounded-2xl bg-rose-500 px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-rose-600 hover:shadow-lg active:scale-[0.97]"
+          className="group w-full rounded-2xl bg-rose-500 px-5 py-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(244,63,94,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-600 active:translate-y-0 active:scale-[0.985]"
         >
           <span className="flex items-center justify-center gap-2">
-            <span className="text-lg leading-none">＋</span>
+            <span className="text-lg leading-none transition-transform duration-200 group-hover:rotate-90">
+              ＋
+            </span>
             {showForm ? "Close trip form" : "Create new trip"}
           </span>
         </button>
@@ -302,7 +364,7 @@ export default function HomePage() {
             </p>
           </div>
 
-           <div className="space-y-3">
+          <div className="space-y-3">
             <input
               type="text"
               placeholder="Trip title"
@@ -437,23 +499,28 @@ export default function HomePage() {
       {!isLoading && !errorMessage && hasAnyTrips && (
         <div className="space-y-8">
           {upcomingTrips.length > 0 && (
-            <section>
-              <div className="mb-4 flex items-center justify-between gap-3">
+            <section className="space-y-5">
+              <div className="flex items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-stone-900">
+                  <div className="mb-2 inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                    Planned journeys
+                  </div>
+
+                  <h2 className="text-2xl font-semibold tracking-[-0.02em] text-stone-900">
                     Upcoming trips
                   </h2>
-                  <p className="mt-1 text-sm text-stone-500">
+
+                  <p className="mt-1 text-sm leading-6 text-stone-500">
                     Everything you still have ahead of you.
                   </p>
                 </div>
 
-                <div className="shrink-0 rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
+                <div className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-stone-700 shadow-sm">
                   {upcomingTrips.length}
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {upcomingTrips.map((trip) => (
                   <TripCard key={trip.id} trip={trip} />
                 ))}
@@ -462,25 +529,30 @@ export default function HomePage() {
           )}
 
           {pastTrips.length > 0 && (
-            <section>
-              <div className="mb-4 flex items-center justify-between gap-3">
+            <section className="space-y-5">
+              <div className="flex items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-stone-900">
+                  <div className="mb-2 inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                    Travel archive
+                  </div>
+
+                  <h2 className="text-2xl font-semibold tracking-[-0.02em] text-stone-900">
                     Past trips
                   </h2>
-                  <p className="mt-1 text-sm text-stone-500">
-                    Your travel archive and memories.
+
+                  <p className="mt-1 text-sm leading-6 text-stone-500">
+                    Places you’ve been and moments you’ve captured.
                   </p>
                 </div>
 
-                <div className="shrink-0 rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
+                <div className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-stone-700 shadow-sm">
                   {pastTrips.length}
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 opacity-90">
                 {pastTrips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} />
+                  <PastTripCard key={trip.id} trip={trip} />
                 ))}
               </div>
             </section>
