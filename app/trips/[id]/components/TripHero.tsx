@@ -31,7 +31,7 @@ export default function TripHero({
         <Link
           href={backHref}
           aria-label="Back to trip"
-          className="absolute left-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white shadow-[0_4px_14px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-black/35 active:scale-95 sm:left-4 sm:top-4"
+          className="absolute left-3 top-3 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white shadow-[0_6px_20px_rgba(0,0,0,0.45)] backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-black/70 active:scale-95 sm:left-4 sm:top-4"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
