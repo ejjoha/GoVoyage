@@ -521,7 +521,7 @@ export default function TripPage() {
         <div className="mb-5 space-y-3">
           <button
             onClick={openNewBookingForm}
-            className="w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-stone-800 hover:shadow-md active:scale-[0.98]"
+            className="w-full rounded-2xl bg-rose-500 hover:bg-rose-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-stone-800 hover:shadow-md active:scale-[0.98]"
           >
             <span className="flex items-center justify-center gap-2">
               <span className="text-lg">＋</span>
@@ -655,7 +655,7 @@ export default function TripPage() {
               <button
                 type="button"
                 onClick={handleAddTraveller}
-                className="shrink-0 rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+                className="shrink-0 rounded-xl bg-rose-500 hover:bg-rose-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
               >
                 Add
               </button>
