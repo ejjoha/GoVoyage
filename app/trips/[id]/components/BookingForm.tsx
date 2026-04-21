@@ -47,6 +47,54 @@ type BookingFormProps = {
   onCancel: () => void;
 };
 
+function SectionCard({
+  title,
+  tone = "neutral",
+  children,
+}: {
+  title: string;
+  tone?: "neutral" | "blue" | "orange" | "violet" | "rose";
+  children: React.ReactNode;
+}) {
+  const toneClass =
+    tone === "blue"
+      ? "border-blue-200/70 bg-blue-50/60"
+      : tone === "orange"
+      ? "border-orange-200/70 bg-orange-50/60"
+      : tone === "violet"
+      ? "border-violet-200/70 bg-violet-50/70"
+      : tone === "rose"
+      ? "border-rose-200/70 bg-rose-50/60"
+      : "border-stone-200 bg-stone-50";
+
+  return (
+    <div className={`rounded-[1.5rem] border p-4 sm:p-5 ${toneClass}`}>
+      <h3 className="text-sm font-semibold text-stone-800">{title}</h3>
+      <div className="mt-4 space-y-4">{children}</div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-sm font-medium text-stone-700">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+const inputClass =
+  "w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400";
+const dateInputClass =
+  "box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800";
+
 export default function BookingForm({
   bookingFormRef,
   editingBookingId,
@@ -84,39 +132,13 @@ export default function BookingForm({
   onCancel,
 }: BookingFormProps) {
   return (
-    <form
-      ref={bookingFormRef}
-      onSubmit={onSubmit}
-      className="mb-6 space-y-5 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold text-rose-600">
-            {editingBookingId ? "Editing booking" : "New booking"}
-          </h2>
-          <p className="mt-1 text-sm text-stone-500">
-            Add the key details for this part of your trip.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={onCancel}
-          className="shrink-0 text-sm text-stone-500 underline"
-        >
-          Cancel
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-stone-700">
-            Booking type
-          </label>
+    <form ref={bookingFormRef} onSubmit={onSubmit} className="space-y-5">
+      <SectionCard title="Booking type">
+        <Field label="Type">
           <select
             value={newType}
             onChange={(e) => setNewType(e.target.value as BookingType)}
-            className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
+            className={dateInputClass}
           >
             <option value="flight">Flight</option>
             <option value="hotel">Hotel</option>
@@ -124,467 +146,372 @@ export default function BookingForm({
             <option value="transport">Transport</option>
             <option value="dining">Dining</option>
           </select>
-        </div>
+        </Field>
 
         {newType !== "hotel" && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-stone-700">Title</label>
+          <Field label="Title">
             <input
               type="text"
               placeholder={getTitlePlaceholder(newType)}
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+              className={inputClass}
             />
-          </div>
+          </Field>
         )}
-      </div>
+      </SectionCard>
 
       {newType === "hotel" ? (
         <>
-          <div className="space-y-4 rounded-2xl bg-orange-50/60 p-4">
-            <h3 className="text-sm font-semibold text-stone-700">
-              Hotel details
-            </h3>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Hotel name
-              </label>
+          <SectionCard title="Hotel details" tone="orange">
+            <Field label="Hotel name">
               <input
                 type="text"
                 placeholder="e.g. The Savoy"
                 value={newHotelName}
                 onChange={(e) => setNewHotelName(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
+            </Field>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label={getStartLabel(newType)}>
+                <input
+                  type="datetime-local"
+                  value={newStartTime}
+                  onChange={(e) => setNewStartTime(e.target.value)}
+                  className={dateInputClass}
+                />
+              </Field>
+
+              <Field label={getEndLabel(newType)}>
+                <input
+                  type="datetime-local"
+                  value={newEndTime}
+                  onChange={(e) => setNewEndTime(e.target.value)}
+                  className={dateInputClass}
+                />
+              </Field>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getStartLabel(newType)}
-              </label>
-              <input
-                type="datetime-local"
-                value={newStartTime}
-                onChange={(e) => setNewStartTime(e.target.value)}
-                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getEndLabel(newType)}
-              </label>
-              <input
-                type="datetime-local"
-                value={newEndTime}
-                onChange={(e) => setNewEndTime(e.target.value)}
-                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Address
-              </label>
+            <Field label="Address">
               <input
                 type="text"
                 placeholder="Hotel address"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
-            </div>
-          </div>
+            </Field>
+          </SectionCard>
 
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getConfirmationLabel(newType)}
-              </label>
+          <SectionCard title="Extra details">
+            <Field label={getConfirmationLabel(newType)}>
               <input
                 type="text"
                 placeholder="Optional"
                 value={newConfirmation}
                 onChange={(e) => setNewConfirmation(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Notes
-              </label>
-              <input
-                type="text"
+            <Field label="Notes">
+              <textarea
                 placeholder="Anything important to remember?"
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                rows={4}
+                className={`${inputClass} resize-none`}
               />
-            </div>
-          </div>
+            </Field>
+          </SectionCard>
         </>
       ) : newType === "flight" ? (
         <>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Departure
-              </label>
-              <input
-                type="datetime-local"
-                value={newStartTime}
-                onChange={(e) => setNewStartTime(e.target.value)}
-                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-              />
+          <SectionCard title="Flight timing">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Departure">
+                <input
+                  type="datetime-local"
+                  value={newStartTime}
+                  onChange={(e) => setNewStartTime(e.target.value)}
+                  className={dateInputClass}
+                />
+              </Field>
+
+              <Field label="Arrival">
+                <input
+                  type="datetime-local"
+                  value={newEndTime}
+                  onChange={(e) => setNewEndTime(e.target.value)}
+                  className={dateInputClass}
+                />
+              </Field>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Flight details" tone="blue">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Departure airport">
+                <input
+                  type="text"
+                  placeholder="e.g. OSL"
+                  value={newDeparture}
+                  onChange={(e) => setNewDeparture(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+
+              <Field label="Arrival airport">
+                <input
+                  type="text"
+                  placeholder="e.g. LHR"
+                  value={newArrival}
+                  onChange={(e) => setNewArrival(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Arrival
-              </label>
-              <input
-                type="datetime-local"
-                value={newEndTime}
-                onChange={(e) => setNewEndTime(e.target.value)}
-                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-              />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Airline">
+                <input
+                  type="text"
+                  placeholder="e.g. Norwegian"
+                  value={newAirline}
+                  onChange={(e) => setNewAirline(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+
+              <Field label="Flight number">
+                <input
+                  type="text"
+                  placeholder="e.g. DY123"
+                  value={newFlightNumber}
+                  onChange={(e) => setNewFlightNumber(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="space-y-4 rounded-2xl bg-blue-50/60 p-4">
-            <h3 className="text-sm font-semibold text-stone-700">
-              Flight details
-            </h3>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Departure airport
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. OSL"
-                value={newDeparture}
-                onChange={(e) => setNewDeparture(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Arrival airport
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. LHR"
-                value={newArrival}
-                onChange={(e) => setNewArrival(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Airline
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Norwegian"
-                value={newAirline}
-                onChange={(e) => setNewAirline(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Flight number
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. DY123"
-                value={newFlightNumber}
-                onChange={(e) => setNewFlightNumber(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getConfirmationLabel(newType)}
-              </label>
+          <SectionCard title="Extra details">
+            <Field label={getConfirmationLabel(newType)}>
               <input
                 type="text"
                 placeholder="Optional"
                 value={newConfirmation}
                 onChange={(e) => setNewConfirmation(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Notes
-              </label>
-              <input
-                type="text"
+            <Field label="Notes">
+              <textarea
                 placeholder="Anything important to remember?"
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                rows={4}
+                className={`${inputClass} resize-none`}
               />
-            </div>
-          </div>
+            </Field>
+          </SectionCard>
         </>
       ) : newType === "transport" ? (
         <>
-          <div className="space-y-4 rounded-2xl bg-violet-50/70 p-4">
-            <h3 className="text-sm font-semibold text-stone-700">
-              Transport details
-            </h3>
+          <SectionCard title="Transport details" tone="violet">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Origin">
+                <input
+                  type="text"
+                  placeholder="e.g. Oslo Central Station"
+                  value={newOrigin}
+                  onChange={(e) => setNewOrigin(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Origin
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Oslo Central Station"
-                value={newOrigin}
-                onChange={(e) => setNewOrigin(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              />
+              <Field label="Destination">
+                <input
+                  type="text"
+                  placeholder="e.g. Stockholm Central Station"
+                  value={newDestinationPoint}
+                  onChange={(e) => setNewDestinationPoint(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Destination
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Stockholm Central Station"
-                value={newDestinationPoint}
-                onChange={(e) => setNewDestinationPoint(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              />
-            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label={getStartLabel(newType)}>
+                <input
+                  type="datetime-local"
+                  value={newStartTime}
+                  onChange={(e) => setNewStartTime(e.target.value)}
+                  className={dateInputClass}
+                />
+              </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getStartLabel(newType)}
-              </label>
-              <input
-                type="datetime-local"
-                value={newStartTime}
-                onChange={(e) => setNewStartTime(e.target.value)}
-                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-              />
+              <Field label={getEndLabel(newType)}>
+                <input
+                  type="datetime-local"
+                  value={newEndTime}
+                  onChange={(e) => setNewEndTime(e.target.value)}
+                  className={dateInputClass}
+                />
+              </Field>
             </div>
+          </SectionCard>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getEndLabel(newType)}
-              </label>
-              <input
-                type="datetime-local"
-                value={newEndTime}
-                onChange={(e) => setNewEndTime(e.target.value)}
-                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getConfirmationLabel(newType)}
-              </label>
+          <SectionCard title="Extra details">
+            <Field label={getConfirmationLabel(newType)}>
               <input
                 type="text"
                 placeholder="Optional"
                 value={newConfirmation}
                 onChange={(e) => setNewConfirmation(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Notes
-              </label>
-              <input
-                type="text"
+            <Field label="Notes">
+              <textarea
                 placeholder="Anything important to remember?"
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                rows={4}
+                className={`${inputClass} resize-none`}
               />
-            </div>
-          </div>
+            </Field>
+          </SectionCard>
         </>
       ) : newType === "dining" ? (
         <>
-          <div className="space-y-4 rounded-2xl border border-rose-200/70 bg-rose-50/60 p-4">
-            <h3 className="text-sm font-semibold text-stone-700">
-              Reservation details
-            </h3>
+          <SectionCard title="Reservation details" tone="rose">
+            <Field label="Restaurant">
+              <input
+                type="text"
+                placeholder="e.g. Bar Cañete"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
 
-            <div className="rounded-2xl border border-rose-200/70 bg-white/80 p-4 shadow-sm">
-              <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-full">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
-                    Restaurant
-                  </p>
-                  <p className="mt-1 text-base font-semibold text-stone-900">
-                    {newTitle || "Your reservation"}
-                  </p>
-                </div>
+            <Field label="Reservation date and time">
+              <input
+                type="datetime-local"
+                value={newStartTime}
+                onChange={(e) => setNewStartTime(e.target.value)}
+                className={dateInputClass}
+              />
+            </Field>
 
-                <div className="flex flex-col items-center">
-                  <span className="text-xl">🍽️</span>
-                  <div className="mt-1 h-px w-12 bg-rose-200" />
-                </div>
-
-                <div className="w-full space-y-1.5 text-left">
-                  <label className="text-sm font-medium text-stone-700">
-                    Reservation date and time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={newStartTime}
-                    onChange={(e) => setNewStartTime(e.target.value)}
-                    className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Address
-              </label>
+            <Field label="Address">
               <input
                 type="text"
                 placeholder="e.g. Via Roma 12"
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Reservation code
-              </label>
+            <Field label="Reservation code">
               <input
                 type="text"
                 placeholder="Optional"
                 value={newConfirmation}
                 onChange={(e) => setNewConfirmation(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Notes
-              </label>
-              <input
-                type="text"
+            <Field label="Notes">
+              <textarea
                 placeholder="Anything important to remember?"
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                rows={4}
+                className={`${inputClass} resize-none`}
               />
-            </div>
-          </div>
+            </Field>
+          </SectionCard>
         </>
       ) : (
         <>
-          <div className="space-y-4 rounded-2xl bg-stone-50 p-4">
-            <h3 className="text-sm font-semibold text-stone-700">Timing</h3>
+          <SectionCard title="Timing">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label={getStartLabel(newType)}>
+                <input
+                  type="datetime-local"
+                  value={newStartTime}
+                  onChange={(e) => setNewStartTime(e.target.value)}
+                  className={dateInputClass}
+                />
+              </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getStartLabel(newType)}
-              </label>
-              <input
-                type="datetime-local"
-                value={newStartTime}
-                onChange={(e) => setNewStartTime(e.target.value)}
-                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-              />
+              <Field label={getEndLabel(newType)}>
+                <input
+                  type="datetime-local"
+                  value={newEndTime}
+                  onChange={(e) => setNewEndTime(e.target.value)}
+                  className={dateInputClass}
+                />
+              </Field>
             </div>
+          </SectionCard>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getEndLabel(newType)}
-              </label>
-              <input
-                type="datetime-local"
-                value={newEndTime}
-                onChange={(e) => setNewEndTime(e.target.value)}
-                className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getLocationLabel(newType)}
-              </label>
+          <SectionCard title="Details">
+            <Field label={getLocationLabel(newType)}>
               <input
                 type="text"
                 placeholder={getLocationPlaceholder(newType)}
                 value={newLocation}
                 onChange={(e) => setNewLocation(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                {getConfirmationLabel(newType)}
-              </label>
+            <Field label={getConfirmationLabel(newType)}>
               <input
                 type="text"
                 placeholder="Optional"
                 value={newConfirmation}
                 onChange={(e) => setNewConfirmation(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-stone-700">
-                Notes
-              </label>
-              <input
-                type="text"
+            <Field label="Notes">
+              <textarea
                 placeholder="Anything important to remember?"
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                rows={4}
+                className={`${inputClass} resize-none`}
               />
-            </div>
-          </div>
+            </Field>
+          </SectionCard>
         </>
       )}
 
-      <div className="sticky bottom-0 left-0 right-0 z-10 -mx-4 border-t border-stone-200 bg-white/95 p-4 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
+      <div className="flex flex-col-reverse gap-3 border-t border-stone-200 pt-4 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-xl bg-stone-100 px-5 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-200"
+        >
+          Cancel
+        </button>
+
         <button
           type="submit"
-          className="w-full rounded-2xl bg-rose-500 px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-rose-600 hover:shadow-lg active:scale-[0.97]"
+          className="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
         >
-          <span className="flex items-center justify-center gap-2">
-            <span className="text-lg">✓</span>
-            {editingBookingId ? "Update booking" : "Save booking"}
-          </span>
+          {editingBookingId ? "Save changes" : "Save booking"}
         </button>
       </div>
     </form>

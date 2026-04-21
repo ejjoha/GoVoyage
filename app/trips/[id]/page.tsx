@@ -137,6 +137,23 @@ export default function TripPage() {
     fetchTripMembers();
   }, [id]);
 
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setShowTripForm(false);
+        setShowBookingForm(false);
+      }
+    }
+
+    if (showTripForm || showBookingForm) {
+      window.addEventListener("keydown", handleEscape);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [showTripForm, showBookingForm]);
+
   function resetTripFormFromTrip() {
     if (!trip) return;
 
@@ -304,15 +321,6 @@ export default function TripPage() {
     setNewAddress(booking.address || "");
     setNewOrigin(booking.origin || "");
     setNewDestinationPoint(booking.destination || "");
-
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        bookingFormRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 50);
-    });
   }
 
   function resetBookingForm() {
@@ -339,15 +347,6 @@ export default function TripPage() {
     resetBookingForm();
     setShowBookingForm(true);
     setShowTripForm(false);
-
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        bookingFormRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 50);
-    });
   }
 
   async function handleSaveBooking(e: React.FormEvent) {
@@ -492,271 +491,208 @@ export default function TripPage() {
 
   const filterOptions: BookingFilter[] = ["all", "flight", "hotel", "plans"];
 
+  const tripNights = useMemo(() => {
+    if (!trip?.start_date || !trip?.end_date) return 0;
+
+    const start = new Date(trip.start_date);
+    const end = new Date(trip.end_date);
+
+    const diffMs = end.getTime() - start.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays : 0;
+  }, [trip]);
+
+  const heroStats = useMemo(() => {
+    return [
+      {
+        label: tripMembers.length === 1 ? "traveller" : "travellers",
+        value: String(tripMembers.length),
+      },
+      {
+        label: bookings.length === 1 ? "booking" : "bookings",
+        value: String(bookings.length),
+      },
+      {
+        label: tripNights === 1 ? "night" : "nights",
+        value: String(tripNights),
+      },
+    ];
+  }, [tripMembers.length, bookings.length, tripNights]);
+
   if (isTripLoading) {
-    return <div className="p-8">Loading trip...</div>;
+    return (
+      <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+        <div className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white p-8 shadow-sm">
+          <div className="h-6 w-32 animate-pulse rounded-full bg-stone-200" />
+          <div className="mt-6 h-10 w-2/3 animate-pulse rounded-2xl bg-stone-200" />
+          <div className="mt-3 h-5 w-1/3 animate-pulse rounded-xl bg-stone-200" />
+          <div className="mt-6 flex gap-2">
+            <div className="h-10 w-24 animate-pulse rounded-full bg-stone-200" />
+            <div className="h-10 w-28 animate-pulse rounded-full bg-stone-200" />
+            <div className="h-10 w-24 animate-pulse rounded-full bg-stone-200" />
+          </div>
+        </div>
+      </main>
+    );
   }
 
   if (!trip) {
-    return <div className="p-8">Trip not found</div>;
-  }
-
-  return (
-    <main className="mx-auto w-full max-w-2xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
-      <TripHero
-        title={trip.title}
-        subtitle={formatTripDateRange(trip.start_date, trip.end_date)}
-        eyebrow={trip.destination}
-        imageUrl={trip.image_url}
-        backHref="/"
-        onEdit={() => {
-          if (showTripForm) {
-            resetTripFormFromTrip();
-          } else {
-            setShowTripForm(true);
-          }
-        }}
-      />
-
-      {!showBookingForm && !showTripForm && (
-        <div className="mb-5 space-y-3">
-          <button
-            onClick={openNewBookingForm}
-            className="w-full rounded-2xl bg-rose-500 hover:bg-rose-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-stone-800 hover:shadow-md active:scale-[0.98]"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">＋</span>
-              Add booking
-            </span>
-          </button>
-
-          <div className="grid grid-cols-1">
-            <a
-              href={`/trips/${trip.id}/cost-sharing`}
-              className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700 shadow-sm transition-all duration-200 hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900 active:scale-[0.98]"
-            >
-              <span className="flex items-center justify-center gap-2">
-                <span className="text-base">💸</span>
-                Shared costs
-              </span>
-            </a>
+    return (
+      <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
+        <div className="rounded-[2rem] border border-dashed border-stone-300 bg-stone-50 p-10 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white text-2xl shadow-sm">
+            ✈️
           </div>
-        </div>
-      )}
-
-      {!showBookingForm && !showTripForm && bookings.length > 0 && (
-        <div className="mb-6 w-full">
-          <div className="grid w-full grid-cols-4 gap-2 rounded-[1.75rem] bg-stone-100 p-2">
-            {filterOptions.map((filter) => {
-              const isActive = activeFilter === filter;
-
-              return (
-                <button
-                  key={filter}
-                  type="button"
-                  onClick={() => setActiveFilter(filter)}
-                  aria-label={getFilterLabel(filter)}
-                  className={`flex h-12 items-center justify-center rounded-2xl text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                      : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
-                  }`}
-                >
-                  {filter === "all" && <span>All</span>}
-                  {filter === "flight" && <span className="text-lg">✈️</span>}
-                  {filter === "hotel" && <span className="text-lg">🏨</span>}
-                  {filter === "plans" && <span className="text-lg">🗺️</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {tripSuccessMessage && (
-        <div className="mb-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-          {tripSuccessMessage}
-        </div>
-      )}
-
-      {showTripForm && (
-        <form
-          onSubmit={handleSaveTrip}
-          className="mb-6 space-y-3 rounded-2xl border border-stone-200 bg-white p-4"
-        >
-          <h2 className="text-lg font-semibold">Edit trip</h2>
-
-          <input
-            type="text"
-            placeholder="Trip title"
-            value={editTripTitle}
-            onChange={(e) => setEditTripTitle(e.target.value)}
-            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-          />
-
-          <input
-            type="text"
-            placeholder="Destination"
-            value={editTripDestination}
-            onChange={(e) => setEditTripDestination(e.target.value)}
-            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-          />
-
-          <input
-            type="text"
-            placeholder="Image URL"
-            value={editTripImageUrl}
-            onChange={(e) => setEditTripImageUrl(e.target.value)}
-            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-          />
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-stone-700">
-              Start date
-            </label>
-            <input
-              type="date"
-              value={editTripStartDate}
-              onChange={(e) => setEditTripStartDate(e.target.value)}
-              className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-stone-700">
-              End date
-            </label>
-            <input
-              type="date"
-              value={editTripEndDate}
-              onChange={(e) => setEditTripEndDate(e.target.value)}
-              className="box-border min-w-0 w-full rounded-xl border border-stone-300 bg-white px-2.5 py-3 text-sm text-stone-800"
-            />
-          </div>
-
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-            <div>
-              <h3 className="text-sm font-semibold text-stone-900">
-                Travellers
-              </h3>
-              <p className="mt-1 text-sm text-stone-500">
-                Add or remove the people on this trip.
-              </p>
-            </div>
-
-            <div className="mt-3 flex gap-3">
-              <input
-                type="text"
-                placeholder="Traveller name"
-                value={newTravellerName}
-                onChange={(e) => setNewTravellerName(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-              />
-
-              <button
-                type="button"
-                onClick={handleAddTraveller}
-                className="shrink-0 rounded-xl bg-rose-500 hover:bg-rose-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
-              >
-                Add
-              </button>
-            </div>
-
-            {tripMembers.length === 0 ? (
-              <p className="mt-3 text-sm text-stone-500">
-                No travellers added yet.
-              </p>
-            ) : (
-              <div className="mt-3 space-y-2">
-                {tripMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-3 text-sm text-stone-800"
-                  >
-                    <span>{member.name}</span>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteTraveller(member.id)}
-                      className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-green-500 px-5 py-3 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-green-600 hover:shadow-lg active:scale-[0.97]"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">✓</span>
-              Update trip
-            </span>
-          </button>
+          <p className="text-lg font-semibold text-stone-800">Trip not found</p>
+          <p className="mt-2 text-sm text-stone-500">
+            This trip may have been deleted or the link is incorrect.
+          </p>
 
           <button
             type="button"
-            onClick={handleDeleteTrip}
-            className="w-full rounded-xl bg-red-50 px-5 py-3 text-sm font-medium text-red-500 shadow-sm transition-all duration-200 hover:bg-red-100 hover:shadow-md active:scale-[0.97]"
+            onClick={() => router.push("/")}
+            className="mt-6 rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
           >
-            Delete trip
+            Back to trips
           </button>
-        </form>
-      )}
-
-      {bookingSuccessMessage && (
-        <div className="mb-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-          {bookingSuccessMessage}
         </div>
-      )}
+      </main>
+    );
+  }
 
-      {showBookingForm && (
-        <BookingForm
-          bookingFormRef={bookingFormRef}
-          editingBookingId={editingBookingId}
-          newTitle={newTitle}
-          setNewTitle={setNewTitle}
-          newType={newType}
-          setNewType={setNewType}
-          newStartTime={newStartTime}
-          setNewStartTime={setNewStartTime}
-          newEndTime={newEndTime}
-          setNewEndTime={setNewEndTime}
-          newLocation={newLocation}
-          setNewLocation={setNewLocation}
-          newConfirmation={newConfirmation}
-          setNewConfirmation={setNewConfirmation}
-          newNotes={newNotes}
-          setNewNotes={setNewNotes}
-          newAirline={newAirline}
-          setNewAirline={setNewAirline}
-          newFlightNumber={newFlightNumber}
-          setNewFlightNumber={setNewFlightNumber}
-          newDeparture={newDeparture}
-          setNewDeparture={setNewDeparture}
-          newArrival={newArrival}
-          setNewArrival={setNewArrival}
-          newHotelName={newHotelName}
-          setNewHotelName={setNewHotelName}
-          newAddress={newAddress}
-          setNewAddress={setNewAddress}
-          newOrigin={newOrigin}
-          setNewOrigin={setNewOrigin}
-          newDestinationPoint={newDestinationPoint}
-          setNewDestinationPoint={setNewDestinationPoint}
-          onSubmit={handleSaveBooking}
-          onCancel={resetBookingForm}
+  return (
+    <>
+      <main className="mx-auto w-full max-w-3xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
+        <TripHero
+          title={trip.title}
+          subtitle={formatTripDateRange(trip.start_date, trip.end_date)}
+          eyebrow={trip.destination}
+          imageUrl={trip.image_url}
+          backHref="/"
+          onEdit={() => {
+            setShowTripForm(true);
+            setShowBookingForm(false);
+          }}
+          stats={heroStats}
         />
-      )}
 
-      {filteredBookings.length === 0 &&
-        bookings.length > 0 &&
-        !showBookingForm && (
+        {(tripSuccessMessage || bookingSuccessMessage) && (
+          <div className="mb-5 space-y-3">
+            {tripSuccessMessage && (
+              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                {tripSuccessMessage}
+              </div>
+            )}
+
+            {bookingSuccessMessage && (
+              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                {bookingSuccessMessage}
+              </div>
+            )}
+          </div>
+        )}
+
+        <section className="mb-8 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={openNewBookingForm}
+            className="group rounded-[1.75rem] bg-rose-500 p-5 text-left text-white shadow-[0_14px_28px_rgba(244,63,94,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-600"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold">Add booking</p>
+                <p className="mt-1 text-sm text-white/85">
+                  Add flights, stays, meals and activities for this trip.
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/18 text-2xl transition-transform duration-200 group-hover:scale-105">
+                ＋
+              </div>
+            </div>
+          </button>
+
+          <a
+            href={`/trips/${trip.id}/cost-sharing`}
+            className="group rounded-[1.75rem] border border-stone-200 bg-white p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-stone-900">
+                  Shared costs
+                </p>
+                <p className="mt-1 text-sm text-stone-500">
+                  See balances, payments and who owes what.
+                </p>
+              </div>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-stone-100 text-stone-700 transition-colors duration-200 group-hover:bg-stone-900 group-hover:text-white">
+                →
+              </div>
+            </div>
+          </a>
+        </section>
+
+        <section className="mb-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="mb-2 inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                Trip plan
+              </div>
+
+              <h2 className="text-2xl font-semibold tracking-[-0.02em] text-stone-900">
+                Your itinerary
+              </h2>
+
+              <p className="mt-1 text-sm leading-6 text-stone-500">
+                Everything booked and planned for this trip.
+              </p>
+            </div>
+
+            {bookings.length > 0 && (
+              <div className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-stone-700 shadow-sm">
+                {filteredBookings.length} shown
+              </div>
+            )}
+          </div>
+        </section>
+
+        {bookings.length > 0 && (
+          <div className="mb-6 w-full">
+            <div className="grid w-full grid-cols-4 gap-2 rounded-[1.75rem] bg-stone-100 p-2">
+              {filterOptions.map((filter) => {
+                const isActive = activeFilter === filter;
+
+                return (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => setActiveFilter(filter)}
+                    aria-label={getFilterLabel(filter)}
+                    className={`flex h-12 items-center justify-center rounded-2xl px-3 text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                        : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
+                    }`}
+                  >
+                    {filter === "all" && <span>All</span>}
+                    {filter === "flight" && <span>Flights</span>}
+                    {filter === "hotel" && <span>Hotels</span>}
+                    {filter === "plans" && <span>Plans</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {filteredBookings.length === 0 && bookings.length > 0 && (
           <div className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50 p-8 text-center">
-            <p className="text-base font-medium text-stone-700">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white text-xl shadow-sm">
+              🗂️
+            </div>
+            <p className="text-base font-semibold text-stone-800">
               No {getFilterLabel(activeFilter).toLowerCase()} yet
             </p>
             <p className="mt-2 text-sm text-stone-500">
@@ -765,22 +701,295 @@ export default function TripPage() {
           </div>
         )}
 
-      {bookings.length === 0 && (
-        <div className="mt-16 text-center text-gray-400">
-          <p className="text-lg">No bookings yet</p>
-          <p className="mt-1 text-sm">Tap “Add booking” to start your trip ✈️</p>
+        {bookings.length === 0 && (
+          <div className="rounded-[2rem] border border-dashed border-stone-300 bg-stone-50 p-10 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white text-2xl shadow-sm">
+              ✈️
+            </div>
+            <p className="text-lg font-semibold text-stone-800">
+              No bookings yet
+            </p>
+            <p className="mt-2 text-sm text-stone-500">
+              Start building your itinerary by adding your first booking.
+            </p>
+
+            <button
+              type="button"
+              onClick={openNewBookingForm}
+              className="mt-6 rounded-2xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+            >
+              Add first booking
+            </button>
+          </div>
+        )}
+
+        {filteredBookings.length > 0 && (
+          <BookingTimeline
+            groupedBookings={groupedBookings}
+            expandedId={expandedId}
+            setExpandedId={setExpandedId}
+            onEditBooking={startEditingBooking}
+            onDeleteBooking={deleteBooking}
+          />
+        )}
+      </main>
+
+      {showTripForm && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-3 backdrop-blur-[2px] sm:items-center sm:p-6">
+          <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
+            <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
+              <div>
+                <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
+                  Edit trip
+                </h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Update the trip details, dates and travellers.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={resetTripFormFromTrip}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
+                aria-label="Close edit trip"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="max-h-[calc(92vh-80px)] overflow-y-auto px-5 py-5 sm:px-6">
+              <form onSubmit={handleSaveTrip} className="space-y-5">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-stone-700">
+                      Trip title
+                    </label>
+                    <input
+                      type="text"
+                      value={editTripTitle}
+                      onChange={(e) => setEditTripTitle(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-stone-700">
+                      Destination
+                    </label>
+                    <input
+                      type="text"
+                      value={editTripDestination}
+                      onChange={(e) => setEditTripDestination(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-stone-700">
+                      Image URL
+                    </label>
+                    <input
+                      type="text"
+                      value={editTripImageUrl}
+                      onChange={(e) => setEditTripImageUrl(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-stone-700">
+                        Start date
+                      </label>
+                      <input
+                        type="date"
+                        value={editTripStartDate}
+                        onChange={(e) => setEditTripStartDate(e.target.value)}
+                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-stone-700">
+                        End date
+                      </label>
+                      <input
+                        type="date"
+                        value={editTripEndDate}
+                        onChange={(e) => setEditTripEndDate(e.target.value)}
+                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-stone-900">
+                      Travellers
+                    </h3>
+                    <p className="mt-1 text-sm text-stone-500">
+                      Add or remove the people on this trip.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="Traveller name"
+                      value={newTravellerName}
+                      onChange={(e) => setNewTravellerName(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleAddTraveller}
+                      className="shrink-0 rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {tripMembers.length === 0 ? (
+                    <p className="mt-3 text-sm text-stone-500">
+                      No travellers added yet.
+                    </p>
+                  ) : (
+                    <div className="mt-4 space-y-2">
+                      {tripMembers.map((member) => (
+                        <div
+                          key={member.id}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-3 text-sm text-stone-800"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-700">
+                              {member.name
+                                .split(" ")
+                                .map((part) => part[0])
+                                .join("")
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </div>
+                            <span>{member.name}</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteTraveller(member.id)}
+                            className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-4">
+                  <h3 className="text-sm font-semibold text-red-700">
+                    Danger zone
+                  </h3>
+                  <p className="mt-1 text-sm text-red-600/80">
+                    Deleting the trip will remove it permanently.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={handleDeleteTrip}
+                    className="mt-4 rounded-xl bg-white px-4 py-3 text-sm font-medium text-red-600 shadow-sm transition hover:bg-red-100"
+                  >
+                    Delete trip
+                  </button>
+                </div>
+
+                <div className="flex flex-col-reverse gap-3 border-t border-stone-200 pt-4 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={resetTripFormFromTrip}
+                    className="rounded-xl bg-stone-100 px-5 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-200"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+                  >
+                    Save changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
 
-      {filteredBookings.length > 0 && (
-        <BookingTimeline
-          groupedBookings={groupedBookings}
-          expandedId={expandedId}
-          setExpandedId={setExpandedId}
-          onEditBooking={startEditingBooking}
-          onDeleteBooking={deleteBooking}
-        />
+      {showBookingForm && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-3 backdrop-blur-[2px] sm:items-center sm:p-6">
+          <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
+            <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
+              <div>
+                <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
+                  {editingBookingId ? "Edit booking" : "Add booking"}
+                </h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Add the details and keep your itinerary up to date.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={resetBookingForm}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
+                aria-label="Close booking form"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="max-h-[calc(92vh-80px)] overflow-y-auto px-5 py-5 sm:px-6">
+              <BookingForm
+                bookingFormRef={bookingFormRef}
+                editingBookingId={editingBookingId}
+                newTitle={newTitle}
+                setNewTitle={setNewTitle}
+                newType={newType}
+                setNewType={setNewType}
+                newStartTime={newStartTime}
+                setNewStartTime={setNewStartTime}
+                newEndTime={newEndTime}
+                setNewEndTime={setNewEndTime}
+                newLocation={newLocation}
+                setNewLocation={setNewLocation}
+                newConfirmation={newConfirmation}
+                setNewConfirmation={setNewConfirmation}
+                newNotes={newNotes}
+                setNewNotes={setNewNotes}
+                newAirline={newAirline}
+                setNewAirline={setNewAirline}
+                newFlightNumber={newFlightNumber}
+                setNewFlightNumber={setNewFlightNumber}
+                newDeparture={newDeparture}
+                setNewDeparture={setNewDeparture}
+                newArrival={newArrival}
+                setNewArrival={setNewArrival}
+                newHotelName={newHotelName}
+                setNewHotelName={setNewHotelName}
+                newAddress={newAddress}
+                setNewAddress={setNewAddress}
+                newOrigin={newOrigin}
+                setNewOrigin={setNewOrigin}
+                newDestinationPoint={newDestinationPoint}
+                setNewDestinationPoint={setNewDestinationPoint}
+                onSubmit={handleSaveBooking}
+                onCancel={resetBookingForm}
+              />
+            </div>
+          </div>
+        </div>
       )}
-    </main>
+    </>
   );
 }

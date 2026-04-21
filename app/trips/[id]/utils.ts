@@ -1,4 +1,4 @@
-import type { BookingFilter, BookingType } from "./types";
+import type { BookingFilter, BookingType, Booking } from "./types";
 
 export function getBookingIcon(type: BookingType) {
   if (type === "flight") return "✈️";
@@ -98,6 +98,106 @@ export function formatDateTime(value?: string) {
   const minutes = String(date.getMinutes()).padStart(2, "0");
 
   return `${day} ${month} ${hours}:${minutes}`;
+}
+
+export function formatTimeOnly(value?: string) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${hours}:${minutes}`;
+}
+
+export function formatDayLabel(value: string) {
+  if (value === "No date") return "No date";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("en-GB", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+export function isTodayLabel(value: string) {
+  if (value === "No date") return false;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+
+  return date.toDateString() === new Date().toDateString();
+}
+
+export function getDayBookingCount(
+  items: Record<"Morning" | "Afternoon" | "Evening" | "Unscheduled", Booking[]>
+) {
+  return (
+    items.Morning.length +
+    items.Afternoon.length +
+    items.Evening.length +
+    items.Unscheduled.length
+  );
+}
+
+export function getBookingSummary(booking: Booking) {
+  if (booking.type === "flight") {
+    const from = booking.departure_airport?.trim();
+    const to = booking.arrival_airport?.trim();
+
+    if (from && to) return `${from} → ${to}`;
+    if (from) return `From ${from}`;
+    if (to) return `To ${to}`;
+    if (booking.airline && booking.flight_number) {
+      return `${booking.airline} · ${booking.flight_number}`;
+    }
+    if (booking.airline) return booking.airline;
+    return "Flight details";
+  }
+
+  if (booking.type === "hotel") {
+    const checkIn = formatTimeOnly(booking.start_time);
+    const address = booking.address?.trim();
+
+    if (checkIn && address) return `Check-in ${checkIn} · ${address}`;
+    if (checkIn) return `Check-in ${checkIn}`;
+    if (address) return address;
+    return "Stay details";
+  }
+
+  if (booking.type === "transport") {
+    const from = booking.origin?.trim();
+    const to = booking.destination?.trim();
+
+    if (from && to) return `${from} → ${to}`;
+    if (from) return `From ${from}`;
+    if (to) return `To ${to}`;
+    return "Transport details";
+  }
+
+  if (booking.type === "dining") {
+    const time = formatTimeOnly(booking.start_time);
+    const address = booking.address?.trim();
+
+    if (time && address) return `${time} · ${address}`;
+    if (time) return time;
+    if (address) return address;
+    return "Reservation details";
+  }
+
+  const location = booking.location?.trim();
+  const time = formatTimeOnly(booking.start_time);
+
+  if (location && time) return `${time} · ${location}`;
+  if (location) return location;
+  if (time) return time;
+
+  return "Plan details";
 }
 
 export function formatTripDateRange(start?: string, end?: string) {
