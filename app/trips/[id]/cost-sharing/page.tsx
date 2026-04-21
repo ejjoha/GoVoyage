@@ -481,17 +481,17 @@ export default function TripCostSharingPage() {
                   key={index}
                   className="rounded-xl bg-white px-3 py-3 text-sm text-stone-700"
                 >
-                <div className="flex items-center justify-between">
-                  <span className="text-stone-600">
-                    <span className="font-semibold text-stone-900">{item.from}</span>
-                    {" → "}
-                    <span className="font-semibold text-stone-900">{item.to}</span>
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-600">
+                      <span className="font-semibold text-stone-900">{item.from}</span>
+                      {" owes "}
+                      <span className="font-semibold text-stone-900">{item.to}</span>
+                    </span>
 
-                  <span className="font-semibold text-blue-700">
-                    {formatAmount(item.amount)} {item.currency}
-                  </span>
-                </div>
+                    <span className="font-semibold text-blue-700">
+                      {formatAmount(item.amount)} {item.currency}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -639,7 +639,7 @@ export default function TripCostSharingPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-stone-600">
                             <span className="font-semibold text-stone-900">{item.from}</span>
-                            {" → "}
+                            {" owes "}
                             <span className="font-semibold text-stone-900">{item.to}</span>
                           </span>
 

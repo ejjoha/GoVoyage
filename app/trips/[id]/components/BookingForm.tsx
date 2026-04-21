@@ -132,7 +132,7 @@ export default function BookingForm({
   onCancel,
 }: BookingFormProps) {
   return (
-    <form ref={bookingFormRef} onSubmit={onSubmit} className="space-y-5">
+    <form ref={bookingFormRef} onSubmit={onSubmit} className="space-y-5 pb-2">
       <SectionCard title="Booking type">
         <Field label="Type">
           <select

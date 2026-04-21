@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import type { Booking } from "../types";
 import {
   getBookingIcon,
@@ -79,6 +80,33 @@ export default function BookingTimeline({
   onEditBooking,
   onDeleteBooking,
 }: BookingTimelineProps) {
+  const rowRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  function handleToggleBooking(bookingId: number, isExpanded: boolean) {
+    if (isExpanded) {
+      setExpandedId(null);
+      return;
+    }
+
+    setExpandedId(bookingId);
+
+    window.setTimeout(() => {
+      const row = rowRefs.current[bookingId];
+      if (!row) return;
+
+      const rect = row.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const bottomSpacing = 24;
+
+      if (rect.bottom > viewportHeight - bottomSpacing) {
+        row.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }, 220);
+  }
+
   return (
     <div className="w-full space-y-6">
       {Object.entries(groupedBookings).map(([date, items]) => {
@@ -117,6 +145,9 @@ export default function BookingTimeline({
                       return (
                         <div
                           key={booking.id}
+                          ref={(element) => {
+                            rowRefs.current[booking.id] = element;
+                          }}
                           className="grid w-full min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-3"
                         >
                           <div className="relative flex h-full justify-center">
@@ -129,9 +160,9 @@ export default function BookingTimeline({
                           <div className="min-w-0">
                             <button
                               type="button"
-                              onClick={() => {
-                                setExpandedId(isExpanded ? null : booking.id);
-                              }}
+                              onClick={() =>
+                                handleToggleBooking(booking.id, isExpanded)
+                              }
                               className="mb-2 w-full min-w-0 overflow-hidden rounded-[1.75rem] border border-stone-200 bg-white p-4 text-left shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] sm:p-5"
                             >
                               <div
@@ -195,30 +226,10 @@ export default function BookingTimeline({
                                     booking.type
                                   )}`}
                                 >
-                                  <div className="mb-4 flex items-center justify-between gap-3">
+                                  <div className="mb-4">
                                     <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                                       {getDetailsHeading(booking.type)}
                                     </h3>
-
-                                    <div className="flex items-center gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => onEditBooking(booking)}
-                                        aria-label="Edit booking"
-                                        className="inline-flex h-9 items-center justify-center rounded-full bg-white/80 px-3 text-sm font-medium text-stone-600 shadow-sm transition hover:bg-white hover:text-stone-900"
-                                      >
-                                        Edit
-                                      </button>
-
-                                      <button
-                                        type="button"
-                                        onClick={() => onDeleteBooking(booking.id)}
-                                        aria-label="Delete booking"
-                                        className="inline-flex h-9 items-center justify-center rounded-full bg-white/80 px-3 text-sm font-medium text-red-500 shadow-sm transition hover:bg-white hover:text-red-600"
-                                      >
-                                        Delete
-                                      </button>
-                                    </div>
                                   </div>
 
                                   <div className="space-y-1">
@@ -539,6 +550,26 @@ export default function BookingTimeline({
                                         />
                                       </>
                                     )}
+                                  </div>
+
+                                  <div className="mt-5 flex items-center justify-between border-t border-white/40 pt-4">
+                                    <button
+                                      type="button"
+                                      onClick={() => onDeleteBooking(booking.id)}
+                                      aria-label="Delete booking"
+                                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-red-500 shadow-sm transition hover:bg-white hover:text-red-600 active:scale-95"
+                                    >
+                                      🗑️
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => onEditBooking(booking)}
+                                      aria-label="Edit booking"
+                                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-stone-600 shadow-sm transition hover:bg-white hover:text-stone-900 active:scale-95"
+                                    >
+                                      ✏️
+                                    </button>
                                   </div>
                                 </div>
                               </div>

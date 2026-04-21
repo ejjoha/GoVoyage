@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import BookingTimeline from "./components/BookingTimeline";
 import BookingForm from "./components/BookingForm";
 import TripHero from "./components/TripHero";
+import ConfirmModal from "./components/ConfirmModal";
 import type {
   Trip,
   TripMember,
@@ -20,6 +21,20 @@ import {
   formatForDateInput,
   formatTripDateRange,
 } from "./utils";
+
+type ConfirmState =
+  | {
+    open: false;
+  }
+  | {
+    open: true;
+    title: string;
+    description?: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    tone?: "default" | "danger";
+    onConfirm: () => void;
+  };
 
 export default function TripPage() {
   const params = useParams();
@@ -38,6 +53,9 @@ export default function TripPage() {
   const [editTripStartDate, setEditTripStartDate] = useState("");
   const [editTripEndDate, setEditTripEndDate] = useState("");
 
+  const [tripFormError, setTripFormError] = useState("");
+  const [travellerFormError, setTravellerFormError] = useState("");
+
   const [tripMembers, setTripMembers] = useState<TripMember[]>([]);
   const [newTravellerName, setNewTravellerName] = useState("");
 
@@ -48,6 +66,7 @@ export default function TripPage() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [editingBookingId, setEditingBookingId] = useState<number | null>(null);
   const [bookingSuccessMessage, setBookingSuccessMessage] = useState("");
+  const [bookingFormError, setBookingFormError] = useState("");
 
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState<BookingType>("flight");
@@ -65,7 +84,22 @@ export default function TripPage() {
   const [newOrigin, setNewOrigin] = useState("");
   const [newDestinationPoint, setNewDestinationPoint] = useState("");
 
+  const [confirmState, setConfirmState] = useState<ConfirmState>({
+    open: false,
+  });
+
   const bookingFormRef = useRef<HTMLFormElement | null>(null);
+
+  function openConfirm(config: Omit<Extract<ConfirmState, { open: true }>, "open">) {
+    setConfirmState({
+      open: true,
+      ...config,
+    });
+  }
+
+  function closeConfirm() {
+    setConfirmState({ open: false });
+  }
 
   async function fetchTrip() {
     setIsTripLoading(true);
@@ -142,17 +176,18 @@ export default function TripPage() {
       if (event.key === "Escape") {
         setShowTripForm(false);
         setShowBookingForm(false);
+        closeConfirm();
       }
     }
 
-    if (showTripForm || showBookingForm) {
+    if (showTripForm || showBookingForm || confirmState.open) {
       window.addEventListener("keydown", handleEscape);
     }
 
     return () => {
       window.removeEventListener("keydown", handleEscape);
     };
-  }, [showTripForm, showBookingForm]);
+  }, [showTripForm, showBookingForm, confirmState.open]);
 
   function resetTripFormFromTrip() {
     if (!trip) return;
@@ -163,24 +198,27 @@ export default function TripPage() {
     setEditTripStartDate(formatForDateInput(trip.start_date));
     setEditTripEndDate(formatForDateInput(trip.end_date));
     setNewTravellerName("");
+    setTripFormError("");
+    setTravellerFormError("");
     setShowTripForm(false);
   }
 
   async function handleSaveTrip(e: React.FormEvent) {
     e.preventDefault();
+    setTripFormError("");
 
     if (!editTripTitle.trim() || !editTripDestination.trim()) {
-      alert("Please fill in Title and Destination");
+      setTripFormError("Please fill in trip title and destination.");
       return;
     }
 
     if (!editTripStartDate || !editTripEndDate) {
-      alert("Please fill in Start date and End date");
+      setTripFormError("Please fill in both start date and end date.");
       return;
     }
 
     if (editTripEndDate < editTripStartDate) {
-      alert("End date cannot be before start date");
+      setTripFormError("End date cannot be before start date.");
       return;
     }
 
@@ -197,13 +235,14 @@ export default function TripPage() {
 
     if (error) {
       console.error("Error updating trip:", error);
-      alert("Failed to update trip");
+      setTripFormError("We couldn’t update the trip. Please try again.");
       return;
     }
 
     await fetchTrip();
     await fetchTripMembers();
     setTripSuccessMessage("Trip updated");
+    setTripFormError("");
     setShowTripForm(false);
 
     setTimeout(() => {
@@ -211,26 +250,37 @@ export default function TripPage() {
     }, 2000);
   }
 
-  async function handleDeleteTrip() {
-    const shouldDelete = confirm("Delete this trip?");
-    if (!shouldDelete) return;
-
+  async function handleDeleteTripConfirmed() {
     const { error } = await supabase.from("trips").delete().eq("id", id);
 
     if (error) {
       console.error("Error deleting trip:", error);
-      alert("Could not delete trip");
+      setTripFormError("We couldn’t delete the trip. Please try again.");
       return;
     }
 
+    closeConfirm();
     router.push("/");
+  }
+
+  function handleDeleteTrip() {
+    openConfirm({
+      title: "Delete this trip?",
+      description:
+        "This will permanently remove the trip and its content. This action cannot be undone.",
+      confirmLabel: "Delete trip",
+      cancelLabel: "Keep trip",
+      tone: "danger",
+      onConfirm: handleDeleteTripConfirmed,
+    });
   }
 
   async function handleAddTraveller() {
     const trimmedName = newTravellerName.trim();
+    setTravellerFormError("");
 
     if (!trimmedName) {
-      alert("Please enter a traveller name");
+      setTravellerFormError("Please enter a traveller name.");
       return;
     }
 
@@ -239,7 +289,7 @@ export default function TripPage() {
     );
 
     if (alreadyExists) {
-      alert("That traveller is already on this trip");
+      setTravellerFormError("That traveller is already on this trip.");
       return;
     }
 
@@ -250,18 +300,16 @@ export default function TripPage() {
 
     if (error) {
       console.error("Error adding traveller:", error);
-      alert("Could not add traveller");
+      setTravellerFormError("We couldn’t add that traveller. Please try again.");
       return;
     }
 
     setNewTravellerName("");
+    setTravellerFormError("");
     await fetchTripMembers();
   }
 
-  async function handleDeleteTraveller(memberId: number) {
-    const shouldDelete = confirm("Delete this traveller?");
-    if (!shouldDelete) return;
-
+  async function handleDeleteTravellerConfirmed(memberId: number) {
     const { error } = await supabase
       .from("trip_members")
       .delete()
@@ -269,19 +317,29 @@ export default function TripPage() {
 
     if (error) {
       console.error("Error deleting traveller:", error);
-      alert(
-        "Could not delete traveller. They may still be used in shared costs."
+      setTravellerFormError(
+        "We couldn’t remove this traveller. They may still be used in shared costs."
       );
       return;
     }
 
+    closeConfirm();
     await fetchTripMembers();
   }
 
-  async function deleteBooking(bookingId: number) {
-    const shouldDelete = confirm("Delete this booking?");
-    if (!shouldDelete) return;
+  function handleDeleteTraveller(memberId: number) {
+    openConfirm({
+      title: "Remove this traveller?",
+      description:
+        "This will remove them from the trip. Shared cost entries connected to them may be affected.",
+      confirmLabel: "Remove traveller",
+      cancelLabel: "Keep traveller",
+      tone: "danger",
+      onConfirm: () => handleDeleteTravellerConfirmed(memberId),
+    });
+  }
 
+  async function deleteBookingConfirmed(bookingId: number) {
     const { error } = await supabase
       .from("bookings")
       .delete()
@@ -289,10 +347,11 @@ export default function TripPage() {
 
     if (error) {
       console.error("Error deleting booking:", error);
-      alert("Could not delete booking");
+      setBookingFormError("We couldn’t delete that booking. Please try again.");
       return;
     }
 
+    closeConfirm();
     await fetchBookings();
 
     if (expandedId === bookingId) {
@@ -300,11 +359,24 @@ export default function TripPage() {
     }
   }
 
+  function deleteBooking(bookingId: number) {
+    openConfirm({
+      title: "Delete this booking?",
+      description:
+        "This will remove the booking from the itinerary permanently.",
+      confirmLabel: "Delete booking",
+      cancelLabel: "Keep booking",
+      tone: "danger",
+      onConfirm: () => deleteBookingConfirmed(bookingId),
+    });
+  }
+
   function startEditingBooking(booking: Booking) {
     setEditingBookingId(booking.id);
     setShowBookingForm(true);
     setShowTripForm(false);
     setExpandedId(null);
+    setBookingFormError("");
 
     setNewTitle(booking.title || "");
     setNewType(booking.type);
@@ -340,6 +412,7 @@ export default function TripPage() {
     setNewAddress("");
     setNewOrigin("");
     setNewDestinationPoint("");
+    setBookingFormError("");
     setShowBookingForm(false);
   }
 
@@ -351,24 +424,25 @@ export default function TripPage() {
 
   async function handleSaveBooking(e: React.FormEvent) {
     e.preventDefault();
+    setBookingFormError("");
 
     const resolvedTitle =
       newType === "hotel" ? newHotelName.trim() : newTitle.trim();
 
     if (!resolvedTitle) {
-      alert(
+      setBookingFormError(
         newType === "hotel"
-          ? "Please fill in Hotel name"
-          : "Please fill in Title"
+          ? "Please fill in the hotel name."
+          : "Please fill in the booking title."
       );
       return;
     }
 
     if (!newStartTime) {
-      alert(
+      setBookingFormError(
         newType === "flight"
-          ? "Please fill in departure"
-          : `Please fill in ${getStartLabel(newType).toLowerCase()}`
+          ? "Please fill in the departure date and time."
+          : `Please fill in ${getStartLabel(newType).toLowerCase()}.`
       );
       return;
     }
@@ -377,7 +451,7 @@ export default function TripPage() {
       newType === "transport" &&
       (!newOrigin.trim() || !newDestinationPoint.trim())
     ) {
-      alert("Please fill in both origin and destination");
+      setBookingFormError("Please fill in both origin and destination.");
       return;
     }
 
@@ -423,7 +497,7 @@ export default function TripPage() {
 
     if (error) {
       console.error("Error saving booking:", error);
-      alert("Save failed. Check the browser console.");
+      setBookingFormError("We couldn’t save that booking. Please try again.");
       return;
     }
 
@@ -432,6 +506,7 @@ export default function TripPage() {
     await fetchBookings();
 
     setBookingSuccessMessage(wasEditing ? "Booking updated" : "Booking saved");
+    setBookingFormError("");
     resetBookingForm();
 
     setTimeout(() => {
@@ -573,6 +648,8 @@ export default function TripPage() {
           onEdit={() => {
             setShowTripForm(true);
             setShowBookingForm(false);
+            setTripFormError("");
+            setTravellerFormError("");
           }}
           stats={heroStats}
         />
@@ -593,73 +670,27 @@ export default function TripPage() {
           </div>
         )}
 
-        <section className="mb-8 grid gap-3 sm:grid-cols-2">
+        <section className="mb-4 grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={openNewBookingForm}
-            className="group rounded-[1.75rem] bg-rose-500 p-5 text-left text-white shadow-[0_14px_28px_rgba(244,63,94,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-600"
+            className="flex items-center justify-center gap-2 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-semibold text-white shadow-sm transition active:scale-[0.97]"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold">Add booking</p>
-                <p className="mt-1 text-sm text-white/85">
-                  Add flights, stays, meals and activities for this trip.
-                </p>
-              </div>
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/18 text-2xl transition-transform duration-200 group-hover:scale-105">
-                ＋
-              </div>
-            </div>
+            <span className="text-base">＋</span>
+            Add booking
           </button>
 
           <a
             href={`/trips/${trip.id}/cost-sharing`}
-            className="group rounded-[1.75rem] border border-stone-200 bg-white p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-sm transition active:scale-[0.97]"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-stone-900">
-                  Shared costs
-                </p>
-                <p className="mt-1 text-sm text-stone-500">
-                  See balances, payments and who owes what.
-                </p>
-              </div>
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-stone-100 text-stone-700 transition-colors duration-200 group-hover:bg-stone-900 group-hover:text-white">
-                →
-              </div>
-            </div>
+            <span className="text-base">＋</span>
+            Add cost
           </a>
         </section>
 
-        <section className="mb-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="mb-2 inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-                Trip plan
-              </div>
-
-              <h2 className="text-2xl font-semibold tracking-[-0.02em] text-stone-900">
-                Your itinerary
-              </h2>
-
-              <p className="mt-1 text-sm leading-6 text-stone-500">
-                Everything booked and planned for this trip.
-              </p>
-            </div>
-
-            {bookings.length > 0 && (
-              <div className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-stone-700 shadow-sm">
-                {filteredBookings.length} shown
-              </div>
-            )}
-          </div>
-        </section>
-
         {bookings.length > 0 && (
-          <div className="mb-6 w-full">
+          <div className="mb-5 w-full">
             <div className="grid w-full grid-cols-4 gap-2 rounded-[1.75rem] bg-stone-100 p-2">
               {filterOptions.map((filter) => {
                 const isActive = activeFilter === filter;
@@ -670,11 +701,10 @@ export default function TripPage() {
                     type="button"
                     onClick={() => setActiveFilter(filter)}
                     aria-label={getFilterLabel(filter)}
-                    className={`flex h-12 items-center justify-center rounded-2xl px-3 text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                        : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
-                    }`}
+                    className={`flex h-12 items-center justify-center rounded-2xl px-3 text-sm font-medium transition-all duration-200 ${isActive
+                      ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                      : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
+                      }`}
                   >
                     {filter === "all" && <span>All</span>}
                     {filter === "flight" && <span>Flights</span>}
@@ -735,7 +765,7 @@ export default function TripPage() {
       </main>
 
       {showTripForm && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-3 backdrop-blur-[2px] sm:items-center sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-3 pt-20 backdrop-blur-[2px] sm:items-center sm:p-6">
           <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
             <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
               <div>
@@ -759,6 +789,12 @@ export default function TripPage() {
 
             <div className="max-h-[calc(92vh-80px)] overflow-y-auto px-5 py-5 sm:px-6">
               <form onSubmit={handleSaveTrip} className="space-y-5">
+                {tripFormError && (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {tripFormError}
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-stone-700">
@@ -851,6 +887,12 @@ export default function TripPage() {
                     </button>
                   </div>
 
+                  {travellerFormError && (
+                    <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {travellerFormError}
+                    </div>
+                  )}
+
                   {tripMembers.length === 0 ? (
                     <p className="mt-3 text-sm text-stone-500">
                       No travellers added yet.
@@ -927,8 +969,8 @@ export default function TripPage() {
       )}
 
       {showBookingForm && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-3 backdrop-blur-[2px] sm:items-center sm:p-6">
-          <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-3 pt-14 backdrop-blur-[2px] sm:items-center sm:p-6">
+          <div className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
             <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
               <div>
                 <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
@@ -949,7 +991,13 @@ export default function TripPage() {
               </button>
             </div>
 
-            <div className="max-h-[calc(92vh-80px)] overflow-y-auto px-5 py-5 sm:px-6">
+            <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
+              {bookingFormError && (
+                <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {bookingFormError}
+                </div>
+              )}
+
               <BookingForm
                 bookingFormRef={bookingFormRef}
                 editingBookingId={editingBookingId}
@@ -990,6 +1038,21 @@ export default function TripPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={confirmState.open}
+        title={confirmState.open ? confirmState.title : ""}
+        description={confirmState.open ? confirmState.description : ""}
+        confirmLabel={confirmState.open ? confirmState.confirmLabel : "Confirm"}
+        cancelLabel={confirmState.open ? confirmState.cancelLabel : "Cancel"}
+        tone={confirmState.open ? confirmState.tone : "default"}
+        onCancel={closeConfirm}
+        onConfirm={() => {
+          if (confirmState.open) {
+            confirmState.onConfirm();
+          }
+        }}
+      />
     </>
   );
 }
