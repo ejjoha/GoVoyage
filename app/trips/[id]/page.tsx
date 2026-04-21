@@ -55,6 +55,7 @@ export default function TripPage() {
 
   const [tripFormError, setTripFormError] = useState("");
   const [travellerFormError, setTravellerFormError] = useState("");
+  const [showTravellersSheet, setShowTravellersSheet] = useState(false);
 
   const [tripMembers, setTripMembers] = useState<TripMember[]>([]);
   const [newTravellerName, setNewTravellerName] = useState("");
@@ -176,11 +177,12 @@ export default function TripPage() {
       if (event.key === "Escape") {
         setShowTripForm(false);
         setShowBookingForm(false);
+        setShowTravellersSheet(false);
         closeConfirm();
       }
     }
 
-    if (showTripForm || showBookingForm || confirmState.open) {
+    if (showTripForm || showBookingForm || showTravellersSheet || confirmState.open) {
       window.addEventListener("keydown", handleEscape);
     }
 
@@ -583,6 +585,8 @@ export default function TripPage() {
       {
         label: tripMembers.length === 1 ? "traveller" : "travellers",
         value: String(tripMembers.length),
+        onClick: () => setShowTravellersSheet(true),
+        ariaLabel: "Show travellers",
       },
       {
         label: bookings.length === 1 ? "booking" : "bookings",
@@ -1053,6 +1057,67 @@ export default function TripPage() {
           }
         }}
       />
+      {showTravellersSheet && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-3 pt-12 backdrop-blur-[2px] sm:items-center sm:p-6"
+          onClick={() => setShowTravellersSheet(false)}
+        >
+          <div
+            className="flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
+              <div>
+                <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
+                  Travellers
+                </h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Everyone joining this trip.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowTravellersSheet(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
+                aria-label="Close travellers"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="min-h-0 overflow-y-auto px-5 py-5">
+              {tripMembers.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
+                  <p className="text-sm text-stone-500">No travellers added yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {tripMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
+                        {member.name
+                          .split(" ")
+                          .map((part) => part[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
+
+                      <span className="text-sm font-medium text-stone-800">
+                        {member.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

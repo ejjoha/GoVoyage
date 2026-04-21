@@ -3,6 +3,8 @@ import Link from "next/link";
 type TripStat = {
   label: string;
   value: string;
+  onClick?: () => void;
+  ariaLabel?: string;
 };
 
 type TripHeroProps = {
@@ -60,7 +62,7 @@ export default function TripHero({
             type="button"
             onClick={onEdit}
             aria-label="Edit trip"
-            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition active:scale-95"
+            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center transition active:scale-95"
           >
             <img
               src="/icons/insideedit.svg"
@@ -82,15 +84,28 @@ export default function TripHero({
 
         {stats.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-full bg-white/20 px-3 py-1.5 text-xs text-white backdrop-blur-sm"
-              >
-                <span className="font-semibold">{stat.value}</span>{" "}
-                {stat.label}
-              </div>
-            ))}
+            {stats.map((stat) =>
+              stat.onClick ? (
+                <button
+                  key={stat.label}
+                  type="button"
+                  onClick={stat.onClick}
+                  aria-label={stat.ariaLabel || `${stat.label}: ${stat.value}`}
+                  className="rounded-full bg-white/20 px-3 py-1.5 text-xs text-white backdrop-blur-sm transition hover:bg-white/25 active:scale-95 cursor-pointer"
+                >
+                  <span className="font-semibold">{stat.value}</span>{" "}
+                  {stat.label}
+                </button>
+              ) : (
+                <div
+                  key={stat.label}
+                  className="rounded-full bg-white/20 px-3 py-1.5 text-xs text-white backdrop-blur-sm"
+                >
+                  <span className="font-semibold">{stat.value}</span>{" "}
+                  {stat.label}
+                </div>
+              )
+            )}
           </div>
         )}
       </div>
