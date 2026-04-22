@@ -321,22 +321,25 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-      <section className="mb-5 overflow-hidden rounded-[2rem] border border-stone-200/60 bg-gradient-to-br from-white via-stone-50/90 to-rose-50/40 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] backdrop-blur sm:p-7">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-500 shadow-sm">
-          <span className="text-sm">✈️</span>
-          <span>Travel Organizer</span>
+      <section className="mb-5 overflow-hidden rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
+
+        <div className="flex justify-center">
+          <img
+            src="/logos/app-hero-logo.png"
+            alt="Travel Organizer"
+            className="h-52 w-auto sm:h-64"
+          />
         </div>
 
-        <div className="space-y-3">
-          <h1 className="max-w-md text-3xl font-bold tracking-[-0.03em] text-stone-900 sm:text-4xl">
-            From here to there
-          </h1>
-
-          <p className="max-w-lg text-[15px] leading-7 text-stone-600 sm:text-base">
-            Plan, view, and manage every part of your trip — from flights and stays
-            to dining plans and the details in between.
+        <div className="mt-3 max-w-md">
+          <p className="text-sm text-stone-500 sm:text-base">
+            Plan, view, and manage every part of your trip —
+          </p>
+          <p className="text-sm text-stone-500 sm:text-base">
+            from flights and stays to dining plans and the details in between.
           </p>
         </div>
+
       </section>
 
       <div className="mb-8">
