@@ -84,12 +84,14 @@ export default function TripPage() {
   const [newAddress, setNewAddress] = useState("");
   const [newOrigin, setNewOrigin] = useState("");
   const [newDestinationPoint, setNewDestinationPoint] = useState("");
-
+  const [showStaysSheet, setShowStaysSheet] = useState(false);
   const [confirmState, setConfirmState] = useState<ConfirmState>({
     open: false,
   });
 
   const bookingFormRef = useRef<HTMLFormElement | null>(null);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+
 
   function openConfirm(config: Omit<Extract<ConfirmState, { open: true }>, "open">) {
     setConfirmState({
@@ -172,24 +174,25 @@ export default function TripPage() {
     fetchTripMembers();
   }, [id]);
 
-  useEffect(() => {
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setShowTripForm(false);
-        setShowBookingForm(false);
-        setShowTravellersSheet(false);
-        closeConfirm();
-      }
+  function handleEscape(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      setShowTripForm(false);
+      setShowBookingForm(false);
+      setShowTravellersSheet(false);
+      setShowStaysSheet(false);
+      closeConfirm();
     }
+  }
 
-    if (showTripForm || showBookingForm || showTravellersSheet || confirmState.open) {
-      window.addEventListener("keydown", handleEscape);
-    }
-
-    return () => {
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, [showTripForm, showBookingForm, confirmState.open]);
+  if (
+    showTripForm ||
+    showBookingForm ||
+    showTravellersSheet ||
+    showStaysSheet ||
+    confirmState.open
+  ) {
+    window.addEventListener("keydown", handleEscape);
+  }
 
   function resetTripFormFromTrip() {
     if (!trip) return;
@@ -580,6 +583,38 @@ export default function TripPage() {
     return diffDays > 0 ? diffDays : 0;
   }, [trip]);
 
+  const hotelStays = useMemo(() => {
+    return bookings
+      .filter((booking) => booking.type === "hotel")
+      .map((booking) => {
+        const start = booking.start_time ? new Date(booking.start_time) : null;
+        const end = booking.end_time ? new Date(booking.end_time) : null;
+
+        let nights = 0;
+
+        if (
+          start &&
+          end &&
+          !Number.isNaN(start.getTime()) &&
+          !Number.isNaN(end.getTime())
+        ) {
+          const diffMs = end.getTime() - start.getTime();
+          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+          nights = diffDays > 0 ? diffDays : 0;
+        }
+
+        return {
+          id: booking.id,
+          hotelName: booking.hotel_name || booking.title || "Hotel stay",
+          address: booking.address || "",
+          startTime: booking.start_time,
+          endTime: booking.end_time || "",
+          nights,
+        };
+      })
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [bookings]);
+
   const heroStats = useMemo(() => {
     return [
       {
@@ -591,13 +626,22 @@ export default function TripPage() {
       {
         label: bookings.length === 1 ? "booking" : "bookings",
         value: String(bookings.length),
+        onClick: () => {
+          timelineRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        },
+        ariaLabel: "Scroll to bookings",
       },
       {
         label: tripNights === 1 ? "night" : "nights",
         value: String(tripNights),
+        onClick: hotelStays.length > 0 ? () => setShowStaysSheet(true) : undefined,
+        ariaLabel: hotelStays.length > 0 ? "Show hotel stays" : undefined,
       },
     ];
-  }, [tripMembers.length, bookings.length, tripNights]);
+  }, [tripMembers.length, bookings.length, tripNights, hotelStays.length]);
 
   if (isTripLoading) {
     return (
@@ -758,13 +802,15 @@ export default function TripPage() {
         )}
 
         {filteredBookings.length > 0 && (
-          <BookingTimeline
-            groupedBookings={groupedBookings}
-            expandedId={expandedId}
-            setExpandedId={setExpandedId}
-            onEditBooking={startEditingBooking}
-            onDeleteBooking={deleteBooking}
-          />
+          <div ref={timelineRef}>
+            <BookingTimeline
+              groupedBookings={groupedBookings}
+              expandedId={expandedId}
+              setExpandedId={setExpandedId}
+              onEditBooking={startEditingBooking}
+              onDeleteBooking={deleteBooking}
+            />
+          </div>
         )}
       </main>
 
@@ -906,10 +952,10 @@ export default function TripPage() {
                       {tripMembers.map((member) => (
                         <div
                           key={member.id}
-                          className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-3 text-sm text-stone-800"
+                          className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-700">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
                               {member.name
                                 .split(" ")
                                 .map((part) => part[0])
@@ -917,7 +963,10 @@ export default function TripPage() {
                                 .slice(0, 2)
                                 .toUpperCase()}
                             </div>
-                            <span>{member.name}</span>
+
+                            <span className="text-sm font-medium text-stone-800">
+                              {member.name}
+                            </span>
                           </div>
 
                           <button
@@ -1059,11 +1108,11 @@ export default function TripPage() {
       />
       {showTravellersSheet && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-3 pt-12 backdrop-blur-[2px] sm:items-center sm:p-6"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
           onClick={() => setShowTravellersSheet(false)}
         >
           <div
-            className="flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            className="sheet-up flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
@@ -1086,7 +1135,31 @@ export default function TripPage() {
               </button>
             </div>
 
-            <div className="min-h-0 overflow-y-auto px-5 py-5">
+            <div className="min-h-0 overflow-y-auto space-y-4 px-5 py-5">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add traveller"
+                  value={newTravellerName}
+                  onChange={(e) => setNewTravellerName(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleAddTraveller}
+                  className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                  Add
+                </button>
+              </div>
+
+              {travellerFormError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {travellerFormError}
+                </div>
+              )}
+
               {tripMembers.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
                   <p className="text-sm text-stone-500">No travellers added yet.</p>
@@ -1096,23 +1169,102 @@ export default function TripPage() {
                   {tripMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
                     >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
-                        {member.name
-                          .split(" ")
-                          .map((part) => part[0])
-                          .join("")
-                          .slice(0, 2)
-                          .toUpperCase()}
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
+                          {member.name
+                            .split(" ")
+                            .map((part) => part[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </div>
+
+                        <span className="text-sm font-medium text-stone-800">
+                          {member.name}
+                        </span>
                       </div>
 
-                      <span className="text-sm font-medium text-stone-800">
-                        {member.name}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTraveller(member.id)}
+                        className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                      >
+                        Remove
+                      </button>
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showStaysSheet && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
+          onClick={() => setShowStaysSheet(false)}
+        >
+          <div
+            className="sheet-up flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
+              <div>
+                <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
+                  Stays
+                </h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Your hotel stays and nights.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowStaysSheet(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
+                aria-label="Close stays"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="min-h-0 overflow-y-auto space-y-3 px-5 py-5">
+              {hotelStays.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
+                  <p className="text-sm text-stone-500">No hotels booked yet.</p>
+                </div>
+              ) : (
+                hotelStays.map((stay) => (
+                  <div
+                    key={stay.id}
+                    className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-base font-semibold text-stone-900">
+                          {stay.hotelName}
+                        </p>
+
+                        <p className="mt-1 text-sm text-stone-500">
+                          {formatTripDateRange(stay.startTime, stay.endTime)}
+                        </p>
+
+                        {stay.address && (
+                          <p className="mt-2 text-sm text-stone-600">
+                            {stay.address}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="shrink-0 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm">
+                        {stay.nights} {stay.nights === 1 ? "night" : "nights"}
+                      </div>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>
