@@ -333,10 +333,10 @@ export default function HomePage() {
 
         <div className="mt-3 max-w-md">
           <p className="text-sm text-stone-500 sm:text-base">
-            Plan, view, and manage every part of your trip —
+            Plan it. See it. Enjoy it.
           </p>
           <p className="text-sm text-stone-500 sm:text-base">
-            from flights and stays to dining plans and the details in between.
+            Where every journey comes together.
           </p>
         </div>
 
