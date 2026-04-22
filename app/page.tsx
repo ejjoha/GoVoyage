@@ -327,7 +327,7 @@ export default function HomePage() {
           <img
             src="/logos/app-hero-logo.png"
             alt="Travel Organizer"
-            className="h-52 w-auto sm:h-64"
+            className="h-48 w-auto sm:h-64"
           />
         </div>
 

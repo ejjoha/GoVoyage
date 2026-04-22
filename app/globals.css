@@ -20,7 +20,7 @@ body {
 
 body {
   background: var(--background);
-  background-image: radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.015) 1px, transparent 1px);
   background-size: 20px 20px;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
@@ -41,6 +41,7 @@ input[type="datetime-local"] {
 
 .no-spinner {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 @keyframes sheetUp {
