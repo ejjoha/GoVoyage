@@ -47,7 +47,7 @@ export default function TripHero({
           >
             <img
               src="/icons/back.svg"
-              alt="Back"
+              alt=""
               className="h-5 w-5 opacity-80"
             />
           </Link>
@@ -66,7 +66,7 @@ export default function TripHero({
           >
             <img
               src="/icons/insideedit.svg"
-              alt="Edit"
+              alt=""
               className="h-5 w-5 opacity-90"
             />
           </button>
@@ -91,7 +91,7 @@ export default function TripHero({
                   type="button"
                   onClick={stat.onClick}
                   aria-label={stat.ariaLabel || `${stat.label}: ${stat.value}`}
-                  className="rounded-full bg-white/20 px-3 py-1.5 text-xs text-white backdrop-blur-sm transition hover:bg-white/25 active:scale-95 cursor-pointer"
+                  className="cursor-pointer rounded-full bg-white/20 px-3 py-1.5 text-xs text-white backdrop-blur-sm transition hover:bg-white/25 active:bg-white/30 active:scale-95"
                 >
                   <span className="font-semibold">{stat.value}</span>{" "}
                   {stat.label}

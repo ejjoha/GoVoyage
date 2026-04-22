@@ -90,21 +90,23 @@ export default function BookingTimeline({
 
     setExpandedId(bookingId);
 
-    window.setTimeout(() => {
-      const row = rowRefs.current[bookingId];
-      if (!row) return;
+    window.requestAnimationFrame(() => {
+      window.setTimeout(() => {
+        const row = rowRefs.current[bookingId];
+        if (!row) return;
 
-      const rect = row.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const bottomSpacing = 24;
+        const rect = row.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const bottomSpacing = 24;
 
-      if (rect.bottom > viewportHeight - bottomSpacing) {
-        row.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }
-    }, 220);
+        if (rect.bottom > viewportHeight - bottomSpacing) {
+          row.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
+        }
+      }, 50);
+    });
   }
 
   return (
@@ -181,9 +183,8 @@ export default function BookingTimeline({
                                 </span>
 
                                 <span
-                                  className={`flex h-7 w-7 items-center justify-center rounded-full bg-stone-100 text-stone-500 transition-transform duration-300 ${
-                                    isExpanded ? "rotate-180" : "rotate-0"
-                                  }`}
+                                  className={`flex h-7 w-7 items-center justify-center rounded-full bg-stone-100 text-stone-500 transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"
+                                    }`}
                                 >
                                   ⌄
                                 </span>
@@ -214,11 +215,10 @@ export default function BookingTimeline({
                             </button>
 
                             <div
-                              className={`grid transition-all duration-300 ease-in-out ${
-                                isExpanded
+                              className={`grid transition-all duration-300 ease-in-out ${isExpanded
                                   ? "mt-3 grid-rows-[1fr] opacity-100"
                                   : "grid-rows-[0fr] opacity-0"
-                              }`}
+                                }`}
                             >
                               <div className="min-h-0 overflow-hidden">
                                 <div
@@ -529,10 +529,10 @@ export default function BookingTimeline({
                                           value={
                                             booking.end_time
                                               ? `${formatDateTime(
-                                                  booking.start_time
-                                                )} – ${formatDateTime(
-                                                  booking.end_time
-                                                )}`
+                                                booking.start_time
+                                              )} – ${formatDateTime(
+                                                booking.end_time
+                                              )}`
                                               : formatDateTime(booking.start_time)
                                           }
                                         />

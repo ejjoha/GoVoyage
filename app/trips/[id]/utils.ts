@@ -22,7 +22,6 @@ export function getLocationLabel(type: BookingType) {
 }
 
 export function getLocationPlaceholder(type: BookingType) {
-  if (type === "hotel") return "e.g. Downtown Manhattan";
   if (type === "dining") return "e.g. Trastevere";
   return "e.g. Central Park";
 }

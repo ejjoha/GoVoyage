@@ -174,25 +174,37 @@ export default function TripPage() {
     fetchTripMembers();
   }, [id]);
 
-  function handleEscape(event: KeyboardEvent) {
-    if (event.key === "Escape") {
-      setShowTripForm(false);
-      setShowBookingForm(false);
-      setShowTravellersSheet(false);
-      setShowStaysSheet(false);
-      closeConfirm();
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setShowTripForm(false);
+        setShowBookingForm(false);
+        setShowTravellersSheet(false);
+        setShowStaysSheet(false);
+        closeConfirm();
+      }
     }
-  }
 
-  if (
-    showTripForm ||
-    showBookingForm ||
-    showTravellersSheet ||
-    showStaysSheet ||
-    confirmState.open
-  ) {
-    window.addEventListener("keydown", handleEscape);
-  }
+    if (
+      showTripForm ||
+      showBookingForm ||
+      showTravellersSheet ||
+      showStaysSheet ||
+      confirmState.open
+    ) {
+      window.addEventListener("keydown", handleEscape);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [
+    showTripForm,
+    showBookingForm,
+    showTravellersSheet,
+    showStaysSheet,
+    confirmState.open,
+  ]);
 
   function resetTripFormFromTrip() {
     if (!trip) return;
