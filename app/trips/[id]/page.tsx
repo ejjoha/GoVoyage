@@ -715,15 +715,15 @@ export default function TripPage() {
         />
 
         {(tripSuccessMessage || bookingSuccessMessage) && (
-          <div className="mb-5 space-y-3">
+          <div className="fixed left-1/2 top-4 z-[70] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 space-y-3 toast-in">
             {tripSuccessMessage && (
-              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 shadow-lg">
                 {tripSuccessMessage}
               </div>
             )}
 
             {bookingSuccessMessage && (
-              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 shadow-lg">
                 {bookingSuccessMessage}
               </div>
             )}
