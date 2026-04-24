@@ -715,18 +715,20 @@ export default function TripPage() {
         />
 
         {(tripSuccessMessage || bookingSuccessMessage) && (
-          <div className="fixed left-1/2 top-4 z-[70] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 space-y-3 toast-in">
-            {tripSuccessMessage && (
-              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 shadow-lg">
-                {tripSuccessMessage}
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">
+            <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl shadow-sm">
+                ✓
               </div>
-            )}
 
-            {bookingSuccessMessage && (
-              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 shadow-lg">
-                {bookingSuccessMessage}
-              </div>
-            )}
+              <p className="text-lg font-semibold tracking-[-0.02em] text-stone-900">
+                {bookingSuccessMessage || tripSuccessMessage}
+              </p>
+
+              <p className="mt-1 text-sm text-stone-500">
+                Your itinerary has been updated.
+              </p>
+            </div>
           </div>
         )}
 
