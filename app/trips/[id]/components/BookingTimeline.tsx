@@ -95,17 +95,35 @@ export default function BookingTimeline({
         const row = rowRefs.current[bookingId];
         if (!row) return;
 
-        const rect = row.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const bottomSpacing = 24;
+        const offset = 90;
+        const top =
+          row.getBoundingClientRect().top + window.scrollY - offset;
 
-        if (rect.bottom > viewportHeight - bottomSpacing) {
-          row.scrollIntoView({
+        window.setTimeout(() => {
+          const distance = Math.abs(window.scrollY - top);
+
+          if (distance < 8) {
+            window.scrollTo({
+              top: window.scrollY - 40,
+              behavior: "auto",
+            });
+
+            window.setTimeout(() => {
+              window.scrollTo({
+                top,
+                behavior: "smooth",
+              });
+            }, 30);
+
+            return;
+          }
+
+          window.scrollTo({
+            top,
             behavior: "smooth",
-            block: "nearest",
           });
-        }
-      }, 50);
+        }, 100);
+      }, 120);
     });
   }
 
@@ -216,8 +234,8 @@ export default function BookingTimeline({
 
                             <div
                               className={`grid transition-all duration-300 ease-in-out ${isExpanded
-                                  ? "mt-3 grid-rows-[1fr] opacity-100"
-                                  : "grid-rows-[0fr] opacity-0"
+                                ? "mt-3 grid-rows-[1fr] opacity-100"
+                                : "grid-rows-[0fr] opacity-0"
                                 }`}
                             >
                               <div className="min-h-0 overflow-hidden">
@@ -557,18 +575,18 @@ export default function BookingTimeline({
                                       type="button"
                                       onClick={() => onDeleteBooking(booking.id)}
                                       aria-label="Delete booking"
-                                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-red-500 shadow-sm transition hover:bg-white hover:text-red-600 active:scale-95"
+                                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 shadow-sm transition hover:bg-white active:scale-95"
                                     >
-                                      🗑️
+                                      <img src="/icons/delete.svg" alt="" className="h-5 w-5" />
                                     </button>
 
                                     <button
                                       type="button"
                                       onClick={() => onEditBooking(booking)}
                                       aria-label="Edit booking"
-                                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-stone-600 shadow-sm transition hover:bg-white hover:text-stone-900 active:scale-95"
+                                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 shadow-sm transition hover:bg-white active:scale-95"
                                     >
-                                      ✏️
+                                      <img src="/icons/edit.svg" alt="" className="h-5 w-5" />
                                     </button>
                                   </div>
                                 </div>

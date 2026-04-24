@@ -744,8 +744,8 @@ export default function TripPage() {
             href={`/trips/${trip.id}/cost-sharing`}
             className="flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-sm transition active:scale-[0.97]"
           >
-            <span className="text-base">＋</span>
-            Add cost
+            <span className="text-base"></span>
+            Shared expenses
           </a>
         </section>
 

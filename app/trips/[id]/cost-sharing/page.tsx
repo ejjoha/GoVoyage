@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   fetchTripById,
@@ -62,6 +62,8 @@ export default function TripCostSharingPage() {
     null
   );
 
+  const expenseFormBottomRef = useRef<HTMLDivElement | null>(null);
+
   const [showExpenses, setShowExpenses] = useState(false);
 
   function getMemberName(memberId: number) {
@@ -108,6 +110,19 @@ export default function TripCostSharingPage() {
     setExpenses(data);
     setIsLoadingExpenses(false);
   }
+
+  useEffect(() => {
+    if (!paidByMemberId) return;
+
+    const timeout = setTimeout(() => {
+      expenseFormBottomRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }, 180); // 👈 syncs with preview appearing
+
+    return () => clearTimeout(timeout);
+  }, [paidByMemberId]);
 
   useEffect(() => {
     if (!Number.isFinite(id)) return;
@@ -214,24 +229,24 @@ export default function TripCostSharingPage() {
 
     const result = editingExpenseId
       ? await updateExpense({
-          expenseId: editingExpenseId,
-          tripId: id,
-          title: title.trim(),
-          amount: parsedAmount,
-          currency,
-          expenseDate: date,
-          paidByMemberId,
-          participantIds,
-        })
+        expenseId: editingExpenseId,
+        tripId: id,
+        title: title.trim(),
+        amount: parsedAmount,
+        currency,
+        expenseDate: date,
+        paidByMemberId,
+        participantIds,
+      })
       : await createExpense({
-          tripId: id,
-          title: title.trim(),
-          amount: parsedAmount,
-          currency,
-          expenseDate: date,
-          paidByMemberId,
-          participantIds,
-        });
+        tripId: id,
+        title: title.trim(),
+        amount: parsedAmount,
+        currency,
+        expenseDate: date,
+        paidByMemberId,
+        participantIds,
+      });
 
     if (!result.success) {
       alert(result.message);
@@ -378,8 +393,19 @@ export default function TripCostSharingPage() {
         </div>
 
         {successMessage && (
-          <div className="mt-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-            {successMessage}
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-green-200 bg-white px-4 py-3 shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+              ✓
+            </div>
+
+            <div className="text-sm">
+              <p className="font-semibold text-stone-900">
+                Expense saved
+              </p>
+              <p className="text-stone-500">
+                Your expense has been added successfully.
+              </p>
+            </div>
           </div>
         )}
 
@@ -399,9 +425,8 @@ export default function TripCostSharingPage() {
             </div>
 
             <span
-              className={`text-xl text-stone-400 transition-transform ${
-                showExpenses ? "rotate-180" : "rotate-0"
-              }`}
+              className={`text-xl text-stone-400 transition-transform ${showExpenses ? "rotate-180" : "rotate-0"
+                }`}
             >
               ⌄
             </span>
@@ -458,9 +483,8 @@ export default function TripCostSharingPage() {
                             </div>
 
                             <span
-                              className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-500 transition-transform duration-300 ${
-                                isExpanded ? "rotate-180" : "rotate-0"
-                              }`}
+                              className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-500 transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"
+                                }`}
                             >
                               ⌄
                             </span>
@@ -468,11 +492,10 @@ export default function TripCostSharingPage() {
                         </button>
 
                         <div
-                          className={`grid transition-all duration-300 ease-in-out ${
-                            isExpanded
-                              ? "grid-rows-[1fr] opacity-100"
-                              : "grid-rows-[0fr] opacity-0"
-                          }`}
+                          className={`grid transition-all duration-300 ease-in-out ${isExpanded
+                            ? "grid-rows-[1fr] opacity-100"
+                            : "grid-rows-[0fr] opacity-0"
+                            }`}
                         >
                           <div className="min-h-0 overflow-hidden">
                             <div className="border-t border-stone-200 bg-stone-50/70 px-4 py-4">
@@ -753,25 +776,27 @@ export default function TripCostSharingPage() {
                 </div>
 
                 {currentPreview && (
-                  <div className="space-y-3 rounded-[1.5rem] bg-rose-50 p-4">
-                    <h3 className="text-base font-semibold text-rose-800">
-                      Current preview
+                  <div className="space-y-3 rounded-[1.5rem] border border-stone-200 bg-white p-4 shadow-sm">
+                    <h3 className="text-base font-semibold text-stone-900">
+                      Expense summary
                     </h3>
 
-                    <p className="text-sm text-rose-700">
+                    <p className="text-sm text-stone-600">
                       Each person pays:{" "}
-                      {formatAmount(currentPreview.sharePerPerson)}{" "}
-                      {currentPreview.currency}
+                      <span className="font-semibold text-stone-900">
+                        {formatAmount(currentPreview.sharePerPerson)}{" "}
+                        {currentPreview.currency}
+                      </span>
                     </p>
 
                     {!currentPreview.payerIncluded && (
-                      <p className="text-sm text-amber-700">
+                      <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
                         Note: the payer is not included in “Shared between”.
                       </p>
                     )}
 
                     {currentPreview.oweLines.length === 0 ? (
-                      <p className="text-sm text-blue-700">
+                      <p className="rounded-xl bg-blue-50 px-3 py-2 text-sm text-blue-800">
                         No one owes anything yet.
                       </p>
                     ) : (
@@ -779,9 +804,9 @@ export default function TripCostSharingPage() {
                         {currentPreview.oweLines.map((item, index) => (
                           <div
                             key={index}
-                            className="rounded-xl bg-white px-3 py-3 text-sm text-stone-700"
+                            className="rounded-xl bg-stone-50 px-3 py-3 text-sm text-stone-700"
                           >
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-3">
                               <span className="text-stone-600">
                                 <span className="font-semibold text-stone-900">
                                   {item.from}
@@ -792,7 +817,7 @@ export default function TripCostSharingPage() {
                                 </span>
                               </span>
 
-                              <span className="font-semibold text-blue-700">
+                              <span className="shrink-0 font-semibold text-stone-900">
                                 {formatAmount(item.amount)} {item.currency}
                               </span>
                             </div>
@@ -820,6 +845,7 @@ export default function TripCostSharingPage() {
                     {editingExpenseId ? "Update expense" : "Save expense"}
                   </button>
                 </div>
+                <div ref={expenseFormBottomRef} />
               </form>
             </div>
           </div>
@@ -855,7 +881,7 @@ export default function TripCostSharingPage() {
               </button>
             </div>
 
-            <div className="min-h-0 overflow-y-auto space-y-3 px-5 py-5">
+            <div className="min-h-0 space-y-3 overflow-y-auto px-5 py-5">
               {totalCostByCurrency.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
                   <p className="text-sm text-stone-500">
