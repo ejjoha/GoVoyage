@@ -22,6 +22,7 @@ import {
   formatExpenseDate,
   getTodayDateString,
 } from "./formatters";
+import ConfirmModal from "../components/ConfirmModal";
 
 const currencyOptions: Currency[] = [
   "EUR",
@@ -57,10 +58,21 @@ export default function TripCostSharingPage() {
   );
 
   const [successMessage, setSuccessMessage] = useState("");
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState("");
   const [editingExpenseId, setEditingExpenseId] = useState<number | null>(null);
   const [expandedExpenseId, setExpandedExpenseId] = useState<number | null>(
     null
   );
+
+  const [confirmState, setConfirmState] = useState({
+    open: false,
+    title: "",
+    description: "",
+    confirmLabel: "",
+    cancelLabel: "",
+    tone: "default",
+    onConfirm: () => { },
+  });
 
   const expenseFormBottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -72,6 +84,24 @@ export default function TripCostSharingPage() {
     );
   }
 
+  function openConfirm(config: any) {
+    setConfirmState({
+      open: true,
+      ...config,
+    });
+  }
+
+  function closeConfirm() {
+    setConfirmState({
+      open: false,
+      title: "",
+      description: "",
+      confirmLabel: "",
+      cancelLabel: "",
+      tone: "default",
+      onConfirm: () => { },
+    });
+  }
   async function fetchTrip() {
     setIsLoadingTrip(true);
     const data = await fetchTripById(id);
@@ -267,25 +297,39 @@ export default function TripCostSharingPage() {
   }
 
   async function handleDeleteExpense(expenseId: number) {
-    const shouldDelete = confirm("Delete this expense?");
-    if (!shouldDelete) return;
+    openConfirm({
+      title: "Delete this expense?",
+      description: "This will remove the expense permanently.",
+      confirmLabel: "Delete expense",
+      cancelLabel: "Keep expense",
+      tone: "danger",
+      onConfirm: async () => {
+        const result = await deleteExpenseById(expenseId);
 
-    const result = await deleteExpenseById(expenseId);
+        if (!result.success) {
+          alert(result.message);
+          return;
+        }
 
-    if (!result.success) {
-      alert(result.message);
-      return;
-    }
+        closeConfirm();
 
-    if (editingExpenseId === expenseId) {
-      closeExpenseForm();
-    }
+        if (editingExpenseId === expenseId) {
+          closeExpenseForm();
+        }
 
-    if (expandedExpenseId === expenseId) {
-      setExpandedExpenseId(null);
-    }
+        if (expandedExpenseId === expenseId) {
+          setExpandedExpenseId(null);
+        }
 
-    await fetchExpenses();
+        await fetchExpenses();
+
+        setDeleteSuccessMessage("Expense deleted");
+
+        setTimeout(() => {
+          setDeleteSuccessMessage("");
+        }, 2000);
+      },
+    });
   }
 
   const currentPreview = useMemo(() => {
@@ -392,45 +436,56 @@ export default function TripCostSharingPage() {
           </button>
         </div>
 
-        {successMessage && (
-          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-green-200 bg-white px-4 py-3 shadow-sm">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
-              ✓
-            </div>
+        {(successMessage || deleteSuccessMessage) && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">
+            <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl shadow-sm">
+                ✓
+              </div>
 
-            <div className="text-sm">
-              <p className="font-semibold text-stone-900">
-                Expense saved
+              <p className="text-lg font-semibold tracking-[-0.02em] text-stone-900">
+                {successMessage || deleteSuccessMessage}
               </p>
-              <p className="text-stone-500">
-                Your expense has been added successfully.
+
+              <p className="mt-1 text-sm text-stone-500">
+                {deleteSuccessMessage
+                  ? "The expense has been removed."
+                  : "Expense saved successfully."}
               </p>
             </div>
           </div>
         )}
 
         <div className="mt-8">
-          <button
-            type="button"
-            onClick={() => setShowExpenses((current) => !current)}
-            className="flex w-full items-center justify-between rounded-3xl border border-stone-200 bg-white px-4 py-4 text-left shadow-sm transition hover:bg-stone-50"
-          >
-            <div>
-              <h2 className="text-lg font-semibold text-stone-900">Expenses</h2>
-              <p className="mt-1 text-sm text-stone-500">
-                {showExpenses
-                  ? "Hide the expense list"
-                  : "Show all saved expenses"}
-              </p>
-            </div>
-
-            <span
-              className={`text-xl text-stone-400 transition-transform ${showExpenses ? "rotate-180" : "rotate-0"
-                }`}
+          <div className="mb-2 border-b border-stone-200 pb-2">
+            <button
+              type="button"
+              onClick={() => setShowExpenses((current) => !current)}
+              className="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition hover:bg-stone-100 active:scale-[0.99]"
             >
-              ⌄
-            </span>
-          </button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">💸</span>
+                  <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
+                    Expenses
+                  </h2>
+                </div>
+
+                <p className="mt-1 text-sm text-stone-500">
+                  {showExpenses
+                    ? "Hide the expense list"
+                    : "Show all saved expenses"}
+                </p>
+              </div>
+
+              <span
+                className={`flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm text-stone-500 transition-all duration-200 ${showExpenses ? "rotate-180" : ""
+                  }`}
+              >
+                ⌄
+              </span>
+            </button>
+          </div>
 
           {showExpenses && (
             <div className="mt-4">
@@ -913,7 +968,22 @@ export default function TripCostSharingPage() {
             </div>
           </div>
         </div>
+
       )}
+      <ConfirmModal
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmLabel={confirmState.confirmLabel}
+        cancelLabel={confirmState.cancelLabel}
+        tone={confirmState.tone as "default" | "danger"}
+        onCancel={closeConfirm}
+        onConfirm={() => {
+          if (confirmState.open) {
+            confirmState.onConfirm();
+          }
+        }}
+      />
     </>
   );
 }
