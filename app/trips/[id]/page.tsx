@@ -729,13 +729,9 @@ export default function TripPage() {
               </div>
 
               <p className="text-lg font-semibold tracking-[-0.02em] text-stone-900">
-                {bookingSuccessMessage || tripSuccessMessage}
+                {bookingSuccessMessage || tripSuccessMessage || deleteSuccessMessage}
               </p>
 
-              <p className="mt-1 text-sm text-stone-500">
-                Your itinerary has been updated.
-              </p>
-              
               <p className="mt-1 text-sm text-stone-500">
                 {deleteSuccessMessage
                   ? "The booking has been removed."
