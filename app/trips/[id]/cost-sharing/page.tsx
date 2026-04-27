@@ -83,7 +83,24 @@ export default function TripCostSharingPage() {
       tripMembers.find((member) => member.id === memberId)?.name || "Unknown"
     );
   }
+  function getExpenseIcon(title: string) {
+    const t = title.toLowerCase();
 
+    if (t.includes("food") || t.includes("restaurant") || t.includes("dinner"))
+      return "🍽️";
+    if (t.includes("taxi") || t.includes("uber") || t.includes("transport"))
+      return "🚕";
+    if (t.includes("flight") || t.includes("plane"))
+      return "✈️";
+    if (t.includes("hotel") || t.includes("stay"))
+      return "🏨";
+    if (t.includes("coffee") || t.includes("cafe"))
+      return "☕";
+    if (t.includes("shopping"))
+      return "🛍️";
+
+    return "💸"; // default
+  }
   function openConfirm(config: any) {
     setConfirmState({
       open: true,
@@ -323,7 +340,7 @@ export default function TripCostSharingPage() {
 
         await fetchExpenses();
 
-        setDeleteSuccessMessage("Expense deleted");
+        setDeleteSuccessMessage("Expense removed");
 
         setTimeout(() => {
           setDeleteSuccessMessage("");
@@ -490,39 +507,48 @@ export default function TripCostSharingPage() {
           </div>
         )}
 
-        <div className="mt-8">
-          <div className="mb-2 border-b border-stone-200 pb-2">
-            <button
-              type="button"
-              onClick={() => setShowExpenses((current) => !current)}
-              className="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition hover:bg-stone-100 active:scale-[0.99]"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">💸</span>
+        <div className="mt-8 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/85 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setShowExpenses((current) => !current)}
+            className="group flex w-full items-center justify-between px-4 py-4 text-left transition hover:bg-stone-50 active:scale-[0.99]"
+          >
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-lg">
+                  💸
+                </span>
+
+                <div>
                   <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
                     Expenses
                   </h2>
-                </div>
 
-                <p className="mt-1 text-sm text-stone-500">
-                  {showExpenses
-                    ? "Hide the expense list"
-                    : "Show all saved expenses"}
-                </p>
+                  <p className="mt-0.5 text-sm text-stone-500">
+                    {showExpenses
+                      ? "Hide the expense list"
+                      : "Show all saved expenses"}
+                  </p>
+                </div>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="hidden text-xs font-semibold text-stone-400 sm:inline">
+                {showExpenses ? "Collapse" : "Expand"}
+              </span>
 
               <span
-                className={`flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm text-stone-500 transition-all duration-200 ${showExpenses ? "rotate-180" : ""
+                className={`flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-stone-500 shadow-sm transition-all duration-200 group-hover:bg-stone-200 ${showExpenses ? "rotate-180" : ""
                   }`}
               >
                 ⌄
               </span>
-            </button>
-          </div>
+            </div>
+          </button>
 
           {showExpenses && (
-            <div className="mt-4">
+            <div className="border-t border-stone-200 px-4 pb-4">
               {isLoadingExpenses ? (
                 <div className="rounded-2xl border border-stone-200 bg-white p-6 text-sm text-stone-500 shadow-sm">
                   Loading expenses...
@@ -554,7 +580,7 @@ export default function TripCostSharingPage() {
                         return (
                           <div
                             key={expense.id}
-                            className="rounded-2xl border border-stone-200 bg-white shadow-sm"
+                            className="rounded-2xl border border-stone-200 bg-white/90 shadow-sm"
                           >
                             <button
                               type="button"
@@ -564,17 +590,23 @@ export default function TripCostSharingPage() {
                               className="w-full px-4 py-4 text-left"
                             >
                               <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  <h3 className="truncate text-base font-semibold text-stone-900">
-                                    {expense.title}
-                                  </h3>
+                                <div className="flex min-w-0 items-start gap-3">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-lg">
+                                    {getExpenseIcon(expense.title)}
+                                  </div>
 
-                                  <p className="mt-1 text-sm text-stone-500">
-                                    Paid by {getMemberName(expense.paid_by_member_id)}
-                                  </p>
+                                  <div className="min-w-0">
+                                    <h3 className="truncate text-base font-semibold text-stone-900">
+                                      {expense.title}
+                                    </h3>
+
+                                    <p className="mt-1 text-sm text-stone-500">
+                                      Paid by {getMemberName(expense.paid_by_member_id)}
+                                    </p>
+                                  </div>
                                 </div>
 
-                                <div className="flex flex-col items-end">
+                                <div className="flex shrink-0 flex-col items-end">
                                   <span className="text-base font-semibold text-stone-900">
                                     {formatAmount(Number(expense.amount))} {expense.currency}
                                   </span>
@@ -660,7 +692,7 @@ export default function TripCostSharingPage() {
             </div>
           )}
         </div>
-
+        
         <div className="mt-8 space-y-4">
           <div>
             <div className="flex items-start justify-between gap-3">
@@ -734,7 +766,7 @@ export default function TripCostSharingPage() {
             </div>
           )}
         </div>
-      </main>
+      </main >
 
       {showExpenseForm && (
         <div
@@ -960,71 +992,74 @@ export default function TripCostSharingPage() {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
-      {showTotalCostSheet && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
-          onClick={() => setShowTotalCostSheet(false)}
-        >
+      {
+        showTotalCostSheet && (
           <div
-            className="sheet-up flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
+            onClick={() => setShowTotalCostSheet(false)}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
-              <div>
-                <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
-                  Total cost
-                </h2>
-                <p className="mt-1 text-sm text-stone-500">
-                  Tracked separately by currency.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowTotalCostSheet(false)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
-                aria-label="Close total cost"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="min-h-0 space-y-3 overflow-y-auto px-5 py-5">
-              {totalCostByCurrency.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
-                  <p className="text-sm text-stone-500">
-                    No expenses added yet.
+            <div
+              className="sheet-up flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
+                <div>
+                  <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
+                    Total cost
+                  </h2>
+                  <p className="mt-1 text-sm text-stone-500">
+                    Tracked separately by currency.
                   </p>
                 </div>
-              ) : (
-                <>
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">
-                    Total by currency
+
+                <button
+                  type="button"
+                  onClick={() => setShowTotalCostSheet(false)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
+                  aria-label="Close total cost"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="min-h-0 space-y-3 overflow-y-auto px-5 py-5">
+                {totalCostByCurrency.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
+                    <p className="text-sm text-stone-500">
+                      No expenses added yet.
+                    </p>
                   </div>
-
-                  {totalCostByCurrency.map((item) => (
-                    <div
-                      key={item.currency}
-                      className="flex items-center justify-between border-b border-stone-200 py-3 last:border-b-0"
-                    >
-                      <span className="text-sm font-medium text-stone-600">
-                        {item.currency}
-                      </span>
-
-                      <span className="text-sm font-semibold text-stone-900">
-                        {formatAmount(item.total)}
-                      </span>
+                ) : (
+                  <>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">
+                      Total by currency
                     </div>
-                  ))}
-                </>
-              )}
+
+                    {totalCostByCurrency.map((item) => (
+                      <div
+                        key={item.currency}
+                        className="flex items-center justify-between border-b border-stone-200 py-3 last:border-b-0"
+                      >
+                        <span className="text-sm font-medium text-stone-600">
+                          {item.currency}
+                        </span>
+
+                        <span className="text-sm font-semibold text-stone-900">
+                          {formatAmount(item.total)}
+                        </span>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-      )}
+        )
+      }
       <ConfirmModal
         open={confirmState.open}
         title={confirmState.title}
