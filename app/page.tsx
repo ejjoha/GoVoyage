@@ -1,46 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-
-type Trip = {
-  id: number;
-  title: string;
-  destination: string;
-  start_date: string;
-  end_date: string;
-  image_url?: string;
-};
+import { TripCard } from "@/components/TripCard";
+import { PastTripCard } from "@/components/PastTripCard";
+import { addTripMembers, createTrip, getTrips } from "@/services/trips";
+import type { Trip } from "@/types/trip";
 
 type NewTraveller = {
   id: number;
   name: string;
 };
-
-function formatTripDateRange(start?: string, end?: string) {
-  if (!start || !end) return "";
-
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-
-  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-    return "";
-  }
-
-  const startDay = startDate.getDate();
-  const endDay = endDate.getDate();
-
-  const startMonth = startDate.toLocaleDateString("en-GB", { month: "short" });
-  const endMonth = endDate.toLocaleDateString("en-GB", { month: "short" });
-
-  if (startMonth === endMonth) {
-    return `${startDay}–${endDay} ${startMonth}`;
-  }
-
-  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
-}
 
 function getTodayDateString() {
   const today = new Date();
@@ -48,112 +18,6 @@ function getTodayDateString() {
   const month = String(today.getMonth() + 1).padStart(2, "0");
   const day = String(today.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-function TripCard({ trip }: { trip: Trip }) {
-  return (
-    <Link
-      href={`/trips/${trip.id}`}
-      className="group block overflow-hidden rounded-[2rem] border border-stone-200/70 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] active:scale-[0.985]"
-    >
-      {trip.image_url ? (
-        <div className="relative h-56 w-full overflow-hidden">
-          <img
-            src={trip.image_url}
-            alt={trip.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
-
-          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-            <div className="inline-flex rounded-full border border-white/40 bg-white/85 px-3 py-1.5 text-xs font-semibold text-stone-700 backdrop-blur-sm">
-              {trip.destination}
-            </div>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-stone-700 shadow-sm backdrop-blur-sm transition-transform duration-300 group-hover:translate-x-0.5">
-              →
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="border-b border-stone-100 bg-gradient-to-r from-stone-50 to-stone-100/70 px-5 py-5">
-          <div className="inline-flex rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-sm">
-            {trip.destination}
-          </div>
-        </div>
-      )}
-
-      <div className="p-5 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h2 className="truncate text-[1.35rem] font-semibold tracking-[-0.02em] text-stone-900">
-              {trip.title}
-            </h2>
-
-            <p className="mt-2 text-sm font-medium text-stone-500">
-              {formatTripDateRange(trip.start_date, trip.end_date)}
-            </p>
-          </div>
-
-          {!trip.image_url && (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-400 transition-colors duration-200 group-hover:bg-stone-900 group-hover:text-white">
-              →
-            </div>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function PastTripCard({ trip }: { trip: Trip }) {
-  return (
-    <Link
-      href={`/trips/${trip.id}`}
-      className="group block overflow-hidden rounded-[1.75rem] border border-stone-200/60 bg-white/90 shadow-[0_6px_20px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] active:scale-[0.985]"
-    >
-      {trip.image_url ? (
-        <div className="relative h-44 w-full overflow-hidden">
-          <img
-            src={trip.image_url}
-            alt={trip.title}
-            className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:opacity-100"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
-
-          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
-            <div className="inline-flex rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-stone-700 backdrop-blur-sm">
-              {trip.destination}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="border-b border-stone-100 bg-stone-50 px-5 py-4">
-          <div className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-medium text-stone-600 shadow-sm">
-            {trip.destination}
-          </div>
-        </div>
-      )}
-
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="truncate text-lg font-medium text-stone-800">
-              {trip.title}
-            </h2>
-
-            <p className="mt-1 text-sm text-stone-500">
-              {formatTripDateRange(trip.start_date, trip.end_date)}
-            </p>
-          </div>
-
-          <div className="shrink-0 text-stone-300 transition-colors group-hover:text-stone-500">
-            →
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
 }
 
 export default function HomePage() {
@@ -177,19 +41,8 @@ export default function HomePage() {
     setErrorMessage("");
 
     try {
-      const { data, error } = await supabase
-        .from("trips")
-        .select("*")
-        .order("start_date", { ascending: true });
-
-      if (error) {
-        console.error("Error loading trips:", error);
-        setErrorMessage(error.message || "Could not load trips");
-        setTrips([]);
-        return;
-      }
-
-      setTrips((data || []) as Trip[]);
+      const data = await getTrips();
+      setTrips(data as Trip[]);
     } catch (err) {
       console.error("Unexpected error loading trips:", err);
 
@@ -255,38 +108,22 @@ export default function HomePage() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from("trips")
-        .insert({
-          title: newTitle.trim(),
-          destination: newDestination.trim(),
-          image_url: newImageUrl.trim() || null,
-          start_date: newStartDate,
-          end_date: newEndDate,
-        })
-        .select()
-        .single();
+      const data = await createTrip({
+        title: newTitle.trim(),
+        destination: newDestination.trim(),
+        image_url: newImageUrl.trim() || undefined,
+        start_date: newStartDate,
+        end_date: newEndDate,
+      });
 
-      if (error || !data) {
-        console.error(error);
-        alert("Failed to create trip");
-        return;
-      }
-
-      if (newTravellers.length > 0) {
-        const travellerRows = newTravellers.map((traveller) => ({
-          trip_id: data.id,
-          name: traveller.name,
-        }));
-
-        const { error: memberError } = await supabase
-          .from("trip_members")
-          .insert(travellerRows);
-
-        if (memberError) {
-          console.error("Error saving travellers:", memberError);
-          alert("Trip created, but travellers could not be saved");
-        }
+      try {
+        await addTripMembers(
+          data.id,
+          newTravellers.map((t) => ({ name: t.name }))
+        );
+      } catch (err) {
+        console.error("Error saving travellers:", err);
+        alert("Trip created, but travellers could not be saved");
       }
 
       setNewTitle("");
