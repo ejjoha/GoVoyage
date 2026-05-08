@@ -23,6 +23,9 @@ import {
   getTodayDateString,
 } from "./formatters";
 import ConfirmModal from "../components/ConfirmModal";
+import ExpenseItem from "./components/ExpenseItem";
+import ExpenseList from "./components/ExpenseList";
+import ExpenseForm from "./components/ExpenseForm";
 
 const currencyOptions: Currency[] = [
   "EUR",
@@ -539,8 +542,7 @@ export default function TripCostSharingPage() {
               </span>
 
               <span
-                className={`flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-stone-500 shadow-sm transition-all duration-200 group-hover:bg-stone-200 ${showExpenses ? "rotate-180" : ""
-                  }`}
+                className={`flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white shadow-md transition-all duration-200 hover:bg-rose-600 ${showExpenses ? "rotate-180" : ""}`}
               >
                 ⌄
               </span>
@@ -558,141 +560,21 @@ export default function TripCostSharingPage() {
                   <p className="text-sm text-stone-500">No expenses added yet.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {Object.entries(groupedExpensesByDate).map(([dateKey, dayExpenses]) => (
-                    <div key={dateKey} className="space-y-1">
-                      <h3 className="px-1 pt-3 pb-1 text-sm font-semibold text-stone-900">
-                        {formatExpenseDate(dateKey)}
-                      </h3>
 
-                      {dayExpenses.map((expense) => {
-                        const participantNames = expense.participants.map((participant) =>
-                          getMemberName(participant.member_id)
-                        );
-
-                        const sharePerPerson =
-                          expense.participants.length > 0
-                            ? Number(expense.amount) / expense.participants.length
-                            : 0;
-
-                        const isExpanded = expandedExpenseId === expense.id;
-
-                        return (
-                          <div
-                            key={expense.id}
-                            className="rounded-2xl border border-stone-200 bg-white/90 shadow-sm"
-                          >
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setExpandedExpenseId(isExpanded ? null : expense.id)
-                              }
-                              className="w-full px-4 py-4 text-left"
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex min-w-0 items-start gap-3">
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-lg">
-                                    {getExpenseIcon(expense.title)}
-                                  </div>
-
-                                  <div className="min-w-0">
-                                    <h3 className="truncate text-base font-semibold text-stone-900">
-                                      {expense.title}
-                                    </h3>
-
-                                    <p className="mt-1 text-sm text-stone-500">
-                                      Paid by {getMemberName(expense.paid_by_member_id)}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="flex shrink-0 flex-col items-end">
-                                  <span className="text-base font-semibold text-stone-900">
-                                    {formatAmount(Number(expense.amount))} {expense.currency}
-                                  </span>
-
-                                  <span
-                                    className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 text-xs text-stone-500 transition-transform ${isExpanded ? "rotate-180" : ""
-                                      }`}
-                                  >
-                                    ⌄
-                                  </span>
-                                </div>
-                              </div>
-                            </button>
-
-                            <div
-                              className={`grid transition-all duration-300 ease-in-out ${isExpanded
-                                ? "grid-rows-[1fr] opacity-100"
-                                : "grid-rows-[0fr] opacity-0"
-                                }`}
-                            >
-                              <div className="min-h-0 overflow-hidden">
-                                <div className="border-t border-stone-200 bg-stone-50/70 px-4 py-4">
-                                  <div className="space-y-2">
-                                    <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
-                                      <span className="text-stone-500">Paid by</span>
-                                      <span className="break-words text-right font-medium text-stone-800">
-                                        {getMemberName(expense.paid_by_member_id)}
-                                      </span>
-                                    </div>
-
-                                    <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
-                                      <span className="text-stone-500">Shared between</span>
-                                      <span className="break-words text-right font-medium text-stone-800">
-                                        {participantNames.join(", ")}
-                                      </span>
-                                    </div>
-
-                                    <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
-                                      <span className="text-stone-500">Each person pays</span>
-                                      <span className="break-words text-right font-medium text-stone-800">
-                                        {formatAmount(sharePerPerson)} {expense.currency}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  <div className="mt-4 flex items-center justify-between border-t border-stone-200 pt-4">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeleteExpense(expense.id)}
-                                      aria-label="Delete expense"
-                                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-50 transition hover:bg-red-100 active:scale-95"
-                                    >
-                                      <img
-                                        src="/icons/delete.svg"
-                                        alt=""
-                                        className="h-4 w-4 opacity-80"
-                                      />
-                                    </button>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => handleEditExpense(expense)}
-                                      aria-label="Edit expense"
-                                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white transition hover:bg-stone-100 active:scale-95"
-                                    >
-                                      <img
-                                        src="/icons/edit.svg"
-                                        alt=""
-                                        className="h-4 w-4 opacity-70"
-                                      />
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
+                <ExpenseList
+                  groupedExpensesByDate={groupedExpensesByDate}
+                  expandedExpenseId={expandedExpenseId}
+                  setExpandedExpenseId={setExpandedExpenseId}
+                  getMemberName={getMemberName}
+                  getExpenseIcon={getExpenseIcon}
+                  handleEditExpense={handleEditExpense}
+                  handleDeleteExpense={handleDeleteExpense}
+                />
               )}
             </div>
           )}
         </div>
-        
+
         <div className="mt-8 space-y-4">
           <div>
             <div className="flex items-start justify-between gap-3">
@@ -798,197 +680,28 @@ export default function TripCostSharingPage() {
             </div>
 
             <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
-              <form onSubmit={handleSaveExpense} className="space-y-4 pb-2">
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Expense title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-                    disabled={tripMembers.length === 0}
-                  />
-
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="Expense amount"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-                    disabled={tripMembers.length === 0}
-                  />
-
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-stone-700">
-                      Expense currency
-                    </label>
-                    <select
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value as Currency)}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                      disabled={tripMembers.length === 0}
-                    >
-                      {currencyOptions.map((currencyCode) => (
-                        <option key={currencyCode} value={currencyCode}>
-                          {currencyCode}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-stone-700">
-                      Date
-                    </label>
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                      disabled={tripMembers.length === 0}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-stone-700">
-                      Paid by
-                    </label>
-                    <select
-                      value={paidByMemberId ?? ""}
-                      onChange={(e) =>
-                        setPaidByMemberId(
-                          e.target.value ? Number(e.target.value) : null
-                        )
-                      }
-                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                      disabled={tripMembers.length === 0}
-                    >
-                      <option value="">Choose traveller</option>
-                      {tripMembers.map((member) => (
-                        <option key={member.id} value={member.id}>
-                          {member.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <label className="text-sm font-semibold text-stone-900">
-                        Shared between
-                      </label>
-
-                      {tripMembers.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSelectedParticipantIds(
-                              tripMembers.map((member) => member.id)
-                            )
-                          }
-                          className="text-sm font-medium text-stone-500 underline"
-                        >
-                          Select all
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="mt-3 space-y-2">
-                      {tripMembers.map((member) => {
-                        const checked = selectedParticipantIds.includes(member.id);
-
-                        return (
-                          <label
-                            key={member.id}
-                            className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-sm text-stone-800"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => toggleParticipant(member.id)}
-                              disabled={tripMembers.length === 0}
-                            />
-                            <span>{member.name}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {currentPreview && (
-                  <div className="space-y-3 rounded-[1.5rem] border border-stone-200 bg-white p-4 shadow-sm">
-                    <h3 className="text-base font-semibold text-stone-900">
-                      Expense summary
-                    </h3>
-
-                    <p className="text-sm text-stone-600">
-                      Each person pays:{" "}
-                      <span className="font-semibold text-stone-900">
-                        {formatAmount(currentPreview.sharePerPerson)}{" "}
-                        {currentPreview.currency}
-                      </span>
-                    </p>
-
-                    {!currentPreview.payerIncluded && (
-                      <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                        Note: the payer is not included in “Shared between”.
-                      </p>
-                    )}
-
-                    {currentPreview.oweLines.length === 0 ? (
-                      <p className="rounded-xl bg-blue-50 px-3 py-2 text-sm text-blue-800">
-                        No one owes anything yet.
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {currentPreview.oweLines.map((item, index) => (
-                          <div
-                            key={index}
-                            className="rounded-xl bg-stone-50 px-3 py-3 text-sm text-stone-700"
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="text-stone-600">
-                                <span className="font-semibold text-stone-900">
-                                  {item.from}
-                                </span>
-                                {" owes "}
-                                <span className="font-semibold text-stone-900">
-                                  {item.to}
-                                </span>
-                              </span>
-
-                              <span className="shrink-0 font-semibold text-stone-900">
-                                {formatAmount(item.amount)} {item.currency}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex flex-col-reverse gap-3 border-t border-stone-200 pt-4 sm:flex-row sm:justify-end">
-                  <button
-                    type="button"
-                    onClick={closeExpenseForm}
-                    className="rounded-xl bg-stone-100 px-5 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-200"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={tripMembers.length === 0}
-                    className="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:bg-stone-300"
-                  >
-                    {editingExpenseId ? "Update expense" : "Save expense"}
-                  </button>
-                </div>
-                <div ref={expenseFormBottomRef} />
-              </form>
+              <ExpenseForm
+                editingExpenseId={editingExpenseId}
+                title={title}
+                setTitle={setTitle}
+                amount={amount}
+                setAmount={setAmount}
+                currency={currency}
+                setCurrency={setCurrency}
+                date={date}
+                setDate={setDate}
+                paidByMemberId={paidByMemberId}
+                setPaidByMemberId={setPaidByMemberId}
+                selectedParticipantIds={selectedParticipantIds}
+                toggleParticipant={toggleParticipant}
+                setSelectedParticipantIds={setSelectedParticipantIds}
+                tripMembers={tripMembers}
+                currencyOptions={currencyOptions}
+                currentPreview={currentPreview}
+                onSubmit={handleSaveExpense}
+                onCancel={closeExpenseForm}
+                expenseFormBottomRef={expenseFormBottomRef}
+              />
             </div>
           </div>
         </div>
