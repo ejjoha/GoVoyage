@@ -1,4 +1,4 @@
-export type Currency = "NOK" | "GBP" | "USD" | "THB" | "SDG" | "IDR" | "EUR";
+export type Currency = string;
 
 export type TripMember = {
   id: number;

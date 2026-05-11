@@ -19,30 +19,33 @@ export async function createTrip({
     start_date,
     end_date,
     image_url,
+    currencies,
 }: {
     title: string;
     destination: string;
     start_date: string;
     end_date: string;
     image_url?: string;
+    currencies?: string[];
 }) {
-    const { data, error } = await supabase
-        .from("trips")
-        .insert({
-            title,
-            destination,
-            start_date,
-            end_date,
-            image_url: image_url || null,
-        })
-        .select()
-        .single();
+const { data, error } = await supabase
+    .from("trips")
+    .insert({
+        title,
+        destination,
+        start_date,
+        end_date,
+        image_url: image_url || null,
+        currencies: currencies || ["NOK", "EUR", "USD"],
+    })
+    .select()
+    .single();
 
-    if (error || !data) {
-        throw new Error(error?.message || "Failed to create trip");
-    }
+if (error || !data) {
+    throw new Error(error?.message || "Failed to create trip");
+}
 
-    return data;
+return data;
 }
 
 export async function addTripMembers(tripId: number, travellers: { name: string }[]) {

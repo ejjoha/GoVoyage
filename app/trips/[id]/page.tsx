@@ -52,6 +52,11 @@ export default function TripPage() {
   const [editTripImageUrl, setEditTripImageUrl] = useState("");
   const [editTripStartDate, setEditTripStartDate] = useState("");
   const [editTripEndDate, setEditTripEndDate] = useState("");
+  const [editCurrencies, setEditCurrencies] = useState<string[]>([
+    "NOK",
+    "EUR",
+    "USD",
+  ]);
 
   const [tripFormError, setTripFormError] = useState("");
   const [travellerFormError, setTravellerFormError] = useState("");
@@ -129,6 +134,12 @@ export default function TripPage() {
     setEditTripImageUrl(tripData.image_url || "");
     setEditTripStartDate(formatForDateInput(tripData.start_date));
     setEditTripEndDate(formatForDateInput(tripData.end_date));
+
+    setEditCurrencies(
+      tripData.currencies?.length
+        ? tripData.currencies
+        : ["NOK", "EUR", "USD"]
+    );
 
     setIsTripLoading(false);
   }
@@ -248,6 +259,7 @@ export default function TripPage() {
         image_url: editTripImageUrl.trim() || null,
         start_date: editTripStartDate,
         end_date: editTripEndDate,
+        currencies: editCurrencies,
       })
       .eq("id", id);
 
@@ -1003,6 +1015,57 @@ export default function TripPage() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-stone-900">Trip currencies</h3>
+                    <p className="mt-1 text-sm text-stone-500">
+                      Choose which currencies are available when adding expenses.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {editCurrencies.map((currency) => (
+                      <button
+                        key={currency}
+                        type="button"
+                        onClick={() =>
+                          setEditCurrencies((current) =>
+                            current.filter((item) => item !== currency)
+                          )
+                        }
+                        className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm"
+                      >
+                        {currency} ×
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    {["NOK", "SEK", "DKK", "EUR", "USD", "GBP", "THB", "IDR", "JPY"].map(
+                      (currency) => {
+                        const isSelected = editCurrencies.includes(currency);
+
+                        return (
+                          <button
+                            key={currency}
+                            type="button"
+                            disabled={isSelected}
+                            onClick={() =>
+                              setEditCurrencies((current) => [...current, currency])
+                            }
+                            className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${isSelected
+                                ? "bg-stone-200 text-stone-400"
+                                : "bg-white text-stone-800 shadow-sm hover:bg-stone-100"
+                              }`}
+                          >
+                            {currency}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
 
                 <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-4">

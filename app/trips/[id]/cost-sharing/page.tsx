@@ -28,14 +28,51 @@ import ExpenseList from "./components/ExpenseList";
 import ExpenseForm from "./components/ExpenseForm";
 
 const currencyOptions: Currency[] = [
-  "EUR",
-  "GBP",
-  "IDR",
   "NOK",
-  "SDG",
-  "THB",
+  "EUR",
   "USD",
+  "GBP",
+  "THB",
+  "IDR",
+  "JPY",
+  "AUD",
+  "CAD",
+  "CHF",
+  "SEK",
+  "DKK",
+  "PLN",
+  "CZK",
+  "HUF",
+  "ISK",
+  "SGD",
+  "MYR",
+  "PHP",
+  "VND",
+  "KHR",
+  "LAK",
+  "INR",
+  "CNY",
+  "HKD",
+  "KRW",
+  "TWD",
+  "NZD",
+  "MXN",
+  "BRL",
+  "ARS",
+  "CLP",
+  "COP",
+  "PEN",
+  "ZAR",
+  "MAD",
+  "EGP",
+  "TRY",
+  "AED",
+  "QAR",
+  "SAR",
+  "ILS",
+  "SDG",
 ];
+
 
 export default function TripCostSharingPage() {
   const params = useParams();
@@ -47,9 +84,18 @@ export default function TripCostSharingPage() {
   const [tripMembers, setTripMembers] = useState<TripMember[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [trip, setTrip] = useState<Trip | null>(null);
+  const tripCurrencyOptions = useMemo(() => {
+    if (trip?.currencies && trip.currencies.length > 0) {
+      return trip.currencies;
+    }
+
+    return ["NOK", "EUR", "USD"];
+  }, [trip]);
+
   const [isLoadingTrip, setIsLoadingTrip] = useState(true);
   const [isLoadingMembers, setIsLoadingMembers] = useState(true);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(true);
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -429,6 +475,32 @@ export default function TripCostSharingPage() {
       .filter((item) => item.total > 0);
   }, [expenses]);
 
+  const selectedCurrencyExpenses = selectedCurrency
+    ? [...expenses]
+      .filter(
+        (expense) => expense.currency === selectedCurrency
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.expense_date).getTime() -
+          new Date(a.expense_date).getTime()
+      )
+    : [];
+
+  const selectedCurrencyExpensesByDate = selectedCurrencyExpenses.reduce(
+    (groups, expense) => {
+      const dateKey = expense.expense_date;
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+
+      groups[dateKey].push(expense);
+      return groups;
+    },
+    {} as Record<string, Expense[]>
+  );
+
   const travellerSummary = useMemo(() => {
     if (tripMembers.length === 0) return "No travellers yet";
     if (tripMembers.length === 1) {
@@ -623,9 +695,11 @@ export default function TripCostSharingPage() {
 
                     <div className="divide-y divide-stone-100">
                       {items.map((item, index) => (
-                        <div
+                        <button
                           key={`${currencyCode}-${index}`}
-                          className="flex items-center justify-between gap-3 py-2 text-sm"
+                          type="button"
+                          onClick={() => setSelectedCurrency(currencyCode)}
+                          className="flex w-full items-center justify-between gap-3 py-2 text-left text-sm transition hover:opacity-70"
                         >
                           <div className="min-w-0">
                             <p className="truncate font-medium text-stone-800">
@@ -639,7 +713,7 @@ export default function TripCostSharingPage() {
                           <span className="font-semibold text-stone-900 tabular-nums">
                             {formatAmount(item.amount)} {currencyCode}
                           </span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -696,7 +770,7 @@ export default function TripCostSharingPage() {
                 toggleParticipant={toggleParticipant}
                 setSelectedParticipantIds={setSelectedParticipantIds}
                 tripMembers={tripMembers}
-                currencyOptions={currencyOptions}
+                currencyOptions={tripCurrencyOptions}
                 currentPreview={currentPreview}
                 onSubmit={handleSaveExpense}
                 onCancel={closeExpenseForm}
@@ -752,9 +826,11 @@ export default function TripCostSharingPage() {
                     </div>
 
                     {totalCostByCurrency.map((item) => (
-                      <div
+                      <button
                         key={item.currency}
-                        className="flex items-center justify-between border-b border-stone-200 py-3 last:border-b-0"
+                        type="button"
+                        onClick={() => setSelectedCurrency(item.currency)}
+                        className="flex w-full items-center justify-between border-b border-stone-200 py-3 text-left transition hover:opacity-70 last:border-b-0"
                       >
                         <span className="text-sm font-medium text-stone-600">
                           {item.currency}
@@ -763,7 +839,7 @@ export default function TripCostSharingPage() {
                         <span className="text-sm font-semibold text-stone-900">
                           {formatAmount(item.total)}
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </>
                 )}
@@ -787,6 +863,70 @@ export default function TripCostSharingPage() {
           }
         }}
       />
+      {selectedCurrency && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
+          onClick={() => setSelectedCurrency(null)}
+        >
+          <div
+            className="sheet-up flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="shrink-0 border-b border-stone-200 px-5 py-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm text-stone-500">Expenses in</p>
+                  <h2 className="text-2xl font-semibold tracking-[-0.02em] text-stone-900">
+                    {selectedCurrency}
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedCurrency(null)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
+                  aria-label="Close currency expenses"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="min-h-0 overflow-y-auto space-y-3 px-5 py-5">
+              {Object.entries(selectedCurrencyExpensesByDate).map(([dateKey, dayExpenses]) => (
+                <div key={dateKey} className="space-y-2">
+                  <h3 className="px-1 text-sm font-semibold text-stone-900">
+                    {formatExpenseDate(dateKey)}
+                  </h3>
+
+                  {dayExpenses.map((expense) => (
+                    <div
+                      key={expense.id}
+                      className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-base font-semibold text-stone-900">
+                            {expense.title}
+                          </p>
+
+                          <p className="mt-1 text-sm text-stone-500">
+                            Paid by {getMemberName(expense.paid_by_member_id)}
+                          </p>
+                        </div>
+
+                        <p className="shrink-0 text-sm font-semibold text-stone-900">
+                          {formatAmount(Number(expense.amount))} {expense.currency}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

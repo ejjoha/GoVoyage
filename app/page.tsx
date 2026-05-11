@@ -35,6 +35,11 @@ export default function HomePage() {
   const [newImageUrl, setNewImageUrl] = useState("");
   const [travellerName, setTravellerName] = useState("");
   const [newTravellers, setNewTravellers] = useState<NewTraveller[]>([]);
+  const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([
+    "NOK",
+    "EUR",
+    "USD",
+  ]);
 
   async function fetchTrips() {
     setIsLoading(true);
@@ -114,6 +119,7 @@ export default function HomePage() {
         image_url: newImageUrl.trim() || undefined,
         start_date: newStartDate,
         end_date: newEndDate,
+        currencies: selectedCurrencies,
       });
 
       try {
@@ -297,6 +303,71 @@ export default function HomePage() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+
+          <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+            <div>
+              <h3 className="text-sm font-semibold text-stone-900">
+                Trip currencies
+              </h3>
+
+              <p className="mt-1 text-sm text-stone-500">
+                Choose which currencies are available when adding expenses.
+              </p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {selectedCurrencies.map((currency) => (
+                <button
+                  key={currency}
+                  type="button"
+                  onClick={() =>
+                    setSelectedCurrencies((current) =>
+                      current.filter((item) => item !== currency)
+                    )
+                  }
+                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm"
+                >
+                  {currency} ×
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {[
+                "NOK",
+                "SEK",
+                "DKK",
+                "EUR",
+                "USD",
+                "GBP",
+                "THB",
+                "IDR",
+                "JPY",
+              ].map((currency) => {
+                const isSelected = selectedCurrencies.includes(currency);
+
+                return (
+                  <button
+                    key={currency}
+                    type="button"
+                    disabled={isSelected}
+                    onClick={() =>
+                      setSelectedCurrencies((current) => [
+                        ...current,
+                        currency,
+                      ])
+                    }
+                    className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${isSelected
+                      ? "bg-stone-200 text-stone-400"
+                      : "bg-white text-stone-800 shadow-sm hover:bg-stone-100"
+                      }`}
+                  >
+                    {currency}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

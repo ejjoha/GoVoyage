@@ -5,6 +5,7 @@ export type Trip = {
   start_date: string;
   end_date: string;
   image_url?: string;
+  currencies?: string[];
 };
 
 export type TripMember = {

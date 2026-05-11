@@ -125,6 +125,7 @@ export function calculateGroupedSummary(params: {
     if (Math.abs(netAmount) < 0.001) continue;
 
     if (netAmount > 0) {
+      grouped[debt.currency] = grouped[debt.currency] ?? [];
       grouped[debt.currency].push({
         from: getMemberName(debt.fromId),
         to: getMemberName(debt.toId),
@@ -142,6 +143,8 @@ export function calculateGroupedSummary(params: {
   }
 
   for (const currencyCode of currencies) {
+    grouped[currencyCode] = grouped[currencyCode] ?? [];
+
     grouped[currencyCode].sort((a, b) => {
       if (a.to === b.to) return a.from.localeCompare(b.from);
       return a.to.localeCompare(b.to);
