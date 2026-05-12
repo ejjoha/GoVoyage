@@ -30,6 +30,8 @@ export default function LoginPage() {
             return;
         }
 
+        await supabase.rpc("accept_trip_invites");
+
         router.push("/");
     }
 
@@ -49,6 +51,8 @@ export default function LoginPage() {
             setMessage(error.message);
             return;
         }
+
+        await supabase.rpc("accept_trip_invites");
 
         setMessage("Account created. You can now sign in.");
     }

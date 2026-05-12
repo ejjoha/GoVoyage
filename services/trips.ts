@@ -9,10 +9,32 @@ export async function getTrips() {
         return [];
     }
 
+    const { data: collaboratorRows, error: collaboratorError } = await supabase
+        .from("trip_collaborators")
+        .select("trip_id")
+        .eq("user_id", user.id);
+
+    if (collaboratorError) {
+        throw new Error(collaboratorError.message);
+    }
+
+    const collaboratorTripIds =
+        collaboratorRows?.map((row) => row.trip_id) || [];
+
+    const ownedFilter = `user_id.eq.${user.id}`;
+    const collaboratorFilter =
+        collaboratorTripIds.length > 0
+            ? `id.in.(${collaboratorTripIds.join(",")})`
+            : "";
+
+    const filter = collaboratorFilter
+        ? `${ownedFilter},${collaboratorFilter}`
+        : ownedFilter;
+
     const { data, error } = await supabase
         .from("trips")
         .select("*")
-        .eq("user_id", user.id)
+        .or(filter)
         .order("start_date", { ascending: true });
 
     if (error) {

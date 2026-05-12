@@ -64,6 +64,8 @@ export default function TripPage() {
 
   const [tripMembers, setTripMembers] = useState<TripMember[]>([]);
   const [newTravellerName, setNewTravellerName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [activeFilter, setActiveFilter] = useState<BookingFilter>("all");
@@ -108,6 +110,29 @@ export default function TripPage() {
 
   function closeConfirm() {
     setConfirmState({ open: false });
+  }
+
+  async function inviteTravellerByEmail() {
+    const email = inviteEmail.trim().toLowerCase();
+
+    if (!email) {
+      setInviteMessage("Enter an email address.");
+      return;
+    }
+
+    const { error } = await supabase.from("trip_invites").insert({
+      trip_id: id,
+      email,
+      role: "editor",
+    });
+
+    if (error) {
+      setInviteMessage(error.message);
+      return;
+    }
+
+    setInviteEmail("");
+    setInviteMessage("Invite saved. They can join when they sign in.");
   }
 
   async function fetchTrip() {
@@ -1027,6 +1052,40 @@ export default function TripPage() {
                         </div>
                       ))}
                     </div>
+                  )}
+                </div>
+
+                <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+                  <h3 className="text-sm font-semibold text-stone-900">
+                    Invite by email
+                  </h3>
+
+                  <p className="mt-1 text-sm text-stone-500">
+                    Invite someone to access and edit this trip.
+                  </p>
+
+                  <div className="mt-4 flex gap-2">
+                    <input
+                      type="email"
+                      placeholder="friend@example.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      className="min-w-0 flex-1 rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={inviteTravellerByEmail}
+                      className="rounded-xl bg-rose-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+                    >
+                      Invite
+                    </button>
+                  </div>
+
+                  {inviteMessage && (
+                    <p className="mt-3 text-sm text-stone-500">
+                      {inviteMessage}
+                    </p>
                   )}
                 </div>
 
