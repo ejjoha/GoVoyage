@@ -176,14 +176,27 @@ export default function TripPage() {
   }
 
   useEffect(() => {
-    if (!Number.isFinite(id)) {
-      setIsTripLoading(false);
-      return;
+    async function checkAuthAndLoad() {
+      if (!Number.isFinite(id)) {
+        setIsTripLoading(false);
+        return;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      fetchTrip();
+      fetchBookings();
+      fetchTripMembers();
     }
 
-    fetchTrip();
-    fetchBookings();
-    fetchTripMembers();
+    checkAuthAndLoad();
   }, [id]);
 
   useEffect(() => {
@@ -1056,8 +1069,8 @@ export default function TripPage() {
                               setEditCurrencies((current) => [...current, currency])
                             }
                             className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${isSelected
-                                ? "bg-stone-200 text-stone-400"
-                                : "bg-white text-stone-800 shadow-sm hover:bg-stone-100"
+                              ? "bg-stone-200 text-stone-400"
+                              : "bg-white text-stone-800 shadow-sm hover:bg-stone-100"
                               }`}
                           >
                             {currency}

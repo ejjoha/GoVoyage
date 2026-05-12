@@ -1,7 +1,8 @@
 "use client";
 
+import { supabase } from "@/lib/supabase";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   fetchTripById,
   fetchTripMembersByTripId,
@@ -76,6 +77,7 @@ const currencyOptions: Currency[] = [
 
 export default function TripCostSharingPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Number(params.id);
 
   const [showTotalCostSheet, setShowTotalCostSheet] = useState(false);
@@ -221,11 +223,22 @@ export default function TripCostSharingPage() {
   }, [paidByMemberId]);
 
   useEffect(() => {
-    if (!Number.isFinite(id)) return;
+    async function checkAuthAndLoad() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    fetchTrip();
-    fetchTripMembers();
-    fetchExpenses();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      fetchTrip();
+      fetchTripMembers();
+      fetchExpenses();
+    }
+
+    checkAuthAndLoad();
   }, [id]);
 
   useEffect(() => {

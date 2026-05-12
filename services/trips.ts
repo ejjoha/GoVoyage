@@ -12,7 +12,7 @@ export async function getTrips() {
     const { data, error } = await supabase
         .from("trips")
         .select("*")
-        .or(`user_id.eq.${user.id},user_id.is.null`)
+        .eq("user_id", user.id)
         .order("start_date", { ascending: true });
 
     if (error) {
