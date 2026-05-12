@@ -865,11 +865,11 @@ export default function TripCostSharingPage() {
       />
       {selectedCurrency && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 px-3 pt-16 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
           onClick={() => setSelectedCurrency(null)}
         >
           <div
-            className="sheet-up flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            className="sheet-up flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="shrink-0 border-b border-stone-200 px-5 py-4">
