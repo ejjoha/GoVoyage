@@ -1,5 +1,6 @@
 "use client";
 
+import { supabase } from "@/lib/supabase";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TripCard } from "@/components/TripCard";
@@ -22,6 +23,7 @@ function getTodayDateString() {
 
 export default function HomePage() {
   const router = useRouter();
+  const [userEmail, setUserEmail] = useState("");
 
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,6 +67,18 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchTrips();
+  }, []);
+
+  useEffect(() => {
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      setUserEmail(user?.email || "");
+    }
+
+    loadUser();
   }, []);
 
   function handleAddTraveller() {
@@ -198,6 +212,12 @@ export default function HomePage() {
           </span>
         </button>
       </div>
+
+      {userEmail && (
+        <p className="text-sm text-stone-500">
+          Signed in as {userEmail}
+        </p>
+      )}
 
       {showForm && (
         <div className="mb-6 space-y-4 rounded-[1.75rem] border border-stone-200 bg-white p-5 shadow-sm">

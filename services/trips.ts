@@ -1,9 +1,18 @@
 import { supabase } from "@/lib/supabase";
 
 export async function getTrips() {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return [];
+    }
+
     const { data, error } = await supabase
         .from("trips")
         .select("*")
+        .or(`user_id.eq.${user.id},user_id.is.null`)
         .order("start_date", { ascending: true });
 
     if (error) {
@@ -28,24 +37,33 @@ export async function createTrip({
     image_url?: string;
     currencies?: string[];
 }) {
-const { data, error } = await supabase
-    .from("trips")
-    .insert({
-        title,
-        destination,
-        start_date,
-        end_date,
-        image_url: image_url || null,
-        currencies: currencies || ["NOK", "EUR", "USD"],
-    })
-    .select()
-    .single();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-if (error || !data) {
-    throw new Error(error?.message || "Failed to create trip");
-}
+    if (!user) {
+        throw new Error("You must be signed in to create a trip.");
+    }
 
-return data;
+    const { data, error } = await supabase
+        .from("trips")
+        .insert({
+            title,
+            destination,
+            start_date,
+            end_date,
+            image_url: image_url || null,
+            currencies: currencies || ["NOK", "EUR", "USD"],
+            user_id: user.id,
+        })
+        .select()
+        .single();
+
+    if (error || !data) {
+        throw new Error(error?.message || "Failed to create trip");
+    }
+
+    return data;
 }
 
 export async function addTripMembers(tripId: number, travellers: { name: string }[]) {
