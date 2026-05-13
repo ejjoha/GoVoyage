@@ -24,6 +24,7 @@ function getTodayDateString() {
 export default function HomePage() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
+  const [isOnline, setIsOnline] = useState(true);
 
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,6 +85,26 @@ export default function HomePage() {
     }
 
     loadUser();
+  }, []);
+
+  useEffect(() => {
+    setIsOnline(navigator.onLine);
+
+    function handleOnline() {
+      setIsOnline(true);
+    }
+
+    function handleOffline() {
+      setIsOnline(false);
+    }
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
   function handleAddTraveller() {
@@ -203,6 +224,12 @@ export default function HomePage() {
         </div>
 
       </section>
+
+      {!isOnline && (
+        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          You’re offline. You can view cached app content, but updates may not sync until your connection returns.
+        </div>
+      )}
 
       <div className="mb-8">
         <button
