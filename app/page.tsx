@@ -50,9 +50,23 @@ export default function HomePage() {
 
     try {
       const data = await getTrips();
+
       setTrips(data as Trip[]);
+
+      localStorage.setItem(
+        "cached-trips",
+        JSON.stringify(data)
+      );
     } catch (err) {
       console.error("Unexpected error loading trips:", err);
+
+      const cachedTrips = localStorage.getItem("cached-trips");
+
+      if (cachedTrips) {
+        setTrips(JSON.parse(cachedTrips));
+      } else {
+        setTrips([]);
+      }
 
       const message =
         err instanceof Error
@@ -60,7 +74,6 @@ export default function HomePage() {
           : "Unexpected error while loading trips";
 
       setErrorMessage(message);
-      setTrips([]);
     } finally {
       setIsLoading(false);
     }
