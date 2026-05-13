@@ -250,11 +250,11 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="-mx-4 -mt-4 mb-4 sm:-mx-5 sm:-mt-5">
           <img
             src="/logos/app-hero-logo.png"
             alt="Travel Organizer"
-            className="h-48 w-auto sm:h-64"
+            className="h-auto w-full rounded-t-[2rem] object-cover"
           />
         </div>
 
