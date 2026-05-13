@@ -64,6 +64,12 @@ export default function TripPage() {
 
   const [tripMembers, setTripMembers] = useState<TripMember[]>([]);
   const [newTravellerName, setNewTravellerName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
+
+  const [tripInvites, setTripInvites] = useState<
+    { id: number; email: string; role: string; accepted_at: string | null }[]
+  >([]);
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [activeFilter, setActiveFilter] = useState<BookingFilter>("all");
@@ -108,6 +114,46 @@ export default function TripPage() {
 
   function closeConfirm() {
     setConfirmState({ open: false });
+  }
+
+  async function inviteTravellerByEmail() {
+    const email = inviteEmail.trim().toLowerCase();
+
+    if (!email) {
+      setInviteMessage("Enter an email address.");
+      return;
+    }
+
+    const { error } = await supabase.from("trip_invites").insert({
+      trip_id: id,
+      email,
+      role: "editor",
+    });
+
+    if (error) {
+      setInviteMessage(error.message);
+      return;
+    }
+
+    setInviteEmail("");
+    setInviteMessage("Invite saved. They can join when they sign in.");
+    fetchTripInvites();
+  }
+
+  async function fetchTripInvites() {
+    const { data, error } = await supabase
+      .from("trip_invites")
+      .select("id, email, role, accepted_at")
+      .eq("trip_id", id)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Error loading trip invites:", error);
+      setTripInvites([]);
+      return;
+    }
+
+    setTripInvites(data || []);
   }
 
   async function fetchTrip() {
@@ -176,14 +222,28 @@ export default function TripPage() {
   }
 
   useEffect(() => {
-    if (!Number.isFinite(id)) {
-      setIsTripLoading(false);
-      return;
+    async function checkAuthAndLoad() {
+      if (!Number.isFinite(id)) {
+        setIsTripLoading(false);
+        return;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      fetchTrip();
+      fetchBookings();
+      fetchTripMembers();
+      fetchTripInvites();
     }
 
-    fetchTrip();
-    fetchBookings();
-    fetchTripMembers();
+    checkAuthAndLoad();
   }, [id]);
 
   useEffect(() => {
@@ -1018,6 +1078,70 @@ export default function TripPage() {
                 </div>
 
                 <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+                  <h3 className="text-sm font-semibold text-stone-900">
+                    Invite by email
+                  </h3>
+
+                  <p className="mt-1 text-sm text-stone-500">
+                    Invite someone to access and edit this trip.
+                  </p>
+
+                  <div className="mt-4 flex gap-2">
+                    <input
+                      type="email"
+                      placeholder="friend@example.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      className="min-w-0 flex-1 rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={inviteTravellerByEmail}
+                      className="rounded-xl bg-rose-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+                    >
+                      Invite
+                    </button>
+                  </div>
+
+                  {inviteMessage && (
+                    <p className="mt-3 text-sm text-stone-500">
+                      {inviteMessage}
+                    </p>
+                  )}
+                </div>
+                
+                {tripInvites.length > 0 && (
+                  <div className="rounded-[1.5rem] border border-stone-200 bg-white p-4">
+                    <h3 className="text-sm font-semibold text-stone-900">
+                      People with access
+                    </h3>
+
+                    <div className="mt-3 space-y-2">
+                      {tripInvites.map((invite) => (
+                        <div
+                          key={invite.id}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-stone-50 px-3 py-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-stone-800">
+                              {invite.email}
+                            </p>
+                            <p className="text-xs text-stone-500">
+                              {invite.accepted_at ? "Joined" : "Invited"}
+                            </p>
+                          </div>
+
+                          <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">
+                            {invite.role}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
                   <div>
                     <h3 className="text-sm font-semibold text-stone-900">Trip currencies</h3>
                     <p className="mt-1 text-sm text-stone-500">
@@ -1056,8 +1180,8 @@ export default function TripPage() {
                               setEditCurrencies((current) => [...current, currency])
                             }
                             className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${isSelected
-                                ? "bg-stone-200 text-stone-400"
-                                : "bg-white text-stone-800 shadow-sm hover:bg-stone-100"
+                              ? "bg-stone-200 text-stone-400"
+                              : "bg-white text-stone-800 shadow-sm hover:bg-stone-100"
                               }`}
                           >
                             {currency}

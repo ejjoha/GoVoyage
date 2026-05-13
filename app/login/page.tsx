@@ -1,0 +1,117 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+
+export default function LoginPage() {
+    const router = useRouter();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [message, setMessage] = useState("");
+
+    async function handleSignIn(e: React.FormEvent) {
+        e.preventDefault();
+        setIsLoading(true);
+        setMessage("");
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        setIsLoading(false);
+
+        if (error) {
+            setMessage(error.message);
+            return;
+        }
+
+        await supabase.rpc("accept_trip_invites");
+
+        router.push("/");
+    }
+
+    async function handleSignUp(e: React.FormEvent) {
+        e.preventDefault();
+        setIsLoading(true);
+        setMessage("");
+
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+        });
+
+        setIsLoading(false);
+
+        if (error) {
+            setMessage(error.message);
+            return;
+        }
+
+        await supabase.rpc("accept_trip_invites");
+
+        setMessage("Account created. You can now sign in.");
+    }
+
+    return (
+        <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 py-10">
+            <div className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm">
+                <div className="mb-6">
+                    <p className="text-sm font-semibold text-rose-500">GoVoyage</p>
+                    <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-stone-900">
+                        Sign in
+                    </h1>
+                    <p className="mt-2 text-sm text-stone-500">
+                        Access your trips, itinerary and shared expenses.
+                    </p>
+                </div>
+
+                <form className="space-y-4">
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400"
+                    />
+
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400"
+                    />
+
+                    {message && (
+                        <div className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-600">
+                            {message}
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={handleSignIn}
+                        disabled={isLoading}
+                        className="w-full rounded-2xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:bg-stone-300"
+                    >
+                        {isLoading ? "Working..." : "Sign in"}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleSignUp}
+                        disabled={isLoading}
+                        className="w-full rounded-2xl bg-stone-100 px-5 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-200 disabled:bg-stone-100"
+                    >
+                        Create account
+                    </button>
+                </form>
+            </div>
+        </main>
+    );
+}

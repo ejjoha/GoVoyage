@@ -1,7 +1,8 @@
 "use client";
 
+import { supabase } from "@/lib/supabase";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   fetchTripById,
   fetchTripMembersByTripId,
@@ -76,6 +77,7 @@ const currencyOptions: Currency[] = [
 
 export default function TripCostSharingPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Number(params.id);
 
   const [showTotalCostSheet, setShowTotalCostSheet] = useState(false);
@@ -221,11 +223,22 @@ export default function TripCostSharingPage() {
   }, [paidByMemberId]);
 
   useEffect(() => {
-    if (!Number.isFinite(id)) return;
+    async function checkAuthAndLoad() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    fetchTrip();
-    fetchTripMembers();
-    fetchExpenses();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      fetchTrip();
+      fetchTripMembers();
+      fetchExpenses();
+    }
+
+    checkAuthAndLoad();
   }, [id]);
 
   useEffect(() => {
@@ -865,11 +878,11 @@ export default function TripCostSharingPage() {
       />
       {selectedCurrency && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 px-3 pt-16 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
           onClick={() => setSelectedCurrency(null)}
         >
           <div
-            className="sheet-up flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            className="sheet-up flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="shrink-0 border-b border-stone-200 px-5 py-4">

@@ -1,5 +1,6 @@
 "use client";
 
+import { supabase } from "@/lib/supabase";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TripCard } from "@/components/TripCard";
@@ -22,6 +23,7 @@ function getTodayDateString() {
 
 export default function HomePage() {
   const router = useRouter();
+  const [userEmail, setUserEmail] = useState("");
 
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,6 +67,23 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchTrips();
+  }, []);
+
+  useEffect(() => {
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      setUserEmail(user.email || "");
+    }
+
+    loadUser();
   }, []);
 
   function handleAddTraveller() {
@@ -198,6 +217,26 @@ export default function HomePage() {
           </span>
         </button>
       </div>
+
+      {userEmail && (
+        <div className="mb-4 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-4 py-3 shadow-sm">
+          <p className="text-sm text-stone-500">
+            Signed in as <span className="font-medium text-stone-800">{userEmail}</span>
+          </p>
+
+          <button
+            type="button"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              setUserEmail("");
+              window.location.href = "/login";
+            }}
+            className="rounded-xl bg-stone-100 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-200"
+          >
+            Sign out
+          </button>
+        </div>
+      )}
 
       {showForm && (
         <div className="mb-6 space-y-4 rounded-[1.75rem] border border-stone-200 bg-white p-5 shadow-sm">

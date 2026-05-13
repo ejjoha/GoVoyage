@@ -1,9 +1,40 @@
 import { supabase } from "@/lib/supabase";
 
 export async function getTrips() {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return [];
+    }
+
+    const { data: collaboratorRows, error: collaboratorError } = await supabase
+        .from("trip_collaborators")
+        .select("trip_id")
+        .eq("user_id", user.id);
+
+    if (collaboratorError) {
+        throw new Error(collaboratorError.message);
+    }
+
+    const collaboratorTripIds =
+        collaboratorRows?.map((row) => row.trip_id) || [];
+
+    const ownedFilter = `user_id.eq.${user.id}`;
+    const collaboratorFilter =
+        collaboratorTripIds.length > 0
+            ? `id.in.(${collaboratorTripIds.join(",")})`
+            : "";
+
+    const filter = collaboratorFilter
+        ? `${ownedFilter},${collaboratorFilter}`
+        : ownedFilter;
+
     const { data, error } = await supabase
         .from("trips")
         .select("*")
+        .or(filter)
         .order("start_date", { ascending: true });
 
     if (error) {
@@ -28,24 +59,33 @@ export async function createTrip({
     image_url?: string;
     currencies?: string[];
 }) {
-const { data, error } = await supabase
-    .from("trips")
-    .insert({
-        title,
-        destination,
-        start_date,
-        end_date,
-        image_url: image_url || null,
-        currencies: currencies || ["NOK", "EUR", "USD"],
-    })
-    .select()
-    .single();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-if (error || !data) {
-    throw new Error(error?.message || "Failed to create trip");
-}
+    if (!user) {
+        throw new Error("You must be signed in to create a trip.");
+    }
 
-return data;
+    const { data, error } = await supabase
+        .from("trips")
+        .insert({
+            title,
+            destination,
+            start_date,
+            end_date,
+            image_url: image_url || null,
+            currencies: currencies || ["NOK", "EUR", "USD"],
+            user_id: user.id,
+        })
+        .select()
+        .single();
+
+    if (error || !data) {
+        throw new Error(error?.message || "Failed to create trip");
+    }
+
+    return data;
 }
 
 export async function addTripMembers(tripId: number, travellers: { name: string }[]) {

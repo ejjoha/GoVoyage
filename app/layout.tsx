@@ -12,13 +12,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Go Voyage",
-  description: "Your travel organizer",
-  icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+export const metadata = {
+  title: "GoVoyage",
+  description: "Plan it. See it. Enjoy it.",
+
+  manifest: "/manifest.json",
+
+  appleWebApp: {
+    capable: true,
+    title: "GoVoyage",
+    statusBarStyle: "default",
   },
+};
+
+export const viewport = {
+  themeColor: "#f43f5e",
 };
 
 export default function RootLayout({
@@ -32,7 +40,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
