@@ -18,13 +18,15 @@ export const metadata = {
 
   manifest: "/manifest.json",
 
-  themeColor: "#f43f5e",
-
   appleWebApp: {
     capable: true,
     title: "GoVoyage",
     statusBarStyle: "default",
   },
+};
+
+export const viewport = {
+  themeColor: "#f43f5e",
 };
 
 export default function RootLayout({
@@ -38,7 +40,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
