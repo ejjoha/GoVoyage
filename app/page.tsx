@@ -217,17 +217,8 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-      <section className="mb-5 overflow-hidden rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
-
-        <div className="flex justify-center">
-          <img
-            src="/logos/app-hero-logo.png"
-            alt="Travel Organizer"
-            className="h-48 w-auto sm:h-64"
-          />
-        </div>
-
-        <div className="mb-6 flex items-center justify-end">
+      <section className="relative mb-5 overflow-visible rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
+        <div className="absolute right-4 top-4 z-10">
           <div className="relative group">
             <button
               className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600"
@@ -259,19 +250,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mt-3 max-w-md">
-          <p className="text-sm text-stone-500 sm:text-base">
-            Plan it. See it. Enjoy it.
-          </p>
-          <p className="text-sm text-stone-500 sm:text-base">
-            Where every journey comes together.
-          </p>
-        </div>
-
-      </section>
-
-      <section className="mb-5 overflow-hidden rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
-
         <div className="flex justify-center">
           <img
             src="/logos/app-hero-logo.png"
@@ -288,7 +266,6 @@ export default function HomePage() {
             Where every journey comes together.
           </p>
         </div>
-
       </section>
 
       {!isOnline && (
@@ -317,6 +294,7 @@ export default function HomePage() {
             <h2 className="text-lg font-semibold text-stone-900">
               Create new trip
             </h2>
+
             <p className="mt-1 text-sm text-stone-500">
               Start with the basics and build the details from there.
             </p>
