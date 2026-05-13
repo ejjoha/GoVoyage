@@ -227,6 +227,59 @@ export default function HomePage() {
           />
         </div>
 
+        <div className="mb-6 flex items-center justify-end">
+          <div className="relative group">
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600"
+            >
+              {userEmail?.charAt(0).toUpperCase()}
+            </button>
+
+            <div className="absolute right-0 top-12 hidden min-w-[220px] rounded-2xl border border-stone-200 bg-white p-3 shadow-xl group-hover:block">
+              <p className="mb-3 text-sm text-stone-500">
+                Signed in as
+              </p>
+
+              <p className="mb-4 break-all text-sm font-medium text-stone-800">
+                {userEmail}
+              </p>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setUserEmail("");
+                  window.location.href = "/login";
+                }}
+                className="w-full rounded-xl bg-stone-100 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-200"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 max-w-md">
+          <p className="text-sm text-stone-500 sm:text-base">
+            Plan it. See it. Enjoy it.
+          </p>
+          <p className="text-sm text-stone-500 sm:text-base">
+            Where every journey comes together.
+          </p>
+        </div>
+
+      </section>
+
+      <section className="mb-5 overflow-hidden rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
+
+        <div className="flex justify-center">
+          <img
+            src="/logos/app-hero-logo.png"
+            alt="Travel Organizer"
+            className="h-48 w-auto sm:h-64"
+          />
+        </div>
+
         <div className="mt-3 max-w-md">
           <p className="text-sm text-stone-500 sm:text-base">
             Plan it. See it. Enjoy it.
@@ -257,26 +310,6 @@ export default function HomePage() {
           </span>
         </button>
       </div>
-
-      {userEmail && (
-        <div className="mb-4 flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-4 py-3 shadow-sm">
-          <p className="text-sm text-stone-500">
-            Signed in as <span className="font-medium text-stone-800">{userEmail}</span>
-          </p>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              setUserEmail("");
-              window.location.href = "/login";
-            }}
-            className="rounded-xl bg-stone-100 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-200"
-          >
-            Sign out
-          </button>
-        </div>
-      )}
 
       {showForm && (
         <div className="mb-6 space-y-4 rounded-[1.75rem] border border-stone-200 bg-white p-5 shadow-sm">
