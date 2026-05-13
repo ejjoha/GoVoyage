@@ -67,6 +67,10 @@ export default function TripPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
 
+  const [tripInvites, setTripInvites] = useState<
+    { id: number; email: string; role: string; accepted_at: string | null }[]
+  >([]);
+
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [activeFilter, setActiveFilter] = useState<BookingFilter>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -133,6 +137,23 @@ export default function TripPage() {
 
     setInviteEmail("");
     setInviteMessage("Invite saved. They can join when they sign in.");
+    fetchTripInvites();
+  }
+
+  async function fetchTripInvites() {
+    const { data, error } = await supabase
+      .from("trip_invites")
+      .select("id, email, role, accepted_at")
+      .eq("trip_id", id)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Error loading trip invites:", error);
+      setTripInvites([]);
+      return;
+    }
+
+    setTripInvites(data || []);
   }
 
   async function fetchTrip() {
@@ -219,6 +240,7 @@ export default function TripPage() {
       fetchTrip();
       fetchBookings();
       fetchTripMembers();
+      fetchTripInvites();
     }
 
     checkAuthAndLoad();
@@ -1088,6 +1110,36 @@ export default function TripPage() {
                     </p>
                   )}
                 </div>
+                
+                {tripInvites.length > 0 && (
+                  <div className="rounded-[1.5rem] border border-stone-200 bg-white p-4">
+                    <h3 className="text-sm font-semibold text-stone-900">
+                      People with access
+                    </h3>
+
+                    <div className="mt-3 space-y-2">
+                      {tripInvites.map((invite) => (
+                        <div
+                          key={invite.id}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-stone-50 px-3 py-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-stone-800">
+                              {invite.email}
+                            </p>
+                            <p className="text-xs text-stone-500">
+                              {invite.accepted_at ? "Joined" : "Invited"}
+                            </p>
+                          </div>
+
+                          <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">
+                            {invite.role}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
                   <div>

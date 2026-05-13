@@ -12,12 +12,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Go Voyage",
-  description: "Your travel organizer",
-  icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+export const metadata = {
+  title: "GoVoyage",
+  description: "Plan it. See it. Enjoy it.",
+
+  manifest: "/manifest.json",
+
+  themeColor: "#f43f5e",
+
+  appleWebApp: {
+    capable: true,
+    title: "GoVoyage",
+    statusBarStyle: "default",
   },
 };
 
