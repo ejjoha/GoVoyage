@@ -214,11 +214,24 @@ export default function TripPage() {
       .order("start_time", { ascending: true });
 
     if (error) {
-      console.error("Error loading bookings:", error);
+      console.error("Error fetching bookings:", error);
+
+      const cachedBookings = localStorage.getItem(`trip-bookings-${id}`);
+
+      if (cachedBookings) {
+        setBookings(JSON.parse(cachedBookings));
+        return;
+      }
+
       return;
     }
 
     setBookings((data || []) as Booking[]);
+
+    localStorage.setItem(
+      `trip-bookings-${id}`,
+      JSON.stringify(data || [])
+    );
   }
 
   useEffect(() => {
@@ -1110,7 +1123,7 @@ export default function TripPage() {
                     </p>
                   )}
                 </div>
-                
+
                 {tripInvites.length > 0 && (
                   <div className="rounded-[1.5rem] border border-stone-200 bg-white p-4">
                     <h3 className="text-sm font-semibold text-stone-900">
