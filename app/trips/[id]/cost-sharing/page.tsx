@@ -26,7 +26,7 @@ import {
 import ConfirmModal from "../components/ConfirmModal";
 import ExpenseItem from "./components/ExpenseItem";
 import ExpenseList from "./components/ExpenseList";
-import ExpenseForm from "./components/ExpenseForm";
+import ExpenseFormModal from "./components/ExpenseFormModal";
 
 const currencyOptions: Currency[] = [
   "NOK",
@@ -110,6 +110,7 @@ export default function TripCostSharingPage() {
 
   const [successMessage, setSuccessMessage] = useState("");
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState("");
+  const [expenseFormError, setExpenseFormError] = useState("");
   const [editingExpenseId, setEditingExpenseId] = useState<number | null>(null);
   const [expandedExpenseId, setExpandedExpenseId] = useState<number | null>(
     null
@@ -268,6 +269,7 @@ export default function TripCostSharingPage() {
     setPaidByMemberId(null);
     setSelectedParticipantIds(tripMembers.map((member) => member.id));
     setEditingExpenseId(null);
+    setExpenseFormError("");
   }
 
   function closeExpenseForm() {
@@ -306,31 +308,32 @@ export default function TripCostSharingPage() {
 
   async function handleSaveExpense(e: React.FormEvent) {
     e.preventDefault();
+    setExpenseFormError("");
 
     const parsedAmount = Number(amount);
 
     if (!title.trim()) {
-      alert("Please fill in Expense title");
+      setExpenseFormError("Please fill in an expense title.");
       return;
     }
 
     if (!parsedAmount || parsedAmount <= 0) {
-      alert("Please fill in a valid Expense amount");
+      setExpenseFormError("Please enter a valid expense amount.");
       return;
     }
 
     if (!date) {
-      alert("Please choose a date");
+      setExpenseFormError("Please choose a date.");
       return;
     }
 
     if (!paidByMemberId) {
-      alert("Please choose who paid");
+      setExpenseFormError("Please choose who paid.");
       return;
     }
 
     if (selectedParticipantIds.length === 0) {
-      alert("Please choose at least one person in Shared between");
+      setExpenseFormError("Please choose at least one participant.");
       return;
     }
 
@@ -738,62 +741,30 @@ export default function TripCostSharingPage() {
       </main >
 
       {showExpenseForm && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-3 pt-12 backdrop-blur-[2px] sm:items-center sm:p-6"
-          onClick={closeExpenseForm}
-        >
-          <div
-            className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
-              <div>
-                <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
-                  {editingExpenseId ? "Edit expense" : "Add expense"}
-                </h2>
-                <p className="mt-1 text-sm text-stone-500">
-                  Add the details and keep the shared costs up to date.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeExpenseForm}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
-                aria-label="Close expense form"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
-              <ExpenseForm
-                editingExpenseId={editingExpenseId}
-                title={title}
-                setTitle={setTitle}
-                amount={amount}
-                setAmount={setAmount}
-                currency={currency}
-                setCurrency={setCurrency}
-                date={date}
-                setDate={setDate}
-                paidByMemberId={paidByMemberId}
-                setPaidByMemberId={setPaidByMemberId}
-                selectedParticipantIds={selectedParticipantIds}
-                toggleParticipant={toggleParticipant}
-                setSelectedParticipantIds={setSelectedParticipantIds}
-                tripMembers={tripMembers}
-                currencyOptions={tripCurrencyOptions}
-                currentPreview={currentPreview}
-                onSubmit={handleSaveExpense}
-                onCancel={closeExpenseForm}
-                expenseFormBottomRef={expenseFormBottomRef}
-              />
-            </div>
-          </div>
-        </div>
-      )
-      }
+        <ExpenseFormModal
+          editingExpenseId={editingExpenseId}
+          expenseFormError={expenseFormError}
+          title={title}
+          setTitle={setTitle}
+          amount={amount}
+          setAmount={setAmount}
+          currency={currency}
+          setCurrency={setCurrency}
+          date={date}
+          setDate={setDate}
+          paidByMemberId={paidByMemberId}
+          setPaidByMemberId={setPaidByMemberId}
+          selectedParticipantIds={selectedParticipantIds}
+          toggleParticipant={toggleParticipant}
+          setSelectedParticipantIds={setSelectedParticipantIds}
+          tripMembers={tripMembers}
+          currencyOptions={tripCurrencyOptions}
+          currentPreview={currentPreview}
+          onSubmit={handleSaveExpense}
+          onCancel={closeExpenseForm}
+          expenseFormBottomRef={expenseFormBottomRef}
+        />
+      )}
 
       {
         showTotalCostSheet && (
