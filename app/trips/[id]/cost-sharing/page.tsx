@@ -751,7 +751,7 @@ export default function TripCostSharingPage() {
         <ExpenseFormModal
           editingExpenseId={editingExpenseId}
           expenseFormError={expenseFormError}
-          isSavingExpense={isSavingExpense}ß
+          isSavingExpense={isSavingExpense}
           title={title}
           setTitle={setTitle}
           amount={amount}
