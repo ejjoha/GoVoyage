@@ -140,9 +140,15 @@ export async function createExpense(input: {
       "Error saving expense participants:",
       participantInsertError
     );
+
+    await supabase
+      .from("expenses")
+      .delete()
+      .eq("id", data.id);
+
     return {
       success: false as const,
-      message: "Expense saved, but participants could not be saved",
+      message: "Expense could not be saved. Please try again.",
     };
   }
 

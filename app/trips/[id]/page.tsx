@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 import {
   createBooking,
@@ -855,13 +856,13 @@ export default function TripPage() {
             Add booking
           </button>
 
-          <a
+          <Link
             href={`/trips/${trip.id}/cost-sharing`}
             className="flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-sm transition active:scale-[0.97]"
           >
             <span className="text-base"></span>
             Shared expenses
-          </a>
+          </Link>
         </section>
 
         {bookings.length > 0 && (
