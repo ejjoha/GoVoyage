@@ -5,6 +5,7 @@ import type { Currency, TripMember } from "../types";
 type ExpenseFormModalProps = {
     editingExpenseId: number | null;
     expenseFormError: string;
+    isSavingExpense: boolean;
 
     title: string;
     setTitle: (value: string) => void;
@@ -38,6 +39,7 @@ type ExpenseFormModalProps = {
 export default function ExpenseFormModal({
     editingExpenseId,
     expenseFormError,
+    isSavingExpense,
     title,
     setTitle,
     amount,
@@ -96,6 +98,7 @@ export default function ExpenseFormModal({
 
                     <ExpenseForm
                         editingExpenseId={editingExpenseId}
+                        isSavingExpense={isSavingExpense}
                         title={title}
                         setTitle={setTitle}
                         amount={amount}

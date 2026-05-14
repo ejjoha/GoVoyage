@@ -15,6 +15,7 @@ type ExpensePreview = {
 
 type ExpenseFormProps = {
     editingExpenseId: number | null;
+    isSavingExpense: boolean;
     title: string;
     setTitle: (value: string) => void;
     amount: string;
@@ -38,6 +39,7 @@ type ExpenseFormProps = {
 
 export default function ExpenseForm({
     editingExpenseId,
+    isSavingExpense,
     title,
     setTitle,
     amount,
@@ -234,10 +236,16 @@ export default function ExpenseForm({
 
                 <button
                     type="submit"
-                    disabled={tripMembers.length === 0}
+                    disabled={isSavingExpense}
                     className="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:bg-stone-300"
                 >
-                    {editingExpenseId ? "Update expense" : "Save expense"}
+                    {isSavingExpense
+                        ? editingExpenseId
+                            ? "Updating..."
+                            : "Saving..."
+                        : editingExpenseId
+                            ? "Save changes"
+                            : "Add expense"}
                 </button>
             </div>
 

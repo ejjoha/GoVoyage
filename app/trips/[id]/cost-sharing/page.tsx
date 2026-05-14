@@ -114,6 +114,7 @@ export default function TripCostSharingPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState("");
   const [expenseFormError, setExpenseFormError] = useState("");
+  const [isSavingExpense, setIsSavingExpense] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState<number | null>(null);
   const [expandedExpenseId, setExpandedExpenseId] = useState<number | null>(
     null
@@ -312,6 +313,7 @@ export default function TripCostSharingPage() {
   async function handleSaveExpense(e: React.FormEvent) {
     e.preventDefault();
     setExpenseFormError("");
+    setIsSavingExpense(true);
 
     const parsedAmount = Number(amount);
 
@@ -392,7 +394,8 @@ export default function TripCostSharingPage() {
         const result = await deleteExpenseById(expenseId);
 
         if (!result.success) {
-          alert(result.message);
+          setExpenseFormError(result.message);
+          setIsSavingExpense(false);
           return;
         }
 
@@ -413,6 +416,7 @@ export default function TripCostSharingPage() {
         setTimeout(() => {
           setDeleteSuccessMessage("");
         }, 2000);
+        setIsSavingExpense(false);
       },
     });
   }
@@ -747,6 +751,7 @@ export default function TripCostSharingPage() {
         <ExpenseFormModal
           editingExpenseId={editingExpenseId}
           expenseFormError={expenseFormError}
+          isSavingExpense={isSavingExpense}ß
           title={title}
           setTitle={setTitle}
           amount={amount}
