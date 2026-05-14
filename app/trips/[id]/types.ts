@@ -1,5 +1,6 @@
 export type Trip = {
   id: number;
+  user_id: string;
   title: string;
   destination: string;
   start_date: string;
