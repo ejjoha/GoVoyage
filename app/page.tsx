@@ -80,24 +80,31 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    fetchTrips();
-  }, []);
-
-  useEffect(() => {
-    async function loadUser() {
+    async function loadUserAndTrips() {
       const {
         data: { user },
+        error,
       } = await supabase.auth.getUser();
 
+      if (error) {
+        console.error("Error loading user:", error);
+        setErrorMessage(error.message);
+        setIsLoading(false);
+        return;
+      }
+
       if (!user) {
+        setIsLoading(false);
         router.push("/login");
         return;
       }
 
-      setUserEmail(user.email || "");
+      setUserEmail(user.email || "Unknown user");
+
+      await fetchTrips();
     }
 
-    loadUser();
+    loadUserAndTrips();
   }, []);
 
   useEffect(() => {
@@ -223,7 +230,7 @@ export default function HomePage() {
             <button
               className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600"
             >
-              {userEmail?.charAt(0).toUpperCase()}
+              {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
             </button>
 
             <div className="absolute right-0 top-12 hidden min-w-[220px] rounded-2xl border border-stone-200 bg-white p-3 shadow-xl group-hover:block">

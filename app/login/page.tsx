@@ -16,23 +16,30 @@ export default function LoginPage() {
     async function handleSignIn(e: React.FormEvent) {
         e.preventDefault();
         setIsLoading(true);
-        setMessage("");
+        setMessage("Signing in...");
 
         const { error } = await supabase.auth.signInWithPassword({
-            email,
+            email: email.trim(),
             password,
         });
 
-        setIsLoading(false);
+        console.log("LOGIN ERROR:", error);
 
         if (error) {
+            setIsLoading(false);
             setMessage(error.message);
             return;
         }
 
-        await supabase.rpc("accept_trip_invites");
+        const { error: inviteError } = await supabase.rpc("accept_trip_invites");
 
-        router.push("/");
+        if (inviteError) {
+            console.error("Error accepting trip invites:", inviteError);
+        }
+
+        setMessage("Signed in. Redirecting...");
+
+        window.location.href = "/";
     }
 
     async function handleSignUp(e: React.FormEvent) {
@@ -52,7 +59,11 @@ export default function LoginPage() {
             return;
         }
 
-        await supabase.rpc("accept_trip_invites");
+        const { error: inviteError } = await supabase.rpc("accept_trip_invites");
+
+        if (inviteError) {
+            console.error("Error accepting trip invites:", inviteError);
+        }
 
         setMessage("Account created. You can now sign in.");
     }

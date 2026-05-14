@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import ExpenseForm from "./ExpenseForm";
 import type { Currency, TripMember } from "../types";
 
@@ -60,6 +60,18 @@ export default function ExpenseFormModal({
     onCancel,
     expenseFormBottomRef,
 }: ExpenseFormModalProps) {
+
+    const errorRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (!expenseFormError) return;
+
+        errorRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+        });
+    }, [expenseFormError]);
+
     return (
         <div
             className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-3 pt-12 backdrop-blur-[2px] sm:items-center sm:p-6"
@@ -91,7 +103,10 @@ export default function ExpenseFormModal({
 
                 <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
                     {expenseFormError && (
-                        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <div
+                            ref={errorRef}
+                            className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                        >
                             {expenseFormError}
                         </div>
                     )}

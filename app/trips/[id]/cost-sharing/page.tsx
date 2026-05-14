@@ -312,8 +312,8 @@ export default function TripCostSharingPage() {
 
   async function handleSaveExpense(e: React.FormEvent) {
     e.preventDefault();
+
     setExpenseFormError("");
-    setIsSavingExpense(true);
 
     const parsedAmount = Number(amount);
 
@@ -344,6 +344,8 @@ export default function TripCostSharingPage() {
 
     const participantIds = [...new Set(selectedParticipantIds)];
 
+    setIsSavingExpense(true);
+
     const result = editingExpenseId
       ? await updateExpense({
         expenseId: editingExpenseId,
@@ -366,7 +368,8 @@ export default function TripCostSharingPage() {
       });
 
     if (!result.success) {
-      alert(result.message);
+      setExpenseFormError(result.message);
+      setIsSavingExpense(false);
       return;
     }
 
@@ -381,6 +384,7 @@ export default function TripCostSharingPage() {
     setTimeout(() => {
       setSuccessMessage("");
     }, 2000);
+    setIsSavingExpense(false);
   }
 
   async function handleDeleteExpense(expenseId: number) {

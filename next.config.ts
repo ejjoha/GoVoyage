@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["192.168.86.179"],
   reactStrictMode: true,
 };
 
