@@ -157,3 +157,10 @@ export async function deleteBookingById(bookingId: number) {
         .delete()
         .eq("id", bookingId);
 }
+
+export async function deleteTripInvite(inviteId: number) {
+    return supabase
+        .from("trip_invites")
+        .delete()
+        .eq("id", inviteId);
+}
