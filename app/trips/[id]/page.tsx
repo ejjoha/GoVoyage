@@ -3,6 +3,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+
+import {
+  createBooking,
+  createTripInvite,
+  createTripMember,
+  deleteBookingById,
+  deleteTrip,
+  deleteTripMember,
+  getBookings,
+  getTrip,
+  getTripInvites,
+  getTripMembers,
+  updateBooking,
+  updateTrip,
+  type TripInvite,
+} from "./api";
+
 import BookingTimeline from "./components/BookingTimeline";
 import BookingForm from "./components/BookingForm";
 import TripHero from "./components/TripHero";
@@ -44,6 +61,8 @@ export default function TripPage() {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [isTripLoading, setIsTripLoading] = useState(true);
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [showTripForm, setShowTripForm] = useState(false);
   const [tripSuccessMessage, setTripSuccessMessage] = useState("");
 
@@ -67,9 +86,7 @@ export default function TripPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
 
-  const [tripInvites, setTripInvites] = useState<
-    { id: number; email: string; role: string; accepted_at: string | null }[]
-  >([]);
+  const [tripInvites, setTripInvites] = useState<TripInvite[]>([]);
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [activeFilter, setActiveFilter] = useState<BookingFilter>("all");
@@ -123,12 +140,7 @@ export default function TripPage() {
       setInviteMessage("Enter an email address.");
       return;
     }
-
-    const { error } = await supabase.from("trip_invites").insert({
-      trip_id: id,
-      email,
-      role: "editor",
-    });
+    const { error } = await createTripInvite(id, email);
 
     if (error) {
       setInviteMessage(error.message);
@@ -141,11 +153,7 @@ export default function TripPage() {
   }
 
   async function fetchTripInvites() {
-    const { data, error } = await supabase
-      .from("trip_invites")
-      .select("id, email, role, accepted_at")
-      .eq("trip_id", id)
-      .order("created_at", { ascending: true });
+    const { data, error } = await getTripInvites(id);
 
     if (error) {
       console.error("Error loading trip invites:", error);
@@ -159,11 +167,7 @@ export default function TripPage() {
   async function fetchTrip() {
     setIsTripLoading(true);
 
-    const { data, error } = await supabase
-      .from("trips")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const { data, error } = await getTrip(id);
 
     if (error) {
       console.error("Error loading trip:", error);
@@ -172,7 +176,14 @@ export default function TripPage() {
       return;
     }
 
-    const tripData = data as Trip;
+    if (!data) {
+      setTrip(null);
+      setIsTripLoading(false);
+      return;
+    }
+
+    const tripData = data;
+
     setTrip(tripData);
 
     setEditTripTitle(tripData.title || "");
@@ -191,11 +202,7 @@ export default function TripPage() {
   }
 
   async function fetchTripMembers() {
-    const { data, error } = await supabase
-      .from("trip_members")
-      .select("*")
-      .eq("trip_id", id)
-      .order("created_at", { ascending: true });
+    const { data, error } = await getTripMembers(id);
 
     if (error) {
       console.error("Error loading trip members:", error);
@@ -203,15 +210,11 @@ export default function TripPage() {
       return;
     }
 
-    setTripMembers((data || []) as TripMember[]);
+    setTripMembers(data || []);
   }
 
   async function fetchBookings() {
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("*")
-      .eq("trip_id", id)
-      .order("start_time", { ascending: true });
+    const { data, error } = await getBookings(id);
 
     if (error) {
       console.error("Error fetching bookings:", error);
@@ -226,7 +229,7 @@ export default function TripPage() {
       return;
     }
 
-    setBookings((data || []) as Booking[]);
+    setBookings(data || []);
 
     localStorage.setItem(
       `trip-bookings-${id}`,
@@ -249,6 +252,8 @@ export default function TripPage() {
         router.push("/login");
         return;
       }
+
+      setCurrentUserId(user.id);
 
       fetchTrip();
       fetchBookings();
@@ -324,17 +329,14 @@ export default function TripPage() {
       return;
     }
 
-    const { error } = await supabase
-      .from("trips")
-      .update({
-        title: editTripTitle.trim(),
-        destination: editTripDestination.trim(),
-        image_url: editTripImageUrl.trim() || null,
-        start_date: editTripStartDate,
-        end_date: editTripEndDate,
-        currencies: editCurrencies,
-      })
-      .eq("id", id);
+    const { error } = await updateTrip(id, {
+      title: editTripTitle.trim(),
+      destination: editTripDestination.trim(),
+      image_url: editTripImageUrl.trim() || null,
+      start_date: editTripStartDate,
+      end_date: editTripEndDate,
+      currencies: editCurrencies,
+    });
 
     if (error) {
       console.error("Error updating trip:", error);
@@ -354,7 +356,7 @@ export default function TripPage() {
   }
 
   async function handleDeleteTripConfirmed() {
-    const { error } = await supabase.from("trips").delete().eq("id", id);
+    const { error } = await deleteTrip(id);
 
     if (error) {
       console.error("Error deleting trip:", error);
@@ -396,10 +398,7 @@ export default function TripPage() {
       return;
     }
 
-    const { error } = await supabase.from("trip_members").insert({
-      trip_id: id,
-      name: trimmedName,
-    });
+    const { error } = await createTripMember(id, trimmedName);
 
     if (error) {
       console.error("Error adding traveller:", error);
@@ -413,10 +412,7 @@ export default function TripPage() {
   }
 
   async function handleDeleteTravellerConfirmed(memberId: number) {
-    const { error } = await supabase
-      .from("trip_members")
-      .delete()
-      .eq("id", memberId);
+    const { error } = await deleteTripMember(memberId);
 
     if (error) {
       console.error("Error deleting traveller:", error);
@@ -443,10 +439,8 @@ export default function TripPage() {
   }
 
   async function deleteBookingConfirmed(bookingId: number) {
-    const { error } = await supabase
-      .from("bookings")
-      .delete()
-      .eq("id", bookingId);
+
+    const { error } = await deleteBookingById(bookingId);
 
     if (error) {
       console.error("Error deleting booking:", error);
@@ -589,17 +583,11 @@ export default function TripPage() {
     let error = null;
 
     if (editingBookingId) {
-      const response = await supabase
-        .from("bookings")
-        .update(payload)
-        .eq("id", editingBookingId);
+      const response = await updateBooking(editingBookingId, payload);
 
       error = response.error;
     } else {
-      const response = await supabase.from("bookings").insert({
-        trip_id: id,
-        ...payload,
-      });
+      const response = await createBooking(id, payload);
 
       error = response.error;
     }
@@ -672,6 +660,10 @@ export default function TripPage() {
       Unscheduled: Booking[];
     }
   >);
+
+  const isTripOwner = Boolean(
+    trip && currentUserId && trip.user_id === currentUserId
+  );
 
   const filterOptions: BookingFilter[] = ["all", "flight", "hotel", "plans"];
 
@@ -1205,22 +1197,24 @@ export default function TripPage() {
                   </div>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-4">
-                  <h3 className="text-sm font-semibold text-red-700">
-                    Danger zone
-                  </h3>
-                  <p className="mt-1 text-sm text-red-600/80">
-                    Deleting the trip will remove it permanently.
-                  </p>
+                {isTripOwner && (
+                  <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-4">
+                    <h3 className="text-sm font-semibold text-red-700">
+                      Danger zone
+                    </h3>
+                    <p className="mt-1 text-sm text-red-600/80">
+                      Deleting the trip will remove it permanently.
+                    </p>
 
-                  <button
-                    type="button"
-                    onClick={handleDeleteTrip}
-                    className="mt-4 rounded-xl bg-white px-4 py-3 text-sm font-medium text-red-600 shadow-sm transition hover:bg-red-100"
-                  >
-                    Delete trip
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={handleDeleteTrip}
+                      className="mt-4 rounded-xl bg-white px-4 py-3 text-sm font-medium text-red-600 shadow-sm transition hover:bg-red-100"
+                    >
+                      Delete trip
+                    </button>
+                  </div>
+                )}
 
                 <div className="flex flex-col-reverse gap-3 border-t border-stone-200 pt-4 sm:flex-row sm:justify-end">
                   <button
