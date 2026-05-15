@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useTripMembers } from "./hooks/useTripMembers";
+import { useTripBookings } from "./hooks/useTripBookings";
 import Link from "next/link";
 
 import {
@@ -100,7 +101,12 @@ export default function TripPage() {
 
   const [tripInvites, setTripInvites] = useState<TripInvite[]>([]);
 
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const {
+    bookings,
+    setBookings,
+    fetchBookings,
+  } = useTripBookings(id);
+
   const [activeFilter, setActiveFilter] = useState<BookingFilter>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
@@ -211,32 +217,6 @@ export default function TripPage() {
     );
 
     setIsTripLoading(false);
-  }
-
-
-
-  async function fetchBookings() {
-    const { data, error } = await getBookings(id);
-
-    if (error) {
-      console.error("Error fetching bookings:", error);
-
-      const cachedBookings = localStorage.getItem(`trip-bookings-${id}`);
-
-      if (cachedBookings) {
-        setBookings(JSON.parse(cachedBookings));
-        return;
-      }
-
-      return;
-    }
-
-    setBookings(data || []);
-
-    localStorage.setItem(
-      `trip-bookings-${id}`,
-      JSON.stringify(data || [])
-    );
   }
 
   useEffect(() => {
