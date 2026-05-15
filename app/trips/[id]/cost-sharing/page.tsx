@@ -641,9 +641,14 @@ export default function TripCostSharingPage() {
               </span>
 
               <span
-                className={`flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white shadow-md transition-all duration-200 hover:bg-rose-600 ${showExpenses ? "rotate-180" : ""}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white shadow-[0_10px_24px_rgba(244,63,94,0.32)] transition-transform duration-300 ${showExpenses ? "rotate-180" : "rotate-0"
+                  }`}
               >
-                ⌄
+                <img
+                  src="/icons/chevron-down.svg"
+                  alt=""
+                  className="h-5 w-5 brightness-0 invert"
+                />
               </span>
             </div>
           </button>
