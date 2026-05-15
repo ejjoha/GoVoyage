@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useTripMembers } from "./hooks/useTripMembers";
 import Link from "next/link";
 
 import {
@@ -80,12 +81,20 @@ export default function TripPage() {
     "USD",
   ]);
 
+  const {
+    tripMembers,
+    newTravellerName,
+    setNewTravellerName,
+    travellerFormError,
+    setTravellerFormError,
+    fetchTripMembers,
+    addTraveller,
+    deleteTraveller,
+  } = useTripMembers(id);
+
   const [tripFormError, setTripFormError] = useState("");
-  const [travellerFormError, setTravellerFormError] = useState("");
   const [showTravellersSheet, setShowTravellersSheet] = useState(false);
 
-  const [tripMembers, setTripMembers] = useState<TripMember[]>([]);
-  const [newTravellerName, setNewTravellerName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
 
@@ -204,17 +213,7 @@ export default function TripPage() {
     setIsTripLoading(false);
   }
 
-  async function fetchTripMembers() {
-    const { data, error } = await getTripMembers(id);
 
-    if (error) {
-      console.error("Error loading trip members:", error);
-      setTripMembers([]);
-      return;
-    }
-
-    setTripMembers(data || []);
-  }
 
   async function fetchBookings() {
     const { data, error } = await getBookings(id);
@@ -383,37 +382,6 @@ export default function TripPage() {
     });
   }
 
-  async function handleAddTraveller() {
-    const trimmedName = newTravellerName.trim();
-    setTravellerFormError("");
-
-    if (!trimmedName) {
-      setTravellerFormError("Please enter a traveller name.");
-      return;
-    }
-
-    const alreadyExists = tripMembers.some(
-      (member) => member.name.trim().toLowerCase() === trimmedName.toLowerCase()
-    );
-
-    if (alreadyExists) {
-      setTravellerFormError("That traveller is already on this trip.");
-      return;
-    }
-
-    const { error } = await createTripMember(id, trimmedName);
-
-    if (error) {
-      console.error("Error adding traveller:", error);
-      setTravellerFormError("We couldn’t add that traveller. Please try again.");
-      return;
-    }
-
-    setNewTravellerName("");
-    setTravellerFormError("");
-    await fetchTripMembers();
-  }
-
   async function handleDeleteInviteConfirmed(inviteId: number) {
     const { error } = await deleteTripInvite(inviteId);
 
@@ -439,21 +407,6 @@ export default function TripPage() {
     });
   }
 
-  async function handleDeleteTravellerConfirmed(memberId: number) {
-    const { error } = await deleteTripMember(memberId);
-
-    if (error) {
-      console.error("Error deleting traveller:", error);
-      setTravellerFormError(
-        "We couldn’t remove this traveller. They may still be used in shared costs."
-      );
-      return;
-    }
-
-    closeConfirm();
-    await fetchTripMembers();
-  }
-
   function handleDeleteTraveller(memberId: number) {
     openConfirm({
       title: "Remove this traveller?",
@@ -462,7 +415,12 @@ export default function TripPage() {
       confirmLabel: "Remove traveller",
       cancelLabel: "Keep traveller",
       tone: "danger",
-      onConfirm: () => handleDeleteTravellerConfirmed(memberId),
+      onConfirm: async () => {
+        const success = await deleteTraveller(memberId);
+        if (success) {
+          closeConfirm();
+        }
+      },
     });
   }
 
@@ -968,7 +926,7 @@ export default function TripPage() {
           tripInvites={tripInvites}
           onClose={resetTripFormFromTrip}
           onSaveTrip={handleSaveTrip}
-          onAddTraveller={handleAddTraveller}
+          onAddTraveller={addTraveller}
           onDeleteTraveller={handleDeleteTraveller}
           onDeleteInvite={handleDeleteInvite}
           onInviteTraveller={inviteTravellerByEmail}
@@ -1102,7 +1060,7 @@ export default function TripPage() {
 
                 <button
                   type="button"
-                  onClick={handleAddTraveller}
+                  onClick={addTraveller}
                   className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
                 >
                   Add
