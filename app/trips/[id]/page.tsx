@@ -10,15 +10,11 @@ import Link from "next/link";
 import {
   createBooking,
   createTripInvite,
-  createTripMember,
   deleteBookingById,
   deleteTrip,
   deleteTripInvite,
-  deleteTripMember,
-  getBookings,
   getTrip,
   getTripInvites,
-  getTripMembers,
   updateBooking,
   updateTrip,
   type TripInvite,
@@ -31,7 +27,6 @@ import EditTripModal from "./components/EditTripModal";
 import ConfirmModal from "./components/ConfirmModal";
 import type {
   Trip,
-  TripMember,
   Booking,
   BookingType,
   BookingFilter,
@@ -103,7 +98,6 @@ export default function TripPage() {
 
   const {
     bookings,
-    setBookings,
     fetchBookings,
   } = useTripBookings(id);
 
@@ -404,30 +398,6 @@ export default function TripPage() {
     });
   }
 
-  async function deleteBookingConfirmed(bookingId: number) {
-
-    const { error } = await deleteBookingById(bookingId);
-
-    if (error) {
-      console.error("Error deleting booking:", error);
-      setBookingFormError("We couldn’t delete that booking. Please try again.");
-      return;
-    }
-
-    closeConfirm();
-    await fetchBookings();
-
-    setDeleteSuccessMessage("Booking deleted");
-
-    setTimeout(() => {
-      setDeleteSuccessMessage("");
-    }, 2000);
-
-    if (expandedId === bookingId) {
-      setExpandedId(null);
-    }
-  }
-
   function deleteBooking(bookingId: number) {
     openConfirm({
       title: "Delete this booking?",
@@ -438,6 +408,31 @@ export default function TripPage() {
       tone: "danger",
       onConfirm: () => deleteBookingConfirmed(bookingId),
     });
+  }
+
+  async function deleteBookingConfirmed(bookingId: number) {
+    setBookingFormError("");
+
+    const { error } = await deleteBookingById(bookingId);
+
+    if (error) {
+      console.error("Error deleting booking:", error);
+      setBookingFormError("We couldn’t delete this booking. Please try again.");
+      return;
+    }
+
+    if (expandedId === bookingId) {
+      setExpandedId(null);
+    }
+
+    closeConfirm();
+    setDeleteSuccessMessage("Booking deleted successfully.");
+
+    setTimeout(() => {
+      setDeleteSuccessMessage("");
+    }, 3000);
+
+    await fetchBookings();
   }
 
   function startEditingBooking(booking: Booking) {
