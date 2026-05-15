@@ -183,10 +183,10 @@ export default function BookingTimeline({
                               onClick={() =>
                                 handleToggleBooking(booking.id, isExpanded)
                               }
-                              className="mb-2 w-full min-w-0 overflow-hidden rounded-[1.75rem] border border-stone-200 bg-white p-4 text-left shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] sm:p-5"
+                              className="mb-2 w-full min-w-0 overflow-hidden rounded-[1.5rem] border border-stone-200 bg-white p-3 text-left shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] sm:p-4"
                             >
                               <div
-                                className={`mb-4 h-1.5 rounded-full ${getAccentBarClass(
+                                className={`mb-3 h-1 rounded-full ${getAccentBarClass(
                                   booking.type
                                 )}`}
                               />
@@ -208,13 +208,13 @@ export default function BookingTimeline({
                                 </span>
                               </div>
 
-                              <h2 className="mt-3 break-words text-base font-semibold leading-snug text-stone-900 sm:text-lg">
+                              <h2 className="mt-2 break-words text-[15px] font-semibold leading-snug text-stone-900 sm:text-base">
                                 {booking.type === "hotel"
                                   ? booking.hotel_name || booking.title
                                   : booking.title}
                               </h2>
 
-                              <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+                              <div className="mt-1.5 flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
                                 <p className="text-sm font-medium text-stone-500">
                                   {formatDateTime(booking.start_time)}
                                   {booking.end_time
@@ -570,7 +570,7 @@ export default function BookingTimeline({
                                     )}
                                   </div>
 
-                                  <div className="mt-5 flex items-center justify-between border-t border-white/40 pt-4">
+                                  <div className="mt-3 flex items-center justify-between border-t border-white/40 pt-3">
                                     <button
                                       type="button"
                                       onClick={() => onDeleteBooking(booking.id)}
