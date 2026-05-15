@@ -5,6 +5,7 @@ type Props = {
     show: boolean;
     onClose: () => void;
     editingBookingId: number | null;
+    bookingFormError: string;
     bookingFormRef: React.RefObject<HTMLFormElement | null>;
 
     newTitle: string;
@@ -59,6 +60,7 @@ export default function BookingFormModal({
     show,
     onClose,
     editingBookingId,
+    bookingFormError,
     bookingFormRef,
     onSubmit,
     ...formProps
@@ -91,6 +93,7 @@ export default function BookingFormModal({
                     <BookingForm
                         bookingFormRef={bookingFormRef}
                         editingBookingId={editingBookingId}
+                        bookingFormError={bookingFormError}
                         onSubmit={onSubmit}
                         onCancel={onClose}
                         {...formProps}
