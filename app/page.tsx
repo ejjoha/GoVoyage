@@ -1,10 +1,11 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TripCard } from "@/components/TripCard";
 import { PastTripCard } from "@/components/PastTripCard";
+import { TripCardSkeleton } from "@/components/TripCardSkeleton";
 import { addTripMembers, createTrip, getTrips } from "@/services/trips";
 import type { Trip } from "@/types/trip";
 
@@ -31,6 +32,9 @@ export default function HomePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [showForm, setShowForm] = useState(false);
+  const [createTripError, setCreateTripError] = useState("");
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+  const createTripErrorRef = useRef<HTMLDivElement | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newDestination, setNewDestination] = useState("");
   const [newStartDate, setNewStartDate] = useState("");
@@ -127,6 +131,15 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!createTripError) return;
+
+    createTripErrorRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [createTripError]);
+
   function handleAddTraveller() {
     if (!travellerName.trim()) {
       alert("Please enter a traveller name");
@@ -158,17 +171,21 @@ export default function HomePage() {
   }
 
   async function handleCreateTrip() {
+    setCreateTripError("");
+    setIsCreatingTrip(true);
     if (!newTitle.trim() || !newDestination.trim() || !newStartDate || !newEndDate) {
-      alert("Please fill in Title, Destination, Start date, and End date");
+      setCreateTripError("Please fill in title, destination, start date, and end date.");
+      setIsCreatingTrip(false);
       return;
     }
-
     if (newEndDate < newStartDate) {
-      alert("End date cannot be before start date");
+      setCreateTripError("End date cannot be before start date.");
+      setIsCreatingTrip(false);
       return;
     }
     if (newTravellers.length === 0) {
-      alert("Please add at least one traveller");
+      setCreateTripError("Please add at least one traveller.");
+      setIsCreatingTrip(false);
       return;
     }
 
@@ -201,10 +218,13 @@ export default function HomePage() {
       setNewTravellers([]);
       setShowForm(false);
 
+      setIsCreatingTrip(false);
+
       router.push(`/trips/${data.id}`);
     } catch (err) {
       console.error("Unexpected error creating trip:", err);
-      alert("Failed to create trip");
+      setCreateTripError("Failed to create trip.");
+      setIsCreatingTrip(false);
     }
   }
 
@@ -283,7 +303,10 @@ export default function HomePage() {
 
       <div className="mb-8">
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            setShowForm((current) => !current);
+            setCreateTripError("");
+          }}
           className="group w-full rounded-2xl bg-rose-500 px-5 py-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(244,63,94,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-600 active:translate-y-0 active:scale-[0.985]"
         >
           <span className="flex items-center justify-center gap-2">
@@ -305,6 +328,14 @@ export default function HomePage() {
             <p className="mt-1 text-sm text-stone-500">
               Start with the basics and build the details from there.
             </p>
+            {createTripError && (
+              <div
+                ref={createTripErrorRef}
+                className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
+                {createTripError}
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -482,19 +513,25 @@ export default function HomePage() {
 
           <button
             onClick={handleCreateTrip}
-            className="w-full rounded-2xl bg-rose-500 px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-rose-600 hover:shadow-lg active:scale-[0.97]"
+            disabled={isCreatingTrip}
+            className="w-full rounded-2xl bg-rose-500 px-5 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-200 hover:bg-rose-600 hover:shadow-lg active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none"
           >
             <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">✓</span>
-              Save trip
+              <span className="text-lg">
+                {isCreatingTrip ? "…" : "✓"}
+              </span>
+
+              {isCreatingTrip ? "Creating trip..." : "Save trip"}
             </span>
           </button>
         </div>
       )}
 
       {isLoading && (
-        <div className="rounded-[1.75rem] border border-stone-200 bg-white p-6 text-stone-500 shadow-sm">
-          Loading trips...
+        <div className="space-y-5">
+          <TripCardSkeleton />
+          <TripCardSkeleton />
+          <TripCardSkeleton />
         </div>
       )}
 

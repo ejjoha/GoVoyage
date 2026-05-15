@@ -105,11 +105,6 @@ export default function EditTripModal({
 
                 <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
                     <form onSubmit={onSaveTrip} className="space-y-5">
-                        {tripFormError && (
-                            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                                {tripFormError}
-                            </div>
-                        )}
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
@@ -396,6 +391,12 @@ export default function EditTripModal({
                             </div>
                         )}
 
+                        {tripFormError && (
+                            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {tripFormError}
+                            </div>
+                        )}
+                        
                         <div className="flex flex-col-reverse gap-3 border-t border-stone-200 pt-4 sm:flex-row sm:justify-end">
                             <button
                                 type="button"
