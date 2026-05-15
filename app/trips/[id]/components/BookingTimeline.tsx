@@ -201,10 +201,14 @@ export default function BookingTimeline({
                                 </span>
 
                                 <span
-                                  className={`flex h-7 w-7 items-center justify-center rounded-full bg-stone-100 text-stone-500 transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"
+                                  className={`flex h-8 w-8 items-center justify-center rounded-full bg-white text-stone-700 shadow-sm transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"
                                     }`}
                                 >
-                                  ⌄
+                                  <img
+                                    src="/icons/chevron-down.svg"
+                                    alt=""
+                                    className="h-4.5 w-4.5 opacity-80"
+                                  />
                                 </span>
                               </div>
 
