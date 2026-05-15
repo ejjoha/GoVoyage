@@ -48,7 +48,7 @@ export default function TripHero({
             aria-label="Back"
           >
             <img
-              src="/icons/back.svg"
+              src="/icons/arrow-left.svg"
               alt=""
               className="h-5 w-5 opacity-80"
             />
