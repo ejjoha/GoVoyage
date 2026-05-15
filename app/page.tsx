@@ -333,19 +333,29 @@ export default function HomePage() {
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <input
-                type="date"
-                value={newStartDate}
-                onChange={(e) => setNewStartDate(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-              />
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-stone-700">
+                  Start date
+                </label>
+                <input
+                  type="date"
+                  value={newStartDate}
+                  onChange={(e) => setNewStartDate(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                />
+              </div>
 
-              <input
-                type="date"
-                value={newEndDate}
-                onChange={(e) => setNewEndDate(e.target.value)}
-                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-              />
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-stone-700">
+                  End date
+                </label>
+                <input
+                  type="date"
+                  value={newEndDate}
+                  onChange={(e) => setNewEndDate(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                />
+              </div>
             </div>
 
             <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
