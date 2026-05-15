@@ -43,6 +43,7 @@ type BookingFormProps = {
   setNewOrigin: React.Dispatch<React.SetStateAction<string>>;
   newDestinationPoint: string;
   setNewDestinationPoint: React.Dispatch<React.SetStateAction<string>>;
+  bookingFormError: string;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
 };
@@ -60,12 +61,12 @@ function SectionCard({
     tone === "blue"
       ? "border-blue-200/70 bg-blue-50/60"
       : tone === "orange"
-      ? "border-orange-200/70 bg-orange-50/60"
-      : tone === "violet"
-      ? "border-violet-200/70 bg-violet-50/70"
-      : tone === "rose"
-      ? "border-rose-200/70 bg-rose-50/60"
-      : "border-stone-200 bg-stone-50";
+        ? "border-orange-200/70 bg-orange-50/60"
+        : tone === "violet"
+          ? "border-violet-200/70 bg-violet-50/70"
+          : tone === "rose"
+            ? "border-rose-200/70 bg-rose-50/60"
+            : "border-stone-200 bg-stone-50";
 
   return (
     <div className={`rounded-[1.5rem] border p-4 sm:p-5 ${toneClass}`}>
@@ -128,6 +129,7 @@ export default function BookingForm({
   setNewOrigin,
   newDestinationPoint,
   setNewDestinationPoint,
+  bookingFormError,
   onSubmit,
   onCancel,
 }: BookingFormProps) {
@@ -496,6 +498,12 @@ export default function BookingForm({
             </Field>
           </SectionCard>
         </>
+      )}
+
+      {bookingFormError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {bookingFormError}
+        </div>
       )}
 
       <div className="flex flex-col-reverse gap-3 border-t border-stone-200 pt-4 sm:flex-row sm:justify-end">

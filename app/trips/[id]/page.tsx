@@ -511,6 +511,15 @@ export default function TripPage() {
       return;
     }
 
+    if (newEndTime && newEndTime < newStartTime) {
+      setBookingFormError(
+        newType === "flight"
+          ? "Arrival cannot be before departure."
+          : "End time cannot be before start time."
+      );
+      return;
+    }
+    
     if (
       newType === "transport" &&
       (!newOrigin.trim() || !newDestinationPoint.trim())
@@ -933,15 +942,11 @@ export default function TripPage() {
             </div>
 
             <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
-              {bookingFormError && (
-                <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {bookingFormError}
-                </div>
-              )}
 
               <BookingForm
                 bookingFormRef={bookingFormRef}
                 editingBookingId={editingBookingId}
+                bookingFormError={bookingFormError}
                 newTitle={newTitle}
                 setNewTitle={setNewTitle}
                 newType={newType}
