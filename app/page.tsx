@@ -572,9 +572,9 @@ export default function HomePage() {
             <section className="space-y-5">
               <div className="flex items-end justify-between gap-4">
                 <div>
-                  <div className="mb-2 inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">
                     Planned journeys
-                  </div>
+                  </p>
 
                   <h2 className="text-2xl font-semibold tracking-[-0.02em] text-stone-900">
                     Upcoming trips
@@ -602,9 +602,9 @@ export default function HomePage() {
             <section className="space-y-5">
               <div className="flex items-end justify-between gap-4">
                 <div>
-                  <div className="mb-2 inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">
                     Travel archive
-                  </div>
+                  </p>
 
                   <h2 className="text-2xl font-semibold tracking-[-0.02em] text-stone-900">
                     Past trips
