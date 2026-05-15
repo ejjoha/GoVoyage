@@ -28,9 +28,17 @@ export function TripCard({ trip }: { trip: Trip }) {
           </div>
         </div>
       ) : (
-        <div className="border-b border-stone-100 bg-gradient-to-r from-stone-50 to-stone-100/70 px-5 py-5">
-          <div className="inline-flex rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-sm">
-            {trip.destination}
+        <div className="relative h-56 w-full overflow-hidden bg-gradient-to-br from-rose-100 via-rose-200 to-pink-300">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent" />
+
+          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
+            <div className="inline-flex rounded-full border border-white/40 bg-white/85 px-3 py-1.5 text-xs font-semibold text-stone-700 backdrop-blur-sm">
+              {trip.destination}
+            </div>
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-stone-700 shadow-sm backdrop-blur-sm transition-transform duration-300 group-hover:translate-x-0.5">
+              →
+            </div>
           </div>
         </div>
       )}
@@ -46,12 +54,6 @@ export function TripCard({ trip }: { trip: Trip }) {
               {formatTripDateRange(trip.start_date, trip.end_date)}
             </p>
           </div>
-
-          {!trip.image_url && (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-400 transition-colors duration-200 group-hover:bg-stone-900 group-hover:text-white">
-              →
-            </div>
-          )}
         </div>
       </div>
     </Link>

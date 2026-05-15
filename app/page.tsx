@@ -397,12 +397,14 @@ export default function HomePage() {
                       key={traveller.id}
                       className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-3 text-sm text-stone-800"
                     >
-                      <span>{traveller.name}</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        {traveller.name}
+                      </span>
 
                       <button
                         type="button"
                         onClick={() => handleRemoveTraveller(traveller.id)}
-                        className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                        className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
                       >
                         Remove
                       </button>

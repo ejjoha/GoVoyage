@@ -28,12 +28,14 @@ export default function TripHero({
 }: TripHeroProps) {
   return (
     <div className="relative mb-5 w-full overflow-hidden rounded-[2rem] shadow-md">
-      {imageUrl && (
+      {imageUrl ? (
         <img
           src={imageUrl}
           alt={title}
           className="h-[300px] w-full object-cover sm:h-[360px]"
         />
+      ) : (
+        <div className="h-[300px] w-full bg-gradient-to-br from-rose-100 via-rose-200 to-pink-300 sm:h-[360px]" />
       )}
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />

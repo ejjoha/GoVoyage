@@ -218,10 +218,10 @@ export default function EditTripModal({
                                     {tripMembers.map((member) => (
                                         <div
                                             key={member.id}
-                                            className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
+                                            className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
+                                            <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
                                                     {member.name
                                                         .split(" ")
                                                         .map((part) => part[0])
@@ -230,7 +230,7 @@ export default function EditTripModal({
                                                         .toUpperCase()}
                                                 </div>
 
-                                                <span className="text-sm font-medium text-stone-800">
+                                                <span className="min-w-0 truncate text-sm font-medium text-stone-800">
                                                     {member.name}
                                                 </span>
                                             </div>
@@ -238,7 +238,7 @@ export default function EditTripModal({
                                             <button
                                                 type="button"
                                                 onClick={() => onDeleteTraveller(member.id)}
-                                                className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                                                className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
                                             >
                                                 Remove
                                             </button>
