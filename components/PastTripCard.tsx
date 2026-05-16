@@ -13,7 +13,7 @@ export function PastTripCard({ trip }: { trip: Trip }) {
                     <img
                         src={trip.image_url}
                         alt={trip.title}
-                        className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:opacity-100"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
 
