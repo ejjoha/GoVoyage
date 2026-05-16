@@ -26,6 +26,7 @@ function getTodayDateString() {
 export default function HomePage() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
 
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -249,45 +250,49 @@ export default function HomePage() {
         <div className="absolute right-4 top-4 z-10">
           <div className="relative group">
             <button
+              type="button"
+              onClick={() => setShowAccountMenu((current) => !current)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600"
             >
               {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
             </button>
 
-            <div className="absolute right-0 top-12 hidden w-[280px] rounded-[1.75rem] border border-stone-200/70 bg-white/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl group-hover:block">
-              <p className="text-sm font-medium text-stone-500">
-                Signed in as
-              </p>
+            {showAccountMenu && (
+              <div className="absolute right-0 top-12 w-[280px] rounded-[1.75rem] border border-stone-200/70 bg-white/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl">
+                <p className="text-sm font-medium text-stone-500">
+                  Signed in as
+                </p>
 
-              <div className="mt-4 flex items-center gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-500 text-lg font-semibold text-white shadow-sm">
-                  {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-500 text-lg font-semibold text-white shadow-sm">
+                    {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-stone-900">
+                      {userEmail || "Unknown user"}
+                    </p>
+                    <p className="mt-0.5 text-xs text-stone-500">
+                      GoVoyage account
+                    </p>
+                  </div>
                 </div>
 
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-stone-900">
-                    {userEmail || "Unknown user"}
-                  </p>
-                  <p className="mt-0.5 text-xs text-stone-500">
-                    GoVoyage account
-                  </p>
-                </div>
+                <div className="my-4 h-px bg-stone-200" />
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    setUserEmail("");
+                    window.location.href = "/login";
+                  }}
+                  className="flex w-full items-center justify-center rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 active:scale-[0.98]"
+                >
+                  Sign out
+                </button>
               </div>
-
-              <div className="my-4 h-px bg-stone-200" />
-
-              <button
-                type="button"
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  setUserEmail("");
-                  window.location.href = "/login";
-                }}
-                className="flex w-full items-center justify-center rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 active:scale-[0.98]"
-              >
-                Sign out
-              </button>
-            </div>
+            )}
           </div>
         </div>
 
