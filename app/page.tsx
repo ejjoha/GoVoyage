@@ -8,6 +8,7 @@ import { PastTripCard } from "@/components/PastTripCard";
 import { TripCardSkeleton } from "@/components/TripCardSkeleton";
 import { addTripMembers, createTrip, getTrips } from "@/services/trips";
 import type { Trip } from "@/types/trip";
+import { PastTripsCarousel } from "@/components/PastTripsCarousel";
 
 type NewTraveller = {
   id: number;
@@ -243,7 +244,7 @@ export default function HomePage() {
   const hasAnyTrips = trips.length > 0;
 
   return (
-    <main className="mx-auto min-h-screen max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto min-h-screen max-w-2xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
       <section className="relative mb-5 overflow-visible rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
         <div className="absolute right-4 top-4 z-10">
           <div className="relative group">
@@ -620,10 +621,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="space-y-4 opacity-90">
-                {pastTrips.map((trip) => (
-                  <PastTripCard key={trip.id} trip={trip} />
-                ))}
+              <div className="max-w-full overflow-hidden opacity-90">
+                <PastTripsCarousel trips={pastTrips} />
               </div>
             </section>
           )}

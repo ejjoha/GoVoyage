@@ -6,10 +6,10 @@ export function PastTripCard({ trip }: { trip: Trip }) {
     return (
         <Link
             href={`/trips/${trip.id}`}
-            className="group block overflow-hidden rounded-[1.75rem] border border-stone-200/60 bg-white/90 shadow-[0_6px_20px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] active:scale-[0.985]"
+            className="group block w-full overflow-hidden rounded-[1.75rem] border border-stone-200/60 bg-white/90 shadow-[0_6px_20px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] active:scale-[0.985]"
         >
             {trip.image_url ? (
-                <div className="relative h-44 w-full overflow-hidden">
+                <div className="relative h-32 w-full overflow-hidden">
                     <img
                         src={trip.image_url}
                         alt={trip.title}
@@ -31,7 +31,7 @@ export function PastTripCard({ trip }: { trip: Trip }) {
                 </div>
             )}
 
-            <div className="p-5">
+            <div className="p-3.5">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                         <h2 className="truncate text-lg font-medium text-stone-800">
