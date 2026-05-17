@@ -7,6 +7,7 @@ import { TripCard } from "@/components/TripCard";
 import { PastTripCard } from "@/components/PastTripCard";
 import { TripCardSkeleton } from "@/components/TripCardSkeleton";
 import { addTripMembers, createTrip, getTrips } from "@/services/trips";
+import { createTripInvite } from "@/app/trips/[id]/api";
 import type { Trip } from "@/types/trip";
 import { PastTripsCarousel } from "@/components/PastTripsCarousel";
 
@@ -44,11 +45,13 @@ export default function HomePage() {
   const [newImageUrl, setNewImageUrl] = useState("");
   const [travellerName, setTravellerName] = useState("");
   const [newTravellers, setNewTravellers] = useState<NewTraveller[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([
     "NOK",
     "EUR",
-    "USD",
+    "GBP",
   ]);
+  const [customCurrency, setCustomCurrency] = useState("");
 
   async function fetchTrips() {
     setIsLoading(true);
@@ -211,6 +214,16 @@ export default function HomePage() {
         alert("Trip created, but travellers could not be saved");
       }
 
+      const invite = inviteEmail.trim().toLowerCase();
+
+      if (invite) {
+        const { error: inviteError } = await createTripInvite(data.id, invite);
+
+        if (inviteError) {
+          console.error("Error saving trip invite:", inviteError);
+        }
+      }
+
       setNewTitle("");
       setNewDestination("");
       setNewImageUrl("");
@@ -218,6 +231,7 @@ export default function HomePage() {
       setNewEndDate("");
       setTravellerName("");
       setNewTravellers([]);
+      setInviteEmail("");
       setShowForm(false);
 
       setIsCreatingTrip(false);
@@ -465,6 +479,24 @@ export default function HomePage() {
             </div>
           </div>
 
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+            <h3 className="text-sm font-semibold text-stone-900">
+              Invite by email
+            </h3>
+
+            <p className="mt-1 text-sm text-stone-500">
+              Optionally invite someone to access and edit this trip.
+            </p>
+
+            <input
+              type="email"
+              placeholder="friend@example.com"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              className="mt-3 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+            />
+          </div>
+
           <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
             <div>
               <h3 className="text-sm font-semibold text-stone-900">
@@ -527,6 +559,43 @@ export default function HomePage() {
                   </button>
                 );
               })}
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <input
+                type="text"
+                placeholder="Custom currency"
+                value={customCurrency}
+                onChange={(e) =>
+                  setCustomCurrency(e.target.value.toUpperCase())
+                }
+                maxLength={3}
+                className="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold uppercase text-stone-800 outline-none transition focus:border-rose-300"
+              />
+
+              <button
+                type="button"
+                onClick={() => {
+                  const trimmed = customCurrency.trim();
+
+                  if (
+                    trimmed.length !== 3 ||
+                    selectedCurrencies.includes(trimmed)
+                  ) {
+                    return;
+                  }
+
+                  setSelectedCurrencies((current) => [
+                    ...current,
+                    trimmed,
+                  ]);
+
+                  setCustomCurrency("");
+                }}
+                className="rounded-xl bg-rose-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 active:scale-[0.98]"
+              >
+                Add
+              </button>
             </div>
           </div>
 
