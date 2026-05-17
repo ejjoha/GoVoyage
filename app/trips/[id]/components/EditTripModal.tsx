@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { TripMember } from "../types";
 
 type TripInvite = {
@@ -79,7 +80,10 @@ export default function EditTripModal({
     onDeleteInvite,
     onInviteTraveller,
     onDeleteTrip,
+
 }: EditTripModalProps) {
+    const [customCurrency, setCustomCurrency] = useState("");
+
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-3 pt-12 backdrop-blur-[2px] sm:items-center sm:p-6">
             <div className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
@@ -370,6 +374,43 @@ export default function EditTripModal({
                                     }
                                 )}
                             </div>
+
+                            <div className="mt-4 flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="Custom currency"
+                                    value={customCurrency}
+                                    onChange={(e) =>
+                                        setCustomCurrency(e.target.value.toUpperCase())
+                                    }
+                                    maxLength={3}
+                                    className="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold uppercase text-stone-800 outline-none transition focus:border-rose-300"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const trimmed = customCurrency.trim();
+
+                                        if (
+                                            trimmed.length !== 3 ||
+                                            editCurrencies.includes(trimmed)
+                                        ) {
+                                            return;
+                                        }
+
+                                        setEditCurrencies((current) => [
+                                            ...current,
+                                            trimmed,
+                                        ]);
+
+                                        setCustomCurrency("");
+                                    }}
+                                    className="rounded-xl bg-rose-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 active:scale-[0.98]"
+                                >
+                                    Add
+                                </button>
+                            </div>
                         </div>
 
                         {isTripOwner && (
@@ -396,7 +437,7 @@ export default function EditTripModal({
                                 {tripFormError}
                             </div>
                         )}
-                        
+
                         <div className="flex flex-col-reverse gap-3 border-t border-stone-200 pt-4 sm:flex-row sm:justify-end">
                             <button
                                 type="button"
