@@ -711,7 +711,7 @@ export default function TripPage() {
 
   if (isTripLoading) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto w-full max-w-3xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
         <div className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white p-8 shadow-sm">
           <div className="h-6 w-32 animate-pulse rounded-full bg-stone-200" />
           <div className="mt-6 h-10 w-2/3 animate-pulse rounded-2xl bg-stone-200" />
@@ -728,7 +728,7 @@ export default function TripPage() {
 
   if (!trip) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
+      <main className="mx-auto w-full max-w-3xl overflow-x-hidden px-4 py-10 sm:px-6">
         <div className="rounded-[2rem] border border-dashed border-stone-300 bg-stone-50 p-10 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white text-2xl shadow-sm">
             ✈️
@@ -788,7 +788,7 @@ export default function TripPage() {
           </div>
         )}
 
-        <section className="mb-4 grid grid-cols-2 gap-3">
+        <section className="mb-4 grid min-w-0 grid-cols-2 gap-3 overflow-hidden">
           <button
             type="button"
             onClick={openNewBookingForm}
@@ -808,8 +808,8 @@ export default function TripPage() {
         </section>
 
         {bookings.length > 0 && (
-          <div className="mb-5 w-full">
-            <div className="grid w-full grid-cols-4 gap-2 rounded-[1.75rem] bg-stone-100 p-2">
+          <div className="mb-5 w-full min-w-0 overflow-hidden">
+            <div className="grid w-full min-w-0 grid-cols-4 gap-2 overflow-hidden rounded-[1.75rem] bg-stone-100 p-2">
               {filterOptions.map((filter) => {
                 const isActive = activeFilter === filter;
 
