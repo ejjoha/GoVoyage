@@ -15,6 +15,8 @@ import {
   deleteTripInvite,
   getTrip,
   getTripInvites,
+  leaveTripByEmail,
+  leaveTripAsCollaborator,
   updateBooking,
   updateTrip,
   type TripInvite,
@@ -344,6 +346,37 @@ export default function TripPage() {
     router.push("/");
   }
 
+  async function handleLeaveTripConfirmed() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.id || !user?.email) {
+      setTripFormError("We couldn’t identify your account. Please sign in again.");
+      return;
+    }
+
+    const { error: collaboratorError } = await leaveTripAsCollaborator(
+      id,
+      user.id
+    );
+
+    if (collaboratorError) {
+      console.error("Error leaving trip:", collaboratorError);
+      setTripFormError(
+        "We couldn’t remove you from this trip. Please try again."
+      );
+      return;
+    }
+
+    await leaveTripByEmail(id, user.email.toLowerCase());
+
+    closeConfirm();
+    setShowTripForm(false);
+    localStorage.removeItem("cached-trips");
+    router.push("/");
+  }
+
   function handleDeleteTrip() {
     openConfirm({
       title: "Delete this trip?",
@@ -353,6 +386,18 @@ export default function TripPage() {
       cancelLabel: "Keep trip",
       tone: "danger",
       onConfirm: handleDeleteTripConfirmed,
+    });
+  }
+
+  function handleLeaveTrip() {
+    openConfirm({
+      title: "Leave this trip?",
+      description:
+        "You will lose access to this trip. The trip will not be deleted for other travellers.",
+      confirmLabel: "Leave trip",
+      cancelLabel: "Stay",
+      tone: "danger",
+      onConfirm: handleLeaveTripConfirmed,
     });
   }
 
@@ -519,7 +564,7 @@ export default function TripPage() {
       );
       return;
     }
-    
+
     if (
       newType === "transport" &&
       (!newOrigin.trim() || !newDestinationPoint.trim())
@@ -915,6 +960,7 @@ export default function TripPage() {
           onDeleteInvite={handleDeleteInvite}
           onInviteTraveller={inviteTravellerByEmail}
           onDeleteTrip={handleDeleteTrip}
+          onLeaveTrip={handleLeaveTrip}
         />
       )}
 

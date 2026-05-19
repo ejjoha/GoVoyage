@@ -87,6 +87,28 @@ export async function deleteTripMember(memberId: number) {
         .eq("id", memberId);
 }
 
+export async function leaveTripByEmail(
+    tripId: number,
+    email: string
+) {
+    return supabase
+        .from("trip_invites")
+        .delete()
+        .eq("trip_id", tripId)
+        .eq("email", email);
+}
+
+export async function leaveTripAsCollaborator(
+    tripId: number,
+    userId: string
+) {
+    return supabase
+        .from("trip_collaborators")
+        .delete()
+        .eq("trip_id", tripId)
+        .eq("user_id", userId);
+}
+
 export type UpdateTripPayload = {
     title: string;
     destination: string;

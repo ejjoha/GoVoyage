@@ -48,6 +48,7 @@ type EditTripModalProps = {
     onDeleteInvite: (inviteId: number) => void;
     onInviteTraveller: () => void;
     onDeleteTrip: () => void;
+    onLeaveTrip: () => void;
 };
 
 export default function EditTripModal({
@@ -80,6 +81,7 @@ export default function EditTripModal({
     onDeleteInvite,
     onInviteTraveller,
     onDeleteTrip,
+    onLeaveTrip,
 
 }: EditTripModalProps) {
     const [customCurrency, setCustomCurrency] = useState("");
@@ -428,6 +430,26 @@ export default function EditTripModal({
                                     className="mt-4 rounded-xl bg-white px-4 py-3 text-sm font-medium text-red-600 shadow-sm transition hover:bg-red-100"
                                 >
                                     Delete trip
+                                </button>
+                            </div>
+                        )}
+
+                        {!isTripOwner && (
+                            <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-4">
+                                <h3 className="text-sm font-semibold text-red-700">
+                                    Leave trip
+                                </h3>
+
+                                <p className="mt-1 text-sm text-red-600/80">
+                                    You will lose access to this trip and its expenses.
+                                </p>
+
+                                <button
+                                    type="button"
+                                    onClick={onLeaveTrip}
+                                    className="mt-4 rounded-xl bg-white px-4 py-3 text-sm font-medium text-red-600 shadow-sm transition hover:bg-red-100"
+                                >
+                                    Leave trip
                                 </button>
                             </div>
                         )}
