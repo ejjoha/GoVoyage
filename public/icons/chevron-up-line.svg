@@ -1,5 +1,17 @@
-<img
-  src="/icons/chevron-up-line.svg"
-  alt=""
-  className="h-5 w-5 brightness-0 invert"
-/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path
+    d="M7 6H17"
+    stroke="#171717"
+    stroke-width="2"
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path
+    d="M7.5 15L12 10.5L16.5 15"
+    stroke="#171717"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>

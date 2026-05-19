@@ -143,20 +143,254 @@ export default function TripCostSharingPage() {
   function getExpenseIcon(title: string) {
     const t = title.toLowerCase();
 
-    if (t.includes("food") || t.includes("restaurant") || t.includes("dinner"))
+    if (
+      t.includes("food") ||
+      t.includes("restaurant") ||
+      t.includes("dinner") ||
+      t.includes("lunch") ||
+      t.includes("breakfast") ||
+      t.includes("brunch") ||
+      t.includes("sushi") ||
+      t.includes("pizza") ||
+      t.includes("burger") ||
+      t.includes("middag") ||
+      t.includes("lunsj") ||
+      t.includes("frokost")
+    )
       return "🍽️";
-    if (t.includes("taxi") || t.includes("uber") || t.includes("transport"))
-      return "🚕";
-    if (t.includes("flight") || t.includes("plane"))
-      return "✈️";
-    if (t.includes("hotel") || t.includes("stay"))
-      return "🏨";
-    if (t.includes("coffee") || t.includes("cafe"))
+
+    if (
+      t.includes("coffee") ||
+      t.includes("cafe") ||
+      t.includes("espresso") ||
+      t.includes("latte") ||
+      t.includes("kaffe")
+    )
       return "☕";
-    if (t.includes("shopping"))
+
+    if (
+      t.includes("beer") ||
+      t.includes("wine") ||
+      t.includes("bar") ||
+      t.includes("cocktail") ||
+      t.includes("drinks") ||
+      t.includes("pub") ||
+      t.includes("øl") ||
+      t.includes("vin")
+    )
+      return "🍷";
+
+    if (
+      t.includes("taxi") ||
+      t.includes("uber") ||
+      t.includes("bolt") ||
+      t.includes("cab")
+    )
+      return "🚕";
+
+    if (
+      t.includes("train") ||
+      t.includes("rail") ||
+      t.includes("metro") ||
+      t.includes("subway") ||
+      t.includes("tram") ||
+      t.includes("tog")
+    )
+      return "🚆";
+
+    if (
+      t.includes("bus") ||
+      t.includes("coach")
+    )
+      return "🚌";
+
+    if (
+      t.includes("boat") ||
+      t.includes("ferry") ||
+      t.includes("ship") ||
+      t.includes("båt")
+    )
+      return "⛴️";
+
+    if (
+      t.includes("flight") ||
+      t.includes("plane") ||
+      t.includes("airport") ||
+      t.includes("airfare")
+    )
+      return "✈️";
+
+    if (
+      t.includes("hotel") ||
+      t.includes("stay") ||
+      t.includes("hostel") ||
+      t.includes("resort") ||
+      t.includes("airbnb") ||
+      t.includes("accommodation")
+    )
+      return "🏨";
+
+    if (
+      t.includes("shopping") ||
+      t.includes("mall") ||
+      t.includes("souvenir") ||
+      t.includes("store")
+    )
       return "🛍️";
 
-    return "💸"; // default
+    if (
+      t.includes("museum") ||
+      t.includes("gallery") ||
+      t.includes("ticket") ||
+      t.includes("tour") ||
+      t.includes("activity") ||
+      t.includes("concert")
+    )
+      return "🎟️";
+
+    if (
+      t.includes("beach") ||
+      t.includes("island") ||
+      t.includes("pool")
+    )
+      return "🏝️";
+
+    if (
+      t.includes("fuel") ||
+      t.includes("gas") ||
+      t.includes("petrol") ||
+      t.includes("diesel")
+    )
+      return "⛽";
+
+    if (
+      t.includes("pharmacy") ||
+      t.includes("medicine") ||
+      t.includes("hospital")
+    )
+      return "💊";
+    if (
+      t.includes("van") ||
+      t.includes("minivan") ||
+      t.includes("mini van") ||
+      t.includes("shuttle")
+    )
+      return "🚐";
+
+    if (
+      t.includes("tuktuk") ||
+      t.includes("tuk tuk") ||
+      t.includes("rickshaw")
+    )
+      return "🛺";
+
+    if (
+      t.includes("scooter") ||
+      t.includes("vespa") ||
+      t.includes("moped")
+    )
+      return "🛵";
+
+    if (
+      t.includes("bike") ||
+      t.includes("bicycle") ||
+      t.includes("cycling")
+    )
+      return "🚲";
+
+    if (
+      t.includes("car rental") ||
+      t.includes("rental car") ||
+      t.includes("rental")
+    )
+      return "🚗";
+
+    if (
+      t.includes("parking") ||
+      t.includes("toll")
+    )
+      return "🅿️";
+
+    if (
+      t.includes("spa") ||
+      t.includes("massage") ||
+      t.includes("sauna")
+    )
+      return "💆";
+
+    if (
+      t.includes("hiking") ||
+      t.includes("trek") ||
+      t.includes("mountain")
+    )
+      return "🥾";
+
+    if (
+      t.includes("diving") ||
+      t.includes("snorkeling") ||
+      t.includes("snorkelling")
+    )
+      return "🤿";
+
+    if (
+      t.includes("surf") ||
+      t.includes("surfing")
+    )
+      return "🏄";
+
+    if (
+      t.includes("gym") ||
+      t.includes("workout") ||
+      t.includes("fitness")
+    )
+      return "🏋️";
+
+    if (
+      t.includes("laundry") ||
+      t.includes("washing")
+    )
+      return "🧺";
+
+    if (
+      t.includes("sim") ||
+      t.includes("esim") ||
+      t.includes("data")
+    )
+      return "📱";
+
+    if (
+      t.includes("visa") ||
+      t.includes("immigration")
+    )
+      return "🛂";
+
+    if (
+      t.includes("tip") ||
+      t.includes("tips") ||
+      t.includes("gratuity")
+    )
+      return "💰";
+
+    if (
+      t.includes("market") ||
+      t.includes("bazaar")
+    )
+      return "🏬";
+
+    if (
+      t.includes("temple") ||
+      t.includes("church") ||
+      t.includes("mosque")
+    )
+      return "🕌";
+
+    if (
+      t.includes("camping") ||
+      t.includes("camp")
+    )
+      return "🏕️";
+
+    return "💸";
   }
   function openConfirm(config: any) {
     setConfirmState({
@@ -842,13 +1076,13 @@ export default function TripCostSharingPage() {
         <button
           type="button"
           onClick={scrollToTop}
-          className="fixed bottom-24 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-stone-900 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] transition-all duration-200 hover:scale-105 active:scale-95"
+          className="fixed bottom-24 left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-white/60 bg-white/90 shadow-[0_12px_30px_rgba(0,0,0,0.14)] backdrop-blur-xl transition-all duration-200 hover:scale-105 active:scale-95"
           aria-label="Scroll to top"
         >
           <img
             src="/icons/chevron-up-line.svg"
             alt=""
-            className="h-5 w-5 brightness-0 invert"
+            className="h-5 w-5"
           />
         </button>
       )}
