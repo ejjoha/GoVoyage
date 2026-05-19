@@ -169,7 +169,7 @@ export default function CreateTripModal({
                                 Add the people going on this trip.
                             </p>
 
-                            <div className="mt-4 flex w-full min-w-0 flex-col gap-3 sm:flex-row">
+                            <div className="mt-4 flex w-full min-w-0 gap-3">
                                 <input
                                     type="text"
                                     placeholder="Traveller name"
@@ -223,7 +223,7 @@ export default function CreateTripModal({
                                 Optionally invite someone to access and edit this trip.
                             </p>
 
-                            <div className="mt-4 flex w-full min-w-0 flex-col gap-2 sm:flex-row">
+                            <div className="mt-4 flex w-full min-w-0 gap-2">
                                 <input
                                     type="email"
                                     placeholder="friend@example.com"
@@ -291,7 +291,7 @@ export default function CreateTripModal({
                                 )}
                             </div>
 
-                            <div className="mt-4 flex w-full min-w-0 flex-col gap-2 sm:flex-row">
+                            <div className="mt-4 flex w-full min-w-0 gap-2">
                                 <input
                                     type="text"
                                     placeholder="Custom currency"
