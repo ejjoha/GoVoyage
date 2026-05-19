@@ -133,6 +133,7 @@ export default function TripCostSharingPage() {
   const expenseFormBottomRef = useRef<HTMLDivElement | null>(null);
 
   const [showExpenses, setShowExpenses] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   function getMemberName(memberId: number) {
     return (
@@ -265,6 +266,18 @@ export default function TripCostSharingPage() {
     };
   }, [showTotalCostSheet, showExpenseForm]);
 
+  useEffect(() => {
+    function handleScroll() {
+      setShowScrollTop(window.scrollY > 500);
+    }
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   function resetForm() {
     setTitle("");
     setAmount("");
@@ -274,6 +287,13 @@ export default function TripCostSharingPage() {
     setSelectedParticipantIds(tripMembers.map((member) => member.id));
     setEditingExpenseId(null);
     setExpenseFormError("");
+  }
+
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   function closeExpenseForm() {
@@ -817,6 +837,20 @@ export default function TripCostSharingPage() {
           getMemberName={getMemberName}
           onClose={() => setSelectedCurrency(null)}
         />
+      )}
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-stone-900 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] transition-all duration-200 hover:scale-105 active:scale-95"
+          aria-label="Scroll to top"
+        >
+          <img
+            src="/icons/chevron-up-line.svg"
+            alt=""
+            className="h-5 w-5 brightness-0 invert"
+          />
+        </button>
       )}
     </>
   );
