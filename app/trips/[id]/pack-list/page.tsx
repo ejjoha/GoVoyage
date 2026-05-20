@@ -39,6 +39,7 @@ export default function PackListPage() {
     const [resetSuccess, setResetSuccess] = useState(false);
     const [weatherSummary, setWeatherSummary] =
         useState<TripWeatherSummary | null>(null);
+    const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
 
     useEffect(() => {
@@ -257,6 +258,13 @@ export default function PackListPage() {
                     : item
             )
         );
+    }
+
+    function toggleCategory(category: string) {
+        setOpenCategories((current) => ({
+            ...current,
+            [category]: !(current[category] ?? true),
+        }));
     }
 
     function deleteItem(itemKey: string) {
@@ -481,106 +489,144 @@ export default function PackListPage() {
                         </div>
 
                         <div className="space-y-4 pb-24">
-                            {Object.entries(groupedItems).map(([category, categoryItems]) => (
-                                <div key={category} className="rounded-3xl bg-white p-4 shadow-sm">
-                                    <h2 className="mb-4 text-lg font-bold text-neutral-950">{category}</h2>
+                            {Object.entries(groupedItems).map(([category, categoryItems]) => {
+                                const isOpen = openCategories[category] ?? true;
+                                const packedInCategory = categoryItems.filter((item) => item.packed).length;
+                                const totalInCategory = categoryItems.length;
 
-                                    <div className="space-y-3">
-                                        {categoryItems.map((item) => {
-                                            const isDragging = draggingItemKey === item.key;
-                                            const offset = isDragging ? dragOffset : 0;
+                                return (
+                                    <div key={category} className="rounded-3xl bg-white p-4 shadow-sm">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleCategory(category)}
+                                            className="flex w-full items-center justify-between gap-4 text-left"
+                                        >
+                                            <div>
+                                                <h2 className="text-lg font-bold text-neutral-950">{category}</h2>
+                                                <p className="mt-1 text-xs font-semibold text-neutral-400">
+                                                    {packedInCategory} / {totalInCategory} packed
+                                                </p>
+                                            </div>
 
-                                            return (
-                                                <div key={item.key} className="relative overflow-hidden rounded-2xl">
-                                                    <div className="absolute inset-0 flex items-center justify-end rounded-2xl bg-red-500 px-5 text-sm font-bold text-white">
-                                                        Delete
-                                                    </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500">
+                                                    {Math.round((packedInCategory / totalInCategory) * 100)}%
+                                                </div>
 
-                                                    <div
-                                                        onPointerDown={(event) => startSwipe(event.clientX, item.key)}
-                                                        onPointerMove={(event) => moveSwipe(event.clientX)}
-                                                        onPointerUp={() => endSwipe(item.key)}
-                                                        onPointerCancel={() => endSwipe(item.key)}
-                                                        style={{
-                                                            transform: `translateX(${offset}px)`,
-                                                        }}
-                                                        className="relative flex touch-pan-y items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-2.5 transition-transform"
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={item.packed}
-                                                            onChange={() => toggleItem(item.key)}
-                                                            onPointerDown={(event) => event.stopPropagation()}
-                                                            className="h-5 w-5 rounded border-neutral-300"
-                                                        />
+                                                <img
+                                                    src="/icons/chevron-down.svg"
+                                                    alt=""
+                                                    className={
+                                                        isOpen
+                                                            ? "h-5 w-5 text-neutral-400 transition-transform"
+                                                            : "h-5 w-5 rotate-[-90deg] text-neutral-400 transition-transform"
+                                                    }
+                                                />
+                                            </div>
+                                        </button>
 
-                                                        <div className="flex flex-1 items-center justify-between gap-3">
-                                                            <span
-                                                                className={
-                                                                    item.packed
-                                                                        ? "text-neutral-400 line-through"
-                                                                        : "text-neutral-800"
-                                                                }
-                                                            >
-                                                                {item.name}
-                                                            </span>
+                                        {isOpen && (
+                                            <div className="mt-4 space-y-3">
+                                                {categoryItems.map((item) => {
+                                                    const isDragging = draggingItemKey === item.key;
+                                                    const offset = isDragging ? dragOffset : 0;
+
+                                                    return (
+                                                        <div key={item.key} className="relative overflow-hidden rounded-2xl">
+                                                            <div className="absolute inset-0 flex items-center justify-end rounded-2xl bg-red-500 px-5 text-sm font-bold text-white">
+                                                                Delete
+                                                            </div>
 
                                                             <div
-                                                                className="flex items-center gap-2"
-                                                                onPointerDown={(event) => event.stopPropagation()}
+                                                                onPointerDown={(event) => startSwipe(event.clientX, item.key)}
+                                                                onPointerMove={(event) => moveSwipe(event.clientX)}
+                                                                onPointerUp={() => endSwipe(item.key)}
+                                                                onPointerCancel={() => endSwipe(item.key)}
+                                                                style={{
+                                                                    transform: `translateX(${offset}px)`,
+                                                                }}
+                                                                className="relative flex touch-pan-y items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-2.5 transition-transform"
                                                             >
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setItems((currentItems) =>
-                                                                            currentItems.map((currentItem) =>
-                                                                                currentItem.key === item.key
-                                                                                    ? {
-                                                                                        ...currentItem,
-                                                                                        quantity: Math.max(1, currentItem.quantity - 1),
-                                                                                        protected: true,
-                                                                                    }
-                                                                                    : currentItem
-                                                                            )
-                                                                        );
-                                                                    }}
-                                                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700 transition active:scale-95"
-                                                                >
-                                                                    −
-                                                                </button>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={item.packed}
+                                                                    onChange={() => toggleItem(item.key)}
+                                                                    onPointerDown={(event) => event.stopPropagation()}
+                                                                    className="h-5 w-5 rounded border-neutral-300"
+                                                                />
 
-                                                                <span className="min-w-[22px] rounded-full bg-neutral-100 px-2 py-1 text-center text-xs font-semibold text-neutral-700">
-                                                                    {item.quantity}
-                                                                </span>
+                                                                <div className="flex flex-1 items-center justify-between gap-3">
+                                                                    <span
+                                                                        className={
+                                                                            item.packed
+                                                                                ? "text-neutral-400 line-through"
+                                                                                : "text-neutral-800"
+                                                                        }
+                                                                    >
+                                                                        {item.name}
+                                                                    </span>
 
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setItems((currentItems) =>
-                                                                            currentItems.map((currentItem) =>
-                                                                                currentItem.key === item.key
-                                                                                    ? {
-                                                                                        ...currentItem,
-                                                                                        quantity: currentItem.quantity + 1,
-                                                                                        protected: true,
-                                                                                    }
-                                                                                    : currentItem
-                                                                            )
-                                                                        );
-                                                                    }}
-                                                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white transition active:scale-95"
-                                                                >
-                                                                    +
-                                                                </button>
+                                                                    <div
+                                                                        className="flex items-center gap-2"
+                                                                        onPointerDown={(event) => event.stopPropagation()}
+                                                                    >
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setItems((currentItems) =>
+                                                                                    currentItems.map((currentItem) =>
+                                                                                        currentItem.key === item.key
+                                                                                            ? {
+                                                                                                ...currentItem,
+                                                                                                quantity: Math.max(
+                                                                                                    1,
+                                                                                                    currentItem.quantity - 1
+                                                                                                ),
+                                                                                                protected: true,
+                                                                                            }
+                                                                                            : currentItem
+                                                                                    )
+                                                                                );
+                                                                            }}
+                                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700 transition active:scale-95"
+                                                                        >
+                                                                            −
+                                                                        </button>
+
+                                                                        <span className="min-w-[22px] rounded-full bg-neutral-100 px-2 py-1 text-center text-xs font-semibold text-neutral-700">
+                                                                            {item.quantity}
+                                                                        </span>
+
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setItems((currentItems) =>
+                                                                                    currentItems.map((currentItem) =>
+                                                                                        currentItem.key === item.key
+                                                                                            ? {
+                                                                                                ...currentItem,
+                                                                                                quantity: currentItem.quantity + 1,
+                                                                                                protected: true,
+                                                                                            }
+                                                                                            : currentItem
+                                                                                    )
+                                                                                );
+                                                                            }}
+                                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white transition active:scale-95"
+                                                                        >
+                                                                            +
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {resetSuccess && (
