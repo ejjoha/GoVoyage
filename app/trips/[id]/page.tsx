@@ -824,6 +824,7 @@ export default function TripPage() {
           eyebrow={trip.destination}
           imageUrl={trip.image_url}
           backHref="/"
+          tripId={trip.id}
           onEdit={() => {
             setShowTripForm(true);
             setShowBookingForm(false);
