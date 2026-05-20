@@ -13,6 +13,10 @@ import {
     tripTypeSuggestions,
     mergePackingItems,
 } from "./packingSuggestions";
+import {
+    getTripWeatherSummary,
+    TripWeatherSummary,
+} from "./weatherIntelligence";
 
 export default function PackListPage() {
     const params = useParams();
@@ -33,16 +37,23 @@ export default function PackListPage() {
     const [dragStartX, setDragStartX] = useState<number | null>(null);
     const [dragOffset, setDragOffset] = useState(0);
     const [resetSuccess, setResetSuccess] = useState(false);
+    const [weatherSummary, setWeatherSummary] =
+        useState<TripWeatherSummary | null>(null);
+
 
     useEffect(() => {
         async function loadPackList() {
             const { data: trip } = await supabase
                 .from("trips")
-                .select("title, start_date, end_date")
+                .select("title, destination, start_date, end_date")
                 .eq("id", tripId)
                 .single();
 
             if (trip?.title) setTripTitle(trip.title);
+            if (trip?.destination) {
+                const summary = await getTripWeatherSummary(trip.destination);
+                setWeatherSummary(summary);
+            }
             setTripDays(calculateTripDays(trip?.start_date, trip?.end_date));
 
             let { data: list } = await supabase
@@ -318,7 +329,7 @@ export default function PackListPage() {
 
     return (
         <main className="min-h-screen bg-[#f6f1e8] px-4 py-6">
-            <div className="mx-auto mb-4 flex max-w-2xl">
+            <div className="mx-auto mb-2 flex max-w-2xl">
                 <Link
                     href={`/trips/${tripId}`}
                     className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
@@ -332,18 +343,41 @@ export default function PackListPage() {
                 </Link>
             </div>
             <div className="mx-auto max-w-2xl">
-                <div className="mb-6">
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                        Smart Pack List
-                    </p>
+                <div className="relative mb-6 overflow-hidden rounded-[2.5rem] bg-[#f6f1e9] px-6 py-10 shadow-sm">
+                    <img
+                        src="/illustrations/pack-list-hero.png"
+                        alt=""
+                        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-70"
+                    />
 
-                    <h1 className="mt-2 text-4xl font-bold tracking-tight text-neutral-950">
-                        {tripTitle} Packing
-                    </h1>
+                    <div className="absolute right-5 top-5 z-20 flex h-16 w-16 flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff8ef] to-[#f4eadb] shadow-sm">
+                        <span className="text-lg font-bold text-rose-500">{progress}%</span>
 
-                    <p className="mt-2 text-neutral-500">
-                        Suggestions adapt to your trip length: {tripDays} days.
-                    </p>
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+                            Packed
+                        </span>
+                    </div>
+
+                    <div className="relative z-10">
+                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                            Smart Pack List
+                        </p>
+
+                        <h1 className="mt-2 text-4xl font-bold tracking-tight text-neutral-950 [text-shadow:0_1px_2px_rgba(255,255,255,0.35)]">
+                            {tripTitle} Packing
+                        </h1>
+
+                        {weatherSummary && (
+                            <div className="mt-3 truncate text-sm font-medium text-neutral-500 [text-shadow:0_1px_1px_rgba(255,255,255,0.25)]">
+                                {weatherSummary.temperature !== null
+                                    ? `${Math.round(weatherSummary.temperature)}°`
+                                    : "—"}{" "}
+                                · {weatherSummary.weatherLabel}
+                                {weatherSummary.precipitationProbability !== null &&
+                                    ` · ${weatherSummary.precipitationProbability}% rain chance`}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="mb-4 rounded-3xl bg-white p-4 shadow-sm">
@@ -422,21 +456,6 @@ export default function PackListPage() {
                             </button>
                         </div>
                     )}
-                </div>
-
-                <div className="mb-6 rounded-3xl bg-white p-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-neutral-500">Packing progress</p>
-                            <h2 className="text-2xl font-bold text-neutral-950">
-                                {loaded ? `${packedCount} / ${totalCount}` : "Loading"}
-                            </h2>
-                        </div>
-
-                        <div className="flex h-15 w-15 items-center justify-center rounded-full bg-rose-500 text-lg font-bold text-white">
-                            {loaded ? `${progress}%` : "…"}
-                        </div>
-                    </div>
                 </div>
 
                 <div className="space-y-4 pb-24">

@@ -137,7 +137,7 @@ export default function TripHero({
             onClick={() => setToolsOpen(false)}
           />
 
-          <div className="relative w-full rounded-t-[2rem] bg-[#faf7ef] p-5 shadow-2xl">
+          <div className="relative mx-auto w-full max-w-3xl rounded-t-[2rem] bg-[#faf7ef] p-5 shadow-2xl">
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300" />
 
             <div className="mb-5 flex items-start justify-between">
@@ -174,8 +174,12 @@ export default function TripHero({
                       Climate-based packing suggestions.
                     </p>
                   </div>
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-pink-600 text-xl text-white">
-                    →
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-500 text-white shadow-sm">
+                    <img
+                      src="/icons/chevron-right.svg"
+                      alt=""
+                      className="h-6 w-6"
+                    />
                   </span>
                 </div>
               </Link>
