@@ -11,6 +11,7 @@ import {
     createKey,
     getSmartQuantity,
     tripTypeSuggestions,
+    mergePackingItems,
 } from "./packingSuggestions";
 
 export default function PackListPage() {
@@ -110,11 +111,15 @@ export default function PackListPage() {
     useEffect(() => {
         if (!loaded) return;
 
-        const generatedItems = [
-            ...baseItems,
-            ...selectedClimates.flatMap((climate) => climateSuggestions[climate] || []),
-            ...selectedTripTypes.flatMap((type) => tripTypeSuggestions[type] || []),
-        ].map((item) => ({
+        const generatedItems = mergePackingItems([
+            baseItems,
+            ...selectedClimates.map(
+                (climate) => climateSuggestions[climate.toLowerCase()] || []
+            ),
+            ...selectedTripTypes.map(
+                (type) => tripTypeSuggestions[type.toLowerCase()] || []
+            ),
+        ]).map((item) => ({
             ...item,
             key: createKey(item.category, item.name),
             quantity: getSmartQuantity(item, tripDays),
