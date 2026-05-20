@@ -1076,7 +1076,7 @@ export default function TripCostSharingPage() {
         <button
           type="button"
           onClick={scrollToTop}
-          className="fixed bottom-24 left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-white/60 bg-white/90 shadow-[0_12px_30px_rgba(0,0,0,0.14)] backdrop-blur-xl transition-all duration-200 hover:scale-105 active:scale-95"
+          className="fixed bottom-16 left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-white/60 bg-white/90 shadow-[0_12px_30px_rgba(0,0,0,0.14)] backdrop-blur-xl transition-all duration-200 hover:scale-105 active:scale-95"
           aria-label="Scroll to top"
         >
           <img

@@ -131,6 +131,7 @@ export default function TripPage() {
   const [confirmState, setConfirmState] = useState<ConfirmState>({
     open: false,
   });
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const bookingFormRef = useRef<HTMLFormElement | null>(null);
   const timelineRef = useRef<HTMLDivElement | null>(null);
@@ -273,6 +274,25 @@ export default function TripPage() {
     showStaysSheet,
     confirmState.open,
   ]);
+
+  useEffect(() => {
+    function handleScroll() {
+      setShowScrollTop(window.scrollY > 500);
+    }
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
 
   function resetTripFormFromTrip() {
     if (!trip) return;
@@ -1208,6 +1228,20 @@ export default function TripPage() {
             </div>
           </div>
         </div>
+      )}
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="fixed bottom-16 left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-white/60 bg-white/90 shadow-[0_12px_30px_rgba(0,0,0,0.14)] backdrop-blur-xl transition-all duration-200 hover:scale-105 active:scale-95"
+          aria-label="Scroll to top"
+        >
+          <img
+            src="/icons/chevron-up-line.svg"
+            alt=""
+            className="h-5 w-5"
+          />
+        </button>
       )}
     </>
   );
