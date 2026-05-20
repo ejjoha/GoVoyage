@@ -343,282 +343,306 @@ export default function PackListPage() {
                 </Link>
             </div>
             <div className="mx-auto max-w-2xl">
-                <div className="relative mb-6 overflow-hidden rounded-[2.5rem] bg-[#f6f1e9] px-6 py-10 shadow-sm">
-                    <img
-                        src="/illustrations/pack-list-hero.png"
-                        alt=""
-                        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-70"
-                    />
 
-                    <div className="absolute right-5 top-5 z-20 flex h-16 w-16 flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff8ef] to-[#f4eadb] shadow-sm">
-                        <span className="text-lg font-bold text-rose-500">{progress}%</span>
+                {!loaded && (
+                    <div className="space-y-5">
+                        <div className="h-[260px] animate-pulse rounded-[2.5rem] bg-white/70" />
 
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
-                            Packed
-                        </span>
-                    </div>
+                        <div className="h-[92px] animate-pulse rounded-3xl bg-white/70" />
 
-                    <div className="relative z-10">
-                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                            Smart Pack List
-                        </p>
-
-                        <h1 className="mt-2 text-4xl font-bold tracking-tight text-neutral-950 [text-shadow:0_1px_2px_rgba(255,255,255,0.35)]">
-                            {tripTitle} Packing
-                        </h1>
-
-                        {weatherSummary && (
-                            <div className="mt-3 truncate text-sm font-medium text-neutral-500 [text-shadow:0_1px_1px_rgba(255,255,255,0.25)]">
-                                {weatherSummary.temperature !== null
-                                    ? `${Math.round(weatherSummary.temperature)}°`
-                                    : "—"}{" "}
-                                · {weatherSummary.weatherLabel}
-                                {weatherSummary.precipitationProbability !== null &&
-                                    ` · ${weatherSummary.precipitationProbability}% rain chance`}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="mb-4 rounded-3xl bg-white p-4 shadow-sm">
-                    <button
-                        type="button"
-                        onClick={() => setProfileOpen((open) => !open)}
-                        className="flex w-full items-center justify-between gap-4 text-left"
-                    >
-                        <div>
-                            <h2 className="text-lg font-bold text-neutral-950">Trip profile</h2>
-                            <p className="mt-1 text-sm text-neutral-500">
-                                {[...selectedClimates, ...selectedTripTypes].join(" · ")}
-                            </p>
-                        </div>
-
-                        <span className="rounded-full bg-neutral-100 px-3 py-1 text-sm font-semibold text-neutral-700">
-                            {profileOpen ? "Done" : "Edit"}
-                        </span>
-                    </button>
-
-                    {profileOpen && (
-                        <div className="mt-5">
-                            <h3 className="mb-3 text-sm font-bold text-neutral-950">Climate</h3>
-
-                            <div className="flex flex-wrap gap-2">
-                                {["Tropical", "Cold", "Mountain"].map((climate) => {
-                                    const active = selectedClimates.includes(climate);
-
-                                    return (
-                                        <button
-                                            key={climate}
-                                            type="button"
-                                            onClick={() => toggleClimate(climate)}
-                                            className={
-                                                active
-                                                    ? "rounded-full bg-rose-500 px-3.5 py-1.5 text-sm font-semibold text-white"
-                                                    : "rounded-full bg-neutral-100 px-3.5 py-1.5 text-sm font-medium text-neutral-700"
-                                            }
-                                        >
-                                            {climate}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            <h3 className="mb-3 mt-5 text-sm font-bold text-neutral-950">
-                                Trip style
-                            </h3>
-
-                            <div className="flex flex-wrap gap-2">
-                                {["Beach", "Hiking", "City"].map((type) => {
-                                    const active = selectedTripTypes.includes(type);
-
-                                    return (
-                                        <button
-                                            key={type}
-                                            type="button"
-                                            onClick={() => toggleTripType(type)}
-                                            className={
-                                                active
-                                                    ? "rounded-full bg-rose-500 px-3.5 py-1.5 text-sm font-semibold text-white"
-                                                    : "rounded-full bg-neutral-100 px-3.5 py-1.5 text-sm font-medium text-neutral-700"
-                                            }
-                                        >
-                                            {type}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            <button
-                                type="button"
-                                onClick={resetPackList}
-                                className="mt-5 w-full rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700 transition active:scale-[0.98]"
-                            >
-                                Reset pack list
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                <div className="space-y-4 pb-24">
-                    {Object.entries(groupedItems).map(([category, categoryItems]) => (
-                        <div key={category} className="rounded-3xl bg-white p-4 shadow-sm">
-                            <h2 className="mb-4 text-lg font-bold text-neutral-950">{category}</h2>
+                        <div className="rounded-3xl bg-white/70 p-5">
+                            <div className="mb-5 h-8 w-44 rounded-full bg-neutral-200" />
 
                             <div className="space-y-3">
-                                {categoryItems.map((item) => {
-                                    const isDragging = draggingItemKey === item.key;
-                                    const offset = isDragging ? dragOffset : 0;
-
-                                    return (
-                                        <div key={item.key} className="relative overflow-hidden rounded-2xl">
-                                            <div className="absolute inset-0 flex items-center justify-end rounded-2xl bg-red-500 px-5 text-sm font-bold text-white">
-                                                Delete
-                                            </div>
-
-                                            <div
-                                                onPointerDown={(event) => startSwipe(event.clientX, item.key)}
-                                                onPointerMove={(event) => moveSwipe(event.clientX)}
-                                                onPointerUp={() => endSwipe(item.key)}
-                                                onPointerCancel={() => endSwipe(item.key)}
-                                                style={{
-                                                    transform: `translateX(${offset}px)`,
-                                                }}
-                                                className="relative flex touch-pan-y items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-2.5 transition-transform"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={item.packed}
-                                                    onChange={() => toggleItem(item.key)}
-                                                    onPointerDown={(event) => event.stopPropagation()}
-                                                    className="h-5 w-5 rounded border-neutral-300"
-                                                />
-
-                                                <div className="flex flex-1 items-center justify-between gap-3">
-                                                    <span
-                                                        className={
-                                                            item.packed
-                                                                ? "text-neutral-400 line-through"
-                                                                : "text-neutral-800"
-                                                        }
-                                                    >
-                                                        {item.name}
-                                                    </span>
-
-                                                    <div
-                                                        className="flex items-center gap-2"
-                                                        onPointerDown={(event) => event.stopPropagation()}
-                                                    >
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setItems((currentItems) =>
-                                                                    currentItems.map((currentItem) =>
-                                                                        currentItem.key === item.key
-                                                                            ? {
-                                                                                ...currentItem,
-                                                                                quantity: Math.max(1, currentItem.quantity - 1),
-                                                                                protected: true,
-                                                                            }
-                                                                            : currentItem
-                                                                    )
-                                                                );
-                                                            }}
-                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700 transition active:scale-95"
-                                                        >
-                                                            −
-                                                        </button>
-
-                                                        <span className="min-w-[22px] rounded-full bg-neutral-100 px-2 py-1 text-center text-xs font-semibold text-neutral-700">
-                                                            {item.quantity}
-                                                        </span>
-
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setItems((currentItems) =>
-                                                                    currentItems.map((currentItem) =>
-                                                                        currentItem.key === item.key
-                                                                            ? {
-                                                                                ...currentItem,
-                                                                                quantity: currentItem.quantity + 1,
-                                                                                protected: true,
-                                                                            }
-                                                                            : currentItem
-                                                                    )
-                                                                );
-                                                            }}
-                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white transition active:scale-95"
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                <div className="h-14 rounded-2xl bg-neutral-100" />
+                                <div className="h-14 rounded-2xl bg-neutral-100" />
+                                <div className="h-14 rounded-2xl bg-neutral-100" />
                             </div>
-                        </div>
-                    ))}
-                </div>
-
-                {resetSuccess && (
-                    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">
-                        <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
-                            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl shadow-sm">
-                                ✓
-                            </div>
-
-                            <p className="text-lg font-semibold tracking-[-0.02em] text-stone-900">
-                                Pack list reset
-                            </p>
-
-                            <p className="mt-1 text-sm text-stone-500">
-                                Your smart suggestions have been refreshed.
-                            </p>
                         </div>
                     </div>
                 )}
 
-                {showAddItem && (
-                    <div className="fixed inset-0 z-50 flex items-end bg-black/40">
-                        <button
-                            type="button"
-                            aria-label="Close add item"
-                            className="absolute inset-0"
-                            onClick={() => setShowAddItem(false)}
-                        />
+                {loaded && (
+                    <>
 
-                        <div className="relative w-full rounded-t-[2rem] bg-[#faf7ef] p-4 shadow-2xl">
-                            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300" />
-
-                            <h2 className="text-2xl font-bold text-neutral-950">Add packing item</h2>
-
-                            <input
-                                value={newItemName}
-                                onChange={(event) => setNewItemName(event.target.value)}
-                                placeholder="Example: GoPro battery"
-                                className="mt-5 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-4 text-base outline-none"
-                                autoFocus
+                        <div className="relative mb-6 overflow-hidden rounded-[2.5rem] bg-[#f6f1e9] px-6 py-10 shadow-sm">
+                            <img
+                                src="/illustrations/pack-list-hero.png"
+                                alt=""
+                                className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-70"
                             />
 
+                            <div className="absolute right-5 top-5 z-20 flex h-16 w-16 flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff8ef] to-[#f4eadb] shadow-sm">
+                                <span className="text-lg font-bold text-rose-500">{progress}%</span>
+
+                                <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+                                    Packed
+                                </span>
+                            </div>
+
+                            <div className="relative z-10">
+                                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                                    Smart Pack List
+                                </p>
+
+                                <h1 className="mt-2 text-4xl font-bold tracking-tight text-neutral-950 [text-shadow:0_1px_2px_rgba(255,255,255,0.35)]">
+                                    {tripTitle} Packing
+                                </h1>
+
+                                {weatherSummary && (
+                                    <div className="mt-3 truncate text-sm font-medium text-neutral-500 [text-shadow:0_1px_1px_rgba(255,255,255,0.25)]">
+                                        {weatherSummary.temperature !== null
+                                            ? `${Math.round(weatherSummary.temperature)}°`
+                                            : "—"}{" "}
+                                        · {weatherSummary.weatherLabel}
+                                        {weatherSummary.precipitationProbability !== null &&
+                                            ` · ${weatherSummary.precipitationProbability}% rain chance`}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="mb-4 rounded-3xl bg-white p-4 shadow-sm">
                             <button
                                 type="button"
-                                onClick={addCustomItem}
-                                className="mt-4 w-full rounded-2xl bg-rose-500 px-5 py-4 font-bold text-white shadow-sm transition active:scale-[0.98]"
+                                onClick={() => setProfileOpen((open) => !open)}
+                                className="flex w-full items-center justify-between gap-4 text-left"
                             >
-                                Add item
-                            </button>
-                        </div>
-                    </div>
-                )}
+                                <div>
+                                    <h2 className="text-lg font-bold text-neutral-950">Trip profile</h2>
+                                    <p className="mt-1 text-sm text-neutral-500">
+                                        {[...selectedClimates, ...selectedTripTypes].join(" · ")}
+                                    </p>
+                                </div>
 
-                <button
-                    type="button"
-                    onClick={() => setShowAddItem(true)}
-                    className="fixed bottom-6 right-6 flex h-13 w-13 items-center justify-center rounded-full bg-rose-500 text-3xl text-white shadow-xl transition active:scale-95"
-                >
-                    +
-                </button>
+                                <span className="rounded-full bg-neutral-100 px-3 py-1 text-sm font-semibold text-neutral-700">
+                                    {profileOpen ? "Done" : "Edit"}
+                                </span>
+                            </button>
+
+                            {profileOpen && (
+                                <div className="mt-5">
+                                    <h3 className="mb-3 text-sm font-bold text-neutral-950">Climate</h3>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {["Tropical", "Cold", "Mountain"].map((climate) => {
+                                            const active = selectedClimates.includes(climate);
+
+                                            return (
+                                                <button
+                                                    key={climate}
+                                                    type="button"
+                                                    onClick={() => toggleClimate(climate)}
+                                                    className={
+                                                        active
+                                                            ? "rounded-full bg-rose-500 px-3.5 py-1.5 text-sm font-semibold text-white"
+                                                            : "rounded-full bg-neutral-100 px-3.5 py-1.5 text-sm font-medium text-neutral-700"
+                                                    }
+                                                >
+                                                    {climate}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <h3 className="mb-3 mt-5 text-sm font-bold text-neutral-950">
+                                        Trip style
+                                    </h3>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {["Beach", "Hiking", "City"].map((type) => {
+                                            const active = selectedTripTypes.includes(type);
+
+                                            return (
+                                                <button
+                                                    key={type}
+                                                    type="button"
+                                                    onClick={() => toggleTripType(type)}
+                                                    className={
+                                                        active
+                                                            ? "rounded-full bg-rose-500 px-3.5 py-1.5 text-sm font-semibold text-white"
+                                                            : "rounded-full bg-neutral-100 px-3.5 py-1.5 text-sm font-medium text-neutral-700"
+                                                    }
+                                                >
+                                                    {type}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={resetPackList}
+                                        className="mt-5 w-full rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700 transition active:scale-[0.98]"
+                                    >
+                                        Reset pack list
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-4 pb-24">
+                            {Object.entries(groupedItems).map(([category, categoryItems]) => (
+                                <div key={category} className="rounded-3xl bg-white p-4 shadow-sm">
+                                    <h2 className="mb-4 text-lg font-bold text-neutral-950">{category}</h2>
+
+                                    <div className="space-y-3">
+                                        {categoryItems.map((item) => {
+                                            const isDragging = draggingItemKey === item.key;
+                                            const offset = isDragging ? dragOffset : 0;
+
+                                            return (
+                                                <div key={item.key} className="relative overflow-hidden rounded-2xl">
+                                                    <div className="absolute inset-0 flex items-center justify-end rounded-2xl bg-red-500 px-5 text-sm font-bold text-white">
+                                                        Delete
+                                                    </div>
+
+                                                    <div
+                                                        onPointerDown={(event) => startSwipe(event.clientX, item.key)}
+                                                        onPointerMove={(event) => moveSwipe(event.clientX)}
+                                                        onPointerUp={() => endSwipe(item.key)}
+                                                        onPointerCancel={() => endSwipe(item.key)}
+                                                        style={{
+                                                            transform: `translateX(${offset}px)`,
+                                                        }}
+                                                        className="relative flex touch-pan-y items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-2.5 transition-transform"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={item.packed}
+                                                            onChange={() => toggleItem(item.key)}
+                                                            onPointerDown={(event) => event.stopPropagation()}
+                                                            className="h-5 w-5 rounded border-neutral-300"
+                                                        />
+
+                                                        <div className="flex flex-1 items-center justify-between gap-3">
+                                                            <span
+                                                                className={
+                                                                    item.packed
+                                                                        ? "text-neutral-400 line-through"
+                                                                        : "text-neutral-800"
+                                                                }
+                                                            >
+                                                                {item.name}
+                                                            </span>
+
+                                                            <div
+                                                                className="flex items-center gap-2"
+                                                                onPointerDown={(event) => event.stopPropagation()}
+                                                            >
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setItems((currentItems) =>
+                                                                            currentItems.map((currentItem) =>
+                                                                                currentItem.key === item.key
+                                                                                    ? {
+                                                                                        ...currentItem,
+                                                                                        quantity: Math.max(1, currentItem.quantity - 1),
+                                                                                        protected: true,
+                                                                                    }
+                                                                                    : currentItem
+                                                                            )
+                                                                        );
+                                                                    }}
+                                                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700 transition active:scale-95"
+                                                                >
+                                                                    −
+                                                                </button>
+
+                                                                <span className="min-w-[22px] rounded-full bg-neutral-100 px-2 py-1 text-center text-xs font-semibold text-neutral-700">
+                                                                    {item.quantity}
+                                                                </span>
+
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setItems((currentItems) =>
+                                                                            currentItems.map((currentItem) =>
+                                                                                currentItem.key === item.key
+                                                                                    ? {
+                                                                                        ...currentItem,
+                                                                                        quantity: currentItem.quantity + 1,
+                                                                                        protected: true,
+                                                                                    }
+                                                                                    : currentItem
+                                                                            )
+                                                                        );
+                                                                    }}
+                                                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white transition active:scale-95"
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {resetSuccess && (
+                            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">
+                                <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
+                                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl shadow-sm">
+                                        ✓
+                                    </div>
+
+                                    <p className="text-lg font-semibold tracking-[-0.02em] text-stone-900">
+                                        Pack list reset
+                                    </p>
+
+                                    <p className="mt-1 text-sm text-stone-500">
+                                        Your smart suggestions have been refreshed.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {showAddItem && (
+                            <div className="fixed inset-0 z-50 flex items-end bg-black/40">
+                                <button
+                                    type="button"
+                                    aria-label="Close add item"
+                                    className="absolute inset-0"
+                                    onClick={() => setShowAddItem(false)}
+                                />
+
+                                <div className="relative w-full rounded-t-[2rem] bg-[#faf7ef] p-4 shadow-2xl">
+                                    <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300" />
+
+                                    <h2 className="text-2xl font-bold text-neutral-950">Add packing item</h2>
+
+                                    <input
+                                        value={newItemName}
+                                        onChange={(event) => setNewItemName(event.target.value)}
+                                        placeholder="Example: GoPro battery"
+                                        className="mt-5 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-4 text-base outline-none"
+                                        autoFocus
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={addCustomItem}
+                                        className="mt-4 w-full rounded-2xl bg-rose-500 px-5 py-4 font-bold text-white shadow-sm transition active:scale-[0.98]"
+                                    >
+                                        Add item
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            type="button"
+                            onClick={() => setShowAddItem(true)}
+                            className="fixed bottom-6 right-6 flex h-13 w-13 items-center justify-center rounded-full bg-rose-500 text-3xl text-white shadow-xl transition active:scale-95"
+                        >
+                            +
+                        </button>
+                    </>
+                )}
             </div>
         </main>
     );
