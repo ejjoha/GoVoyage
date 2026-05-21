@@ -165,7 +165,7 @@ export default function TripHero({
                 href={tripId ? `/trips/${tripId}/pack-list` : "#"}
                 className="block rounded-3xl bg-white p-4 shadow-sm transition active:scale-[0.98]"
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-bold text-neutral-950">
                       Smart Pack List
@@ -184,17 +184,31 @@ export default function TripHero({
                 </div>
               </Link>
 
-              <div className="rounded-3xl bg-white/70 p-4 shadow-sm">
-                <h3 className="text-lg font-bold text-neutral-950">
-                  Trip Notes
-                </h3>
-                <p className="mt-1 text-sm text-neutral-500">
-                  Notebook for tips, memories and reminders.
-                </p>
-                <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
-                  Coming soon
-                </p>
-              </div>
+              <Link
+                href={tripId ? `/trips/${tripId}/journal` : "#"}
+                className="block rounded-3xl bg-white p-4 shadow-sm transition active:scale-[0.98]"
+              >
+                <div className="flex items-start justify-between gap-4">
+
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-bold text-neutral-950">
+                      Travel Journal
+                    </h3>
+
+                    <p className="mt-1 text-sm leading-6 text-neutral-500">
+                      Capture memories, hidden gems and moments from your trip.
+                    </p>
+                  </div>
+
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-500 text-white shadow-sm">
+                    <img
+                      src="/icons/chevron-right.svg"
+                      alt=""
+                      className="h-6 w-6"
+                    />
+                  </span>
+                </div>
+              </Link>
 
               <div className="rounded-3xl bg-white/70 p-4 shadow-sm">
                 <h3 className="text-lg font-bold text-neutral-950">
