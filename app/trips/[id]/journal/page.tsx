@@ -1,8 +1,9 @@
 "use client";
 
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type JournalEntry = {
     id: number;
@@ -10,6 +11,7 @@ type JournalEntry = {
     body: string;
     mood?: string;
     image?: string;
+    visibility?: "private" | "trip";
     createdAt: string;
 };
 
@@ -23,56 +25,122 @@ export default function TravelJournalPage() {
     const [selectedMood, setSelectedMood] = useState("");
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
+    const [loadingEntries, setLoadingEntries] = useState(true);
+    const [tripTitle, setTripTitle] = useState("Trip");
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
-    const [entries, setEntries] = useState<JournalEntry[]>([
-        {
-            id: 1,
-            title: "Tiny restaurant in Trastevere",
-            body:
-                "Found a tiny family-owned restaurant hidden away in a side street. No tourists. Just handwritten menus and incredible pasta.",
-            mood: "Beautiful",
-            image: "/illustrations/journal-memory.jpg",
-            createdAt: "Today · 19:42",
-        },
-    ]);
+    const [entries, setEntries] = useState<JournalEntry[]>([]);
 
-    function saveEntry() {
+    useEffect(() => {
+        async function loadJournalEntries() {
+            if (!tripId) return;
+
+            const { data: trip } = await supabase
+                .from("trips")
+                .select("title")
+                .eq("id", tripId)
+                .single();
+
+            if (trip?.title) setTripTitle(trip.title);
+
+            setLoadingEntries(true);
+
+            const { data, error } = await supabase
+                .from("journal_entries")
+                .select("*")
+                .eq("trip_id", tripId)
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                setLoadingEntries(false);
+                return;
+            }
+
+            const formattedEntries: JournalEntry[] =
+                data?.map((entry) => ({
+                    id: entry.id,
+                    title: entry.title,
+                    body: entry.body,
+                    mood: entry.mood || undefined,
+                    image: entry.image_url || undefined,
+                    visibility: entry.visibility,
+                    createdAt: new Date(entry.created_at).toLocaleString(),
+                })) || [];
+
+            setEntries(formattedEntries);
+
+            setLoadingEntries(false);
+        }
+
+        loadJournalEntries();
+    }, [tripId]);
+
+    async function uploadJournalImage() {
+        if (!selectedImageFile) return selectedImage;
+
+        const fileExt = selectedImageFile.name.split(".").pop();
+        const fileName = `${tripId}/${Date.now()}.${fileExt}`;
+
+        const { error } = await supabase.storage
+            .from("journal-images")
+            .upload(fileName, selectedImageFile);
+
+        if (error) {
+            console.error(error);
+            return selectedImage;
+        }
+
+        const { data } = supabase.storage
+            .from("journal-images")
+            .getPublicUrl(fileName);
+
+        return data.publicUrl;
+    }
+
+    async function saveEntry() {
         if (!entryBody.trim()) return;
+        const imageUrl = await uploadJournalImage();
+        const entryData = {
+            trip_id: tripId,
+            title: entryTitle || "Untitled memory",
+            body: entryBody,
+            mood: selectedMood || null,
+            image_url: imageUrl,
+            visibility: "private",
+            updated_at: new Date().toISOString(),
+        };
 
         if (editingEntryId) {
-            setEntries((current) =>
-                current.map((entry) =>
-                    entry.id === editingEntryId
-                        ? {
-                            ...entry,
-                            title: entryTitle || "Untitled memory",
-                            body: entryBody,
-                            mood: selectedMood,
-                            image: selectedImage || entry.image,
-                        }
-                        : entry
-                )
-            );
-        } else {
-            const newEntry: JournalEntry = {
-                id: Date.now(),
-                title: entryTitle || "Untitled memory",
-                body: entryBody,
-                mood: selectedMood,
-                image: selectedImage || undefined,
-                createdAt: "Just now",
-            };
+            const { error } = await supabase
+                .from("journal_entries")
+                .update(entryData)
+                .eq("id", editingEntryId);
 
-            setEntries((current) => [newEntry, ...current]);
+            if (error) {
+                console.error(error);
+                return;
+            }
+        } else {
+            const { error } = await supabase
+                .from("journal_entries")
+                .insert(entryData);
+
+            if (error) {
+                console.error(error);
+                return;
+            }
         }
 
         setEntryTitle("");
         setEntryBody("");
         setSelectedMood("");
         setSelectedImage(null);
+        setSelectedImageFile(null);
         setEditingEntryId(null);
-
         setShowComposer(false);
+
+        window.location.reload();
     }
 
     function editEntry(entry: JournalEntry) {
@@ -86,6 +154,24 @@ export default function TravelJournalPage() {
         setShowComposer(true);
     }
 
+    async function deleteEntry(entryId: number) {
+        const confirmed = window.confirm("Delete this memory?");
+
+        if (!confirmed) return;
+
+        const { error } = await supabase
+            .from("journal_entries")
+            .delete()
+            .eq("id", entryId);
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        setEntries((current) => current.filter((entry) => entry.id !== entryId));
+    }
+
     function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0];
 
@@ -94,6 +180,7 @@ export default function TravelJournalPage() {
         const imageUrl = URL.createObjectURL(file);
 
         setSelectedImage(imageUrl);
+        setSelectedImageFile(file);
     }
     return (
         <main className="min-h-screen bg-[#f6f1e8] px-4 py-6">
@@ -126,7 +213,7 @@ export default function TravelJournalPage() {
                         </p>
 
                         <h1 className="mt-2 text-4xl font-bold tracking-tight text-neutral-950 [text-shadow:0_1px_2px_rgba(255,255,255,0.35)]">
-                            Italy Memories
+                            {tripTitle} Memories
                         </h1>
 
                         <div className="mt-3 truncate text-sm font-medium text-neutral-500 [text-shadow:0_1px_1px_rgba(255,255,255,0.25)]">
@@ -160,7 +247,25 @@ export default function TravelJournalPage() {
                 </div>
 
                 <div className="space-y-5 pb-24">
-                    {entries.length === 0 ? (
+                    {loadingEntries ? (
+                        <div className="space-y-5">
+                            {[1, 2].map((skeleton) => (
+                                <div
+                                    key={skeleton}
+                                    className="animate-pulse rounded-[2.5rem] border border-[#efe7d8] bg-[#fffdf8] px-6 py-8 shadow-sm"
+                                >
+                                    <div className="h-4 w-32 rounded-full bg-[#ece5d8]" />
+                                    <div className="mt-6 h-10 w-3/4 rounded-full bg-[#ece5d8]" />
+
+                                    <div className="mt-6 space-y-3">
+                                        <div className="h-4 rounded-full bg-[#f1ebdf]" />
+                                        <div className="h-4 rounded-full bg-[#f1ebdf]" />
+                                        <div className="h-4 w-2/3 rounded-full bg-[#f1ebdf]" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : entries.length === 0 ? (
                         <div className="rounded-[2.5rem] border border-[#efe7d8] bg-[#fffdf8] px-6 py-10 text-center shadow-sm">
                             <p className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
                                 Your journal is waiting
@@ -194,11 +299,12 @@ export default function TravelJournalPage() {
                                         <div className="mb-6 overflow-hidden rounded-[2rem]">
                                             <img
                                                 src={entry.image}
-                                                alt=""
-                                                className="h-64 w-full object-cover"
+                                                alt={entry.title}
+                                                className="h-50 w-full object-cover"
                                             />
                                         </div>
                                     )}
+
                                     <div className="flex items-center justify-between">
                                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
                                             Journal Entry
@@ -231,13 +337,21 @@ export default function TravelJournalPage() {
                                     <p className="mt-8 leading-8 text-neutral-700">
                                         {entry.body}
                                     </p>
+                                    <div className="mt-6 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => deleteEntry(entry.id)}
+                                            className="text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400 transition active:scale-95"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </article>
                         ))
                     )}
                 </div>
             </div>
-
             <button
                 type="button"
                 onClick={() => {
@@ -246,6 +360,7 @@ export default function TravelJournalPage() {
                     setEntryBody("");
                     setSelectedMood("");
                     setSelectedImage(null);
+                    setSelectedImageFile(null);
                     setShowComposer(true);
                 }}
                 className="fixed bottom-6 right-6 z-40 flex h-14 w-14 touch-manipulation items-center justify-center rounded-full bg-rose-500 text-3xl text-white shadow-xl transition active:scale-95"
@@ -253,7 +368,7 @@ export default function TravelJournalPage() {
                 +
             </button>
             {showComposer && (
-                <div className="fixed inset-0 z-50 flex items-end bg-black/30 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/30 backdrop-blur-sm">
                     <button
                         type="button"
                         aria-label="Close composer"
@@ -261,7 +376,7 @@ export default function TravelJournalPage() {
                         onClick={() => setShowComposer(false)}
                     />
 
-                    <div className="relative w-full rounded-t-[2.5rem] bg-[#faf6ee] px-5 pb-8 pt-4 shadow-2xl">
+                    <div className="relative mx-auto min-h-full w-full max-w-2xl rounded-t-[2.5rem] bg-[#faf6ee] px-5 pb-8 pt-4 shadow-2xl">
 
                         <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-neutral-300" />
 
