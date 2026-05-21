@@ -158,11 +158,21 @@ export default function TravelJournalPage() {
                         <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-neutral-300" />
 
                         <div className="mb-6">
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
-                                New Memory
-                            </p>
+                            <div className="mb-3 flex items-center justify-between gap-4">
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
+                                    New Memory
+                                </p>
 
-                            <h2 className="mt-2 text-3xl font-bold tracking-tight text-neutral-950">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowComposer(false)}
+                                    className="text-sm font-semibold text-neutral-400 transition active:scale-95"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+
+                            <h2 className="text-3xl font-bold tracking-tight text-neutral-950">
                                 Capture a moment
                             </h2>
 
