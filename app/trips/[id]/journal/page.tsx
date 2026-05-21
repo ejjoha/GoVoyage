@@ -4,6 +4,15 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
+type JournalEntry = {
+    id: number;
+    title: string;
+    body: string;
+    mood?: string;
+    image?: string;
+    createdAt: string;
+};
+
 export default function TravelJournalPage() {
     const params = useParams();
     const tripId = Number(params.id);
@@ -12,7 +21,80 @@ export default function TravelJournalPage() {
     const [entryTitle, setEntryTitle] = useState("");
     const [entryBody, setEntryBody] = useState("");
     const [selectedMood, setSelectedMood] = useState("");
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
 
+    const [entries, setEntries] = useState<JournalEntry[]>([
+        {
+            id: 1,
+            title: "Tiny restaurant in Trastevere",
+            body:
+                "Found a tiny family-owned restaurant hidden away in a side street. No tourists. Just handwritten menus and incredible pasta.",
+            mood: "Beautiful",
+            image: "/illustrations/journal-memory.jpg",
+            createdAt: "Today · 19:42",
+        },
+    ]);
+
+    function saveEntry() {
+        if (!entryBody.trim()) return;
+
+        if (editingEntryId) {
+            setEntries((current) =>
+                current.map((entry) =>
+                    entry.id === editingEntryId
+                        ? {
+                            ...entry,
+                            title: entryTitle || "Untitled memory",
+                            body: entryBody,
+                            mood: selectedMood,
+                            image: selectedImage || entry.image,
+                        }
+                        : entry
+                )
+            );
+        } else {
+            const newEntry: JournalEntry = {
+                id: Date.now(),
+                title: entryTitle || "Untitled memory",
+                body: entryBody,
+                mood: selectedMood,
+                image: selectedImage || undefined,
+                createdAt: "Just now",
+            };
+
+            setEntries((current) => [newEntry, ...current]);
+        }
+
+        setEntryTitle("");
+        setEntryBody("");
+        setSelectedMood("");
+        setSelectedImage(null);
+        setEditingEntryId(null);
+
+        setShowComposer(false);
+    }
+
+    function editEntry(entry: JournalEntry) {
+        setEditingEntryId(entry.id);
+
+        setEntryTitle(entry.title);
+        setEntryBody(entry.body);
+        setSelectedMood(entry.mood || "");
+        setSelectedImage(entry.image || null);
+
+        setShowComposer(true);
+    }
+
+    function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0];
+
+        if (!file) return;
+
+        const imageUrl = URL.createObjectURL(file);
+
+        setSelectedImage(imageUrl);
+    }
     return (
         <main className="min-h-screen bg-[#f6f1e8] px-4 py-6">
             <div className="mx-auto mb-2 flex max-w-2xl">
@@ -53,7 +135,7 @@ export default function TravelJournalPage() {
                     </div>
                 </div>
 
-                <div className="mb-5 rounded-[2rem] border border-[#efe7d8] px-6 py-6 shadow-sm">
+                <div className="mb-5 rounded-[2rem] border border-[#efe7d8] px-5 py-4 shadow-sm">
                     <div className="mb-4">
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
                             Prompts
@@ -69,7 +151,7 @@ export default function TravelJournalPage() {
                         ].map((prompt) => (
                             <button
                                 key={prompt}
-                                className="rounded-full bg-[#f6f1e8] px-4 py-2 text-sm font-medium text-neutral-700 transition active:scale-95"
+                                className="rounded-full bg-[#f6f1e8] px-3.5 py-1.5 text-sm font-medium text-neutral-700 transition active:scale-95"
                             >
                                 {prompt}
                             </button>
@@ -77,69 +159,95 @@ export default function TravelJournalPage() {
                     </div>
                 </div>
 
-                <div className="relative overflow-hidden rounded-[2.5rem] bg-[#fffdf8] px-6 py-8 shadow-sm">
-
-                    <div
-                        className="pointer-events-none absolute inset-0 opacity-[0.22]"
-                        style={{
-                            backgroundImage:
-                                "linear-gradient(to bottom, transparent 31px, #d9d2c3 32px)",
-                            backgroundSize: "100% 32px",
-                        }}
-                    />
-
-                    <div className="relative z-10">
-
-                        <div className="mb-10">
+                <div className="space-y-5 pb-24">
+                    {entries.length === 0 ? (
+                        <div className="rounded-[2.5rem] border border-[#efe7d8] bg-[#fffdf8] px-6 py-10 text-center shadow-sm">
                             <p className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
-                                Journal Entry
+                                Your journal is waiting
                             </p>
 
-                            <h2 className="mt-3 text-2xl font-bold tracking-tight text-neutral-950">
-                                Tiny restaurant in Trastevere
+                            <h2 className="mx-auto mt-3 max-w-sm text-2xl font-bold tracking-tight text-neutral-950">
+                                Capture the little moments you’ll want to remember later.
                             </h2>
 
-                            <p className="mt-2 text-sm font-medium text-neutral-400">
-                                Today · 19:42
-                            </p>
-
-                            <p className="mt-6 leading-8 text-neutral-700">
-                                Found a tiny family-owned restaurant hidden away
-                                in a side street. No tourists. Just handwritten
-                                menus and incredible pasta. One of those moments
-                                that feels impossible to plan for.
+                            <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-neutral-500">
+                                Start with a meal, a street, a feeling, or something unexpected from your trip.
                             </p>
                         </div>
+                    ) : (
+                        entries.map((entry) => (
+                            <article
+                                key={entry.id}
+                                className="relative overflow-hidden rounded-[2.5rem] border border-[#efe7d8] bg-[#fffdf8] px-6 py-8 shadow-sm animate-[fadeIn_0.4s_ease]"
+                            >
+                                <div
+                                    className="pointer-events-none absolute inset-0 opacity-[0.18]"
+                                    style={{
+                                        backgroundImage:
+                                            "linear-gradient(to bottom, transparent 31px, #d9d2c3 32px)",
+                                        backgroundSize: "100% 32px",
+                                    }}
+                                />
 
-                        <div className="mb-10">
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
-                                Journal Entry
-                            </p>
+                                <div className="relative z-10">
+                                    {entry.image && (
+                                        <div className="mb-6 overflow-hidden rounded-[2rem]">
+                                            <img
+                                                src={entry.image}
+                                                alt=""
+                                                className="h-64 w-full object-cover"
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-400">
+                                            Journal Entry
+                                        </p>
 
-                            <h2 className="mt-3 text-2xl font-bold tracking-tight text-neutral-950">
-                                Rainstorm near the Pantheon
-                            </h2>
+                                        <button
+                                            type="button"
+                                            onClick={() => editEntry(entry)}
+                                            className="text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 transition active:scale-95"
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
 
-                            <p className="mt-2 text-sm font-medium text-neutral-400">
-                                Yesterday · 16:10
-                            </p>
+                                    <h2 className="mt-4 text-2xl font-bold tracking-tight text-neutral-950">
+                                        {entry.title}
+                                    </h2>
 
-                            <p className="mt-6 leading-8 text-neutral-700">
-                                Sudden warm rainstorm. Everyone ran under the
-                                arches. Ended up drinking espresso while waiting
-                                for it to pass. Somehow became one of the best
-                                moments of the trip.
-                            </p>
-                        </div>
+                                    <div className="mt-3 flex items-center gap-3 text-sm font-medium text-neutral-400">
+                                        <span>{entry.createdAt}</span>
 
-                    </div>
+                                        {entry.mood && (
+                                            <>
+                                                <span>•</span>
+                                                <span>{entry.mood}</span>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    <p className="mt-8 leading-8 text-neutral-700">
+                                        {entry.body}
+                                    </p>
+                                </div>
+                            </article>
+                        ))
+                    )}
                 </div>
             </div>
 
-
             <button
                 type="button"
-                onClick={() => setShowComposer(true)}
+                onClick={() => {
+                    setEditingEntryId(null);
+                    setEntryTitle("");
+                    setEntryBody("");
+                    setSelectedMood("");
+                    setSelectedImage(null);
+                    setShowComposer(true);
+                }}
                 className="fixed bottom-6 right-6 z-40 flex h-14 w-14 touch-manipulation items-center justify-center rounded-full bg-rose-500 text-3xl text-white shadow-xl transition active:scale-95"
             >
                 +
@@ -182,7 +290,36 @@ export default function TravelJournalPage() {
                         </div>
 
                         <div className="space-y-4">
+                            <div>
+                                <label className="flex cursor-pointer items-center justify-center rounded-[2rem] border border-dashed border-[#d9cfbe] bg-[#fffdf8] px-5 py-10 text-center transition active:scale-[0.99]">
+                                    <div>
+                                        <p className="text-sm font-semibold text-neutral-700">
+                                            Add a photo
+                                        </p>
 
+                                        <p className="mt-1 text-xs text-neutral-400">
+                                            Capture the atmosphere of the moment
+                                        </p>
+                                    </div>
+
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleImageUpload}
+                                    />
+                                </label>
+
+                                {selectedImage && (
+                                    <div className="mt-4 overflow-hidden rounded-[2rem]">
+                                        <img
+                                            src={selectedImage}
+                                            alt=""
+                                            className="h-64 w-full object-cover"
+                                        />
+                                    </div>
+                                )}
+                            </div>
                             <input
                                 value={entryTitle}
                                 onChange={(event) => setEntryTitle(event.target.value)}
@@ -239,9 +376,10 @@ export default function TravelJournalPage() {
 
                         <button
                             type="button"
+                            onClick={saveEntry}
                             className="mt-6 w-full rounded-2xl bg-rose-500 px-5 py-4 text-lg font-bold text-white shadow-sm transition active:scale-[0.98]"
                         >
-                            Save memory
+                            {editingEntryId ? "Update memory" : "Save memory"}
                         </button>
                     </div>
                 </div>
