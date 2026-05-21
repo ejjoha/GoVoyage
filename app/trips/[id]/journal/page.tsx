@@ -16,7 +16,7 @@ type JournalEntry = {
 };
 
 export default function TravelJournalPage() {
-    const params = useParams();
+    const params = useParams<{ id: string }>();
     const tripId = Number(params.id);
 
     const [showComposer, setShowComposer] = useState(false);
@@ -31,48 +31,52 @@ export default function TravelJournalPage() {
 
     const [entries, setEntries] = useState<JournalEntry[]>([]);
 
-    useEffect(() => {
-        async function loadJournalEntries() {
-            if (!tripId) return;
+    async function loadJournalEntries() {
+        if (!tripId) return;
 
-            const { data: trip } = await supabase
-                .from("trips")
-                .select("title")
-                .eq("id", tripId)
-                .single();
+        const { data: trip, error: tripError } = await supabase
+            .from("trips")
+            .select("title")
+            .eq("id", tripId)
+            .single();
 
-            if (trip?.title) setTripTitle(trip.title);
-
-            setLoadingEntries(true);
-
-            const { data, error } = await supabase
-                .from("journal_entries")
-                .select("*")
-                .eq("trip_id", tripId)
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                console.error(error);
-                setLoadingEntries(false);
-                return;
-            }
-
-            const formattedEntries: JournalEntry[] =
-                data?.map((entry) => ({
-                    id: entry.id,
-                    title: entry.title,
-                    body: entry.body,
-                    mood: entry.mood || undefined,
-                    image: entry.image_url || undefined,
-                    visibility: entry.visibility,
-                    createdAt: new Date(entry.created_at).toLocaleString(),
-                })) || [];
-
-            setEntries(formattedEntries);
-
-            setLoadingEntries(false);
+        if (tripError) {
+            console.error(tripError);
         }
 
+        if (trip?.title) setTripTitle(trip.title);
+
+        setLoadingEntries(true);
+
+        const { data, error } = await supabase
+            .from("journal_entries")
+            .select("*")
+            .eq("trip_id", tripId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error(error);
+            setLoadingEntries(false);
+            return;
+        }
+
+        const formattedEntries: JournalEntry[] =
+            data?.map((entry) => ({
+                id: entry.id,
+                title: entry.title,
+                body: entry.body,
+                mood: entry.mood || undefined,
+                image: entry.image_url || undefined,
+                visibility: entry.visibility,
+                createdAt: new Date(entry.created_at).toLocaleString(),
+            })) || [];
+
+        setEntries(formattedEntries);
+
+        setLoadingEntries(false);
+    }
+
+    useEffect(() => {
         loadJournalEntries();
     }, [tripId]);
 
@@ -140,7 +144,7 @@ export default function TravelJournalPage() {
         setEditingEntryId(null);
         setShowComposer(false);
 
-        window.location.reload();
+        await loadJournalEntries();
     }
 
     function editEntry(entry: JournalEntry) {
@@ -300,7 +304,7 @@ export default function TravelJournalPage() {
                                             <img
                                                 src={entry.image}
                                                 alt={entry.title}
-                                                className="h-50 w-full object-cover"
+                                                className="h-52 w-full object-cover"
                                             />
                                         </div>
                                     )}
