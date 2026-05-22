@@ -65,31 +65,21 @@ export default function TripHero({
             <div />
           )}
 
-          <button
-            type="button"
-            onClick={() => setToolsOpen(true)}
-            aria-label="Open trip tools"
-            className="flex h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-bold text-neutral-900 shadow-md transition active:scale-95"
-          >
-            Tools
-          </button>
-        </div>
-
-        <div className="absolute bottom-4 left-4 right-4 z-20 rounded-2xl border border-white/20 bg-white/15 p-3 backdrop-blur-md shadow-[0_10px_34px_rgba(0,0,0,0.22)]">
-          {onEdit && (
+          {onEdit ? (
             <button
               type="button"
               onClick={onEdit}
               aria-label="Edit trip"
-              className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center transition active:scale-95"
+              className="flex h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-bold text-neutral-900 shadow-md transition active:scale-95"
             >
-              <img
-                src="/icons/insideedit.svg"
-                alt=""
-                className="h-5 w-5 opacity-90"
-              />
+              Edit Trip
             </button>
+          ) : (
+            <div />
           )}
+        </div>
+
+        <div className="absolute bottom-4 left-4 right-4 z-20 rounded-2xl border border-white/20 bg-white/15 p-3 backdrop-blur-md shadow-[0_10px_34px_rgba(0,0,0,0.22)]">
 
           {eyebrow && <p className="text-sm text-white/80">{eyebrow}</p>}
 

@@ -12,6 +12,9 @@ export function PastTripsCarousel({ trips }: Props) {
     const [emblaRef] = useEmblaCarousel({
         align: "start",
         dragFree: true,
+        containScroll: "trimSnaps",
+        skipSnaps: true,
+        duration: 28,
     });
 
     return (
@@ -20,12 +23,12 @@ export function PastTripsCarousel({ trips }: Props) {
             style={{ maxWidth: "calc(100vw - 2rem)" }}
         >
             <div className="w-full min-w-0 overflow-hidden" ref={emblaRef}>
-                <div className="flex gap-4">
+                <div className="flex gap-4 will-change-transform">
                     {trips.map((trip) => (
                         <div
                             key={trip.id}
                             className="min-w-0 shrink-0"
-                            style={{ flexBasis: "210px" }}
+                            style={{ flexBasis: "280px" }}
                         >
                             <PastTripCard trip={trip} />
                         </div>

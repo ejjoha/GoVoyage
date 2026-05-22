@@ -854,23 +854,49 @@ export default function TripPage() {
           </div>
         )}
 
-        <section className="mb-4 grid min-w-0 grid-cols-2 gap-3 overflow-hidden">
-          <button
-            type="button"
-            onClick={openNewBookingForm}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-semibold text-white shadow-sm transition active:scale-[0.97]"
-          >
-            <span className="text-base">＋</span>
-            Add booking
-          </button>
+        <section className="mb-5 -mx-4 overflow-x-auto px-4 scrollbar-hide">
+          <div className="flex gap-3 pb-1">
+            <button
+              type="button"
+              onClick={openNewBookingForm}
+              className="flex min-w-[145px] flex-col justify-between rounded-2xl bg-rose-500 px-5 py-3 text-left text-white shadow-sm transition active:scale-[0.97]"
+            >
+              <span className="block text-base font-bold">+ Add booking</span>
+            </button>
 
-          <Link
-            href={`/trips/${trip.id}/cost-sharing`}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-sm transition active:scale-[0.97]"
-          >
-            <span className="text-base"></span>
-            Shared expenses
-          </Link>
+            <Link
+              href={`/trips/${trip.id}/cost-sharing`}
+              className="flex min-w-[140px] flex-col justify-between rounded-2xl border border-stone-200 bg-white px-5 py-3 text-left shadow-sm transition active:scale-[0.97]"
+            >
+              <span>
+                <span className="block text-base font-bold text-stone-950">
+                  Expenses
+                </span>
+              </span>
+            </Link>
+
+            <Link
+              href={`/trips/${trip.id}/journal`}
+              className="flex min-w-[145px] flex-col justify-between rounded-2xl border border-stone-200 bg-white px-5 py-3 text-left shadow-sm transition active:scale-[0.97]"
+            >
+              <span>
+                <span className="block text-base font-bold text-stone-950">
+                  Journal
+                </span>
+              </span>
+            </Link>
+
+            <Link
+              href={`/trips/${trip.id}/pack-list`}
+              className="flex min-w-[145px] flex-col justify-between rounded-2xl border border-stone-200 bg-white px-5 py-3 text-left shadow-sm transition active:scale-[0.97]"
+            >
+              <span>
+                <span className="block text-base font-bold text-stone-950">
+                  Pack List
+                </span>
+              </span>
+            </Link>
+          </div>
         </section>
 
         {bookings.length > 0 && (

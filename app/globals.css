@@ -77,3 +77,12 @@ input[type="datetime-local"] {
 .toast-in {
   animation: toastIn 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
