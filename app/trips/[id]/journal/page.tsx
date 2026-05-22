@@ -11,6 +11,7 @@ type JournalEntry = {
     body: string;
     mood?: string;
     image?: string;
+    imagePositionY?: number;
     visibility?: "private" | "trip";
     createdAt: string;
 };
@@ -28,6 +29,9 @@ export default function TravelJournalPage() {
     const [loadingEntries, setLoadingEntries] = useState(true);
     const [tripTitle, setTripTitle] = useState("Trip");
     const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+    const [selectedImagePositionY, setSelectedImagePositionY] = useState(50);
+    const [imageDragStartY, setImageDragStartY] = useState<number | null>(null);
+    const [imageDragStartPositionY, setImageDragStartPositionY] = useState(50);
 
     const [entries, setEntries] = useState<JournalEntry[]>([]);
 
@@ -67,6 +71,7 @@ export default function TravelJournalPage() {
                 body: entry.body,
                 mood: entry.mood || undefined,
                 image: entry.image_url || undefined,
+                imagePositionY: entry.image_position_y ?? 50,
                 visibility: entry.visibility,
                 createdAt: new Date(entry.created_at).toLocaleString(),
             })) || [];
@@ -83,7 +88,7 @@ export default function TravelJournalPage() {
     async function uploadJournalImage() {
         if (!selectedImageFile) return selectedImage;
 
-        const fileExt = selectedImageFile.name.split(".").pop();
+        const fileExt = selectedImageFile.name.split(".").pop() || "jpg";
         const fileName = `${tripId}/${Date.now()}.${fileExt}`;
 
         const { error } = await supabase.storage
@@ -111,6 +116,7 @@ export default function TravelJournalPage() {
             body: entryBody,
             mood: selectedMood || null,
             image_url: imageUrl,
+            image_position_y: Math.round(selectedImagePositionY),
             visibility: "private",
             updated_at: new Date().toISOString(),
         };
@@ -141,6 +147,7 @@ export default function TravelJournalPage() {
         setSelectedMood("");
         setSelectedImage(null);
         setSelectedImageFile(null);
+        setSelectedImagePositionY(50);
         setEditingEntryId(null);
         setShowComposer(false);
 
@@ -154,6 +161,7 @@ export default function TravelJournalPage() {
         setEntryBody(entry.body);
         setSelectedMood(entry.mood || "");
         setSelectedImage(entry.image || null);
+        setSelectedImagePositionY(entry.imagePositionY ?? 50);
 
         setShowComposer(true);
     }
@@ -186,6 +194,30 @@ export default function TravelJournalPage() {
         setSelectedImage(imageUrl);
         setSelectedImageFile(file);
     }
+
+    function startImageDrag(clientY: number) {
+        setImageDragStartY(clientY);
+        setImageDragStartPositionY(selectedImagePositionY);
+    }
+
+    function moveImageDrag(clientY: number) {
+        if (imageDragStartY === null) return;
+
+        const dragDistance = clientY - imageDragStartY;
+        const positionChange = dragDistance / 2.5;
+
+        const nextPosition = Math.min(
+            100,
+            Math.max(0, imageDragStartPositionY - positionChange)
+        );
+
+        setSelectedImagePositionY(nextPosition);
+    }
+
+    function endImageDrag() {
+        setImageDragStartY(null);
+    }
+
     return (
         <main className="min-h-screen bg-[#f6f1e8] px-4 py-6">
             <div className="mx-auto mb-2 flex max-w-2xl">
@@ -305,6 +337,9 @@ export default function TravelJournalPage() {
                                                 src={entry.image}
                                                 alt={entry.title}
                                                 className="h-52 w-full object-cover"
+                                                style={{
+                                                    objectPosition: `center ${entry.imagePositionY ?? 50}%`,
+                                                }}
                                             />
                                         </div>
                                     )}
@@ -365,6 +400,7 @@ export default function TravelJournalPage() {
                     setSelectedMood("");
                     setSelectedImage(null);
                     setSelectedImageFile(null);
+                    setSelectedImagePositionY(50);
                     setShowComposer(true);
                 }}
                 className="fixed bottom-6 right-6 z-40 flex h-14 w-14 touch-manipulation items-center justify-center rounded-full bg-rose-500 text-3xl text-white shadow-xl transition active:scale-95"
@@ -430,12 +466,28 @@ export default function TravelJournalPage() {
                                 </label>
 
                                 {selectedImage && (
-                                    <div className="mt-4 overflow-hidden rounded-[2rem]">
-                                        <img
-                                            src={selectedImage}
-                                            alt=""
-                                            className="h-64 w-full object-cover"
-                                        />
+                                    <div className="mt-4">
+                                        <p className="mb-2 text-center text-xs font-medium text-neutral-400">
+                                            Drag photo to adjust
+                                        </p>
+
+                                        <div
+                                            className="touch-none overflow-hidden rounded-[2rem]"
+                                            onPointerDown={(event) => startImageDrag(event.clientY)}
+                                            onPointerMove={(event) => moveImageDrag(event.clientY)}
+                                            onPointerUp={endImageDrag}
+                                            onPointerCancel={endImageDrag}
+                                        >
+                                            <img
+                                                src={selectedImage}
+                                                alt=""
+                                                draggable={false}
+                                                className="h-64 w-full select-none object-cover"
+                                                style={{
+                                                    objectPosition: `center ${selectedImagePositionY}%`,
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </div>
