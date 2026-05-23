@@ -54,20 +54,19 @@ function SectionCard({
   children,
 }: {
   title: string;
-  tone?: "neutral" | "blue" | "orange" | "violet" | "rose";
+  tone?: "neutral" | "flight" | "hotel" | "dining" | "activity";
   children: React.ReactNode;
 }) {
-  const toneClass =
-    tone === "blue"
-      ? "border-blue-200/70 bg-blue-50/60"
-      : tone === "orange"
-        ? "border-orange-200/70 bg-orange-50/60"
-        : tone === "violet"
-          ? "border-violet-200/70 bg-violet-50/70"
-          : tone === "rose"
-            ? "border-rose-200/70 bg-rose-50/60"
-            : "border-stone-200 bg-stone-50";
-
+const toneClass =
+  tone === "flight"
+    ? "border-[#5FA8FF]/30 bg-[#5FA8FF]/8"
+    : tone === "hotel"
+      ? "border-[#F4B266]/30 bg-[#F4B266]/8"
+      : tone === "dining"
+        ? "border-[#E97A73]/30 bg-[#E97A73]/8"
+        : tone === "activity"
+          ? "border-[#58C7B2]/30 bg-[#58C7B2]/8"
+          : "border-stone-200 bg-stone-50";
   return (
     <div className={`rounded-[1.5rem] border p-4 sm:p-5 ${toneClass}`}>
       <h3 className="text-sm font-semibold text-stone-800">{title}</h3>
@@ -165,7 +164,7 @@ export default function BookingForm({
 
       {newType === "hotel" ? (
         <>
-          <SectionCard title="Hotel details" tone="orange">
+          <SectionCard title="Hotel details" tone="hotel">
             <Field label="Hotel name">
               <input
                 type="text"
@@ -253,7 +252,7 @@ export default function BookingForm({
             </div>
           </SectionCard>
 
-          <SectionCard title="Flight details" tone="blue">
+          <SectionCard title="Flight details" tone="flight">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Departure airport">
                 <input
@@ -323,7 +322,7 @@ export default function BookingForm({
         </>
       ) : newType === "transport" ? (
         <>
-          <SectionCard title="Transport details" tone="violet">
+          <SectionCard title="Transport details" tone="activity">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Origin">
                 <input
@@ -391,7 +390,7 @@ export default function BookingForm({
         </>
       ) : newType === "dining" ? (
         <>
-          <SectionCard title="Reservation details" tone="rose">
+          <SectionCard title="Reservation details" tone="dining">
             <Field label="Restaurant">
               <input
                 type="text"

@@ -859,40 +859,52 @@ export default function TripPage() {
             <button
               type="button"
               onClick={openNewBookingForm}
-              className="flex min-w-[145px] flex-col justify-between rounded-2xl bg-rose-500 px-5 py-3 text-left text-white shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[145px] flex-col items-center justify-center rounded-xl bg-rose-500 px-5 py-3 text-center text-white shadow-sm transition active:scale-[0.97]"
             >
-              <span className="block text-base font-bold">+ Add booking</span>
+              <span className="flex items-center gap-0">
+                <span className="text-l">＋</span>
+
+                <span className="text-[15px] font-bold">
+                  Add booking
+                </span>
+              </span>
             </button>
 
             <Link
               href={`/trips/${trip.id}/cost-sharing`}
-              className="flex min-w-[140px] flex-col justify-between rounded-2xl border border-stone-200 bg-white px-5 py-3 text-left shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
-              <span>
-                <span className="block text-base font-bold text-stone-950">
+              <span className="flex items-center gap-2">
+                <span className="text-l">≋</span>
+
+                <span className="text-[15px] font-bold text-stone-950">
                   Expenses
                 </span>
               </span>
             </Link>
 
             <Link
-              href={`/trips/${trip.id}/journal`}
-              className="flex min-w-[145px] flex-col justify-between rounded-2xl border border-stone-200 bg-white px-5 py-3 text-left shadow-sm transition active:scale-[0.97]"
+              href={`/trips/${trip.id}/pack-list`}
+              className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
-              <span>
-                <span className="block text-base font-bold text-stone-950">
-                  Journal
+              <span className="flex items-center gap-2">
+                <span className="text-l">✓</span>
+
+                <span className="text-[15px] font-bold text-stone-950">
+                  Pack List
                 </span>
               </span>
             </Link>
-
+            
             <Link
-              href={`/trips/${trip.id}/pack-list`}
-              className="flex min-w-[145px] flex-col justify-between rounded-2xl border border-stone-200 bg-white px-5 py-3 text-left shadow-sm transition active:scale-[0.97]"
+              href={`/trips/${trip.id}/journal`}
+              className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
-              <span>
-                <span className="block text-base font-bold text-stone-950">
-                  Pack List
+              <span className="flex items-center gap-2">
+                <span className="text-l">✦</span>
+
+                <span className="text-[15px] font-bold text-stone-950">
+                  Memories
                 </span>
               </span>
             </Link>
