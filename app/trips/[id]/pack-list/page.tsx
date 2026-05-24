@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -27,8 +28,8 @@ export default function PackListPage() {
     const [tripDays, setTripDays] = useState(1);
     const [profileOpen, setProfileOpen] = useState(false);
     const [items, setItems] = useState<PackingItem[]>([]);
-    const [selectedClimates, setSelectedClimates] = useState<string[]>(["Tropical"]);
-    const [selectedTripTypes, setSelectedTripTypes] = useState<string[]>(["Beach"]);
+    const [selectedClimates, setSelectedClimates] = useState<string[]>([]);
+    const [selectedTripTypes, setSelectedTripTypes] = useState<string[]>([]);
     const [newItemName, setNewItemName] = useState("");
     const [showAddItem, setShowAddItem] = useState(false);
     const [loaded, setLoaded] = useState(false);
@@ -40,6 +41,8 @@ export default function PackListPage() {
     const [weatherSummary, setWeatherSummary] =
         useState<TripWeatherSummary | null>(null);
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
+    const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
 
 
     useEffect(() => {
@@ -69,8 +72,8 @@ export default function PackListPage() {
                     .upsert(
                         {
                             trip_id: tripId,
-                            selected_climates: ["Tropical"],
-                            selected_trip_types: ["Beach"],
+                            selected_climates: [],
+                            selected_trip_types: [],
                         },
                         { onConflict: "trip_id" }
                     )
@@ -86,8 +89,8 @@ export default function PackListPage() {
             }
 
             setPackingListId(list.id);
-            setSelectedClimates(list.selected_climates || ["Tropical"]);
-            setSelectedTripTypes(list.selected_trip_types || ["Beach"]);
+            setSelectedClimates(list.selected_climates || []);
+            setSelectedTripTypes(list.selected_trip_types || []);
 
             const { data: savedItems } = await supabase
                 .from("packing_items")
@@ -230,8 +233,8 @@ export default function PackListPage() {
     }
 
     function resetPackList() {
-        setSelectedClimates(["Tropical"]);
-        setSelectedTripTypes(["Beach"]);
+        setSelectedClimates([]);
+        setSelectedTripTypes([]);
         setItems([]);
         setHydrated(false);
 
@@ -268,9 +271,21 @@ export default function PackListPage() {
     }
 
     function deleteItem(itemKey: string) {
+        const itemToDelete = items.find((item) => item.key === itemKey);
+
+        if (!itemToDelete) return;
+
+        setDeletedItem(itemToDelete);
+        setDeleteSuccess(true);
+
         setItems((currentItems) =>
             currentItems.filter((item) => item.key !== itemKey)
         );
+
+        setTimeout(() => {
+            setDeleteSuccess(false);
+            setDeletedItem(null);
+        }, 4000);
     }
 
     function startSwipe(clientX: number, itemKey: string) {
@@ -297,6 +312,14 @@ export default function PackListPage() {
         setDraggingItemKey(null);
         setDragStartX(null);
         setDragOffset(0);
+    }
+
+    function undoDeleteItem() {
+        if (!deletedItem) return;
+
+        setItems((currentItems) => [...currentItems, deletedItem]);
+        setDeletedItem(null);
+        setDeleteSuccess(false);
     }
 
     function toggleClimate(climate: string) {
@@ -419,7 +442,9 @@ export default function PackListPage() {
                                 <div>
                                     <h2 className="text-lg font-bold text-neutral-950">Trip profile</h2>
                                     <p className="mt-1 text-sm text-neutral-500">
-                                        {[...selectedClimates, ...selectedTripTypes].join(" · ")}
+                                        {[...selectedClimates, ...selectedTripTypes].length > 0
+                                            ? [...selectedClimates, ...selectedTripTypes].join(" · ")
+                                            : "Choose climate and trip style"}
                                     </p>
                                 </div>
 
@@ -458,7 +483,7 @@ export default function PackListPage() {
                                     </h3>
 
                                     <div className="flex flex-wrap gap-2">
-                                        {["Beach", "Hiking", "City"].map((type) => {
+                                        {["Beach", "Hiking", "City", "Traveling with kids"].map((type) => {
                                             const active = selectedTripTypes.includes(type);
 
                                             return (
@@ -537,15 +562,18 @@ export default function PackListPage() {
                                                                 Delete
                                                             </div>
 
-                                                            <div
-                                                                onPointerDown={(event) => startSwipe(event.clientX, item.key)}
-                                                                onPointerMove={(event) => moveSwipe(event.clientX)}
-                                                                onPointerUp={() => endSwipe(item.key)}
-                                                                onPointerCancel={() => endSwipe(item.key)}
-                                                                style={{
-                                                                    transform: `translateX(${offset}px)`,
+                                                            <motion.div
+                                                                drag="x"
+                                                                dragDirectionLock
+                                                                dragConstraints={{ left: -120, right: 0 }}
+                                                                dragElastic={0.08}
+                                                                whileTap={{ scale: 0.99 }}
+                                                                onDragEnd={(_, info) => {
+                                                                    if (info.offset.x < -80 || info.velocity.x < -500) {
+                                                                        deleteItem(item.key);
+                                                                    }
                                                                 }}
-                                                                className="relative flex touch-pan-y items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-2.5 transition-transform"
+                                                                className="relative flex touch-pan-y items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-2.5 shadow-sm"
                                                             >
                                                                 <input
                                                                     type="checkbox"
@@ -578,10 +606,7 @@ export default function PackListPage() {
                                                                                         currentItem.key === item.key
                                                                                             ? {
                                                                                                 ...currentItem,
-                                                                                                quantity: Math.max(
-                                                                                                    1,
-                                                                                                    currentItem.quantity - 1
-                                                                                                ),
+                                                                                                quantity: Math.max(1, currentItem.quantity - 1),
                                                                                                 protected: true,
                                                                                             }
                                                                                             : currentItem
@@ -618,7 +643,7 @@ export default function PackListPage() {
                                                                         </button>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                            </motion.div>
                                                         </div>
                                                     );
                                                 })}
@@ -628,6 +653,24 @@ export default function PackListPage() {
                                 );
                             })}
                         </div>
+
+                        {deleteSuccess && deletedItem && (
+                            <div className="fixed inset-0 z-[70] flex items-center justify-center px-4 pointer-events-none">
+                                <div className="toast-in pointer-events-auto flex items-center justify-between gap-4 rounded-2xl bg-neutral-950/95 px-5 py-4 text-white shadow-2xl backdrop-blur-sm">
+                                    <p className="text-sm font-medium">
+                                        Removed “{deletedItem.name}”
+                                    </p>
+
+                                    <button
+                                        type="button"
+                                        onClick={undoDeleteItem}
+                                        className="text-sm font-bold text-rose-300"
+                                    >
+                                        Undo
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {resetSuccess && (
                             <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">

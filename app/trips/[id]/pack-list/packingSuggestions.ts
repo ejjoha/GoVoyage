@@ -10,7 +10,6 @@ export type PackingItem = {
 
 export const packingCategories = [
     "Essentials",
-    "Documents & Money",
     "Clothing",
     "Footwear",
     "Toiletries",
@@ -49,11 +48,11 @@ const item = (
 });
 
 export const baseItems: PackingTemplateItem[] = [
-    item("passport-or-id", "Passport or ID", "Documents & Money", 1, { protected: true }),
-    item("wallet", "Wallet", "Documents & Money", 1, { protected: true }),
-    item("payment-card", "Payment card", "Documents & Money", 1, { protected: true }),
-    item("travel-insurance-info", "Travel insurance info", "Documents & Money", 1, { protected: true }),
-    item("booking-confirmations", "Booking confirmations", "Documents & Money", 1, { protected: true }),
+    item("passport-or-id", "Passport or ID", "Essentials", 1, { protected: true }),
+    item("wallet", "Wallet", "Essentials", 1, { protected: true }),
+    item("payment-card", "Payment card", "Essentials", 1, { protected: true }),
+    item("travel-insurance-info", "Travel insurance info", "Essentials", 1, { protected: true }),
+    item("booking-confirmations", "Booking confirmations", "Essentials", 1, { protected: true }),
     item("house-keys", "House keys", "Essentials", 1, { protected: true }),
 
     item("phone", "Phone", "Tech", 1, { protected: true }),
@@ -203,8 +202,8 @@ export const tripTypeSuggestions: Record<string, PackingTemplateItem[]> = {
         item("notebook-and-pen", "Notebook and pen", "City & Business", 1),
     ],
 
-    family: [
-        item("kids-documents", "Kids’ documents", "Documents & Money", 1, { protected: true }),
+    "traveling with kids": [
+        item("kids-documents", "Kids’ documents", "Essentials", 1, { protected: true }),
         item("small-toys-or-books", "Small toys or books", "Comfort & Travel", 2),
         item("wet-wipes", "Wet wipes", "Health & Safety", 1),
         item("extra-snacks", "Extra snacks", "Comfort & Travel", 1),
