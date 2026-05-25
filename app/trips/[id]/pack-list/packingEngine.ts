@@ -9,21 +9,25 @@ import {
     mergePackingItems,
 } from "./packingSuggestions";
 
+
 export function generatePackingItems({
     selectedClimates,
     selectedEnvironments,
     selectedTripStyles,
     tripDays,
     currentItems,
+    personalItems,
 }: {
     selectedClimates: string[];
     selectedEnvironments: string[];
     selectedTripStyles: string[];
     tripDays: number;
     currentItems: PackingItem[];
+    personalItems: PackingItem[];
 }): PackingItem[] {
     const generatedItems = mergePackingItems([
         baseItems,
+        personalItems,
         ...selectedClimates.map(
             (climate) => climateSuggestions[climate.toLowerCase()] || []
         ),

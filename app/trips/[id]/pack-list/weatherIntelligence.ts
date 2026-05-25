@@ -13,50 +13,58 @@ export async function getTripWeatherSummary(
 ): Promise<TripWeatherSummary | null> {
     if (!destination) return null;
 
-    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-        destination
-    )}&count=1&language=en&format=json`;
+    try {
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+            destination
+        )}&count=1&language=en&format=json`;
 
-    const geoResponse = await fetch(geoUrl);
-    const geoData = await geoResponse.json();
+        const geoResponse = await fetch(geoUrl);
+        if (!geoResponse.ok) return null;
 
-    const location = geoData?.results?.[0];
+        const geoData = await geoResponse.json();
+        const location = geoData?.results?.[0];
 
-    if (!location) return null;
+        if (!location) return null;
 
-    const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,precipitation,weather_code&daily=precipitation_probability_max,temperature_2m_max,temperature_2m_min&timezone=auto`;
+        const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,precipitation,weather_code&daily=precipitation_probability_max,temperature_2m_max,temperature_2m_min&timezone=auto`;
 
-    const forecastResponse = await fetch(forecastUrl);
-    const forecastData = await forecastResponse.json();
+        const forecastResponse = await fetch(forecastUrl);
+        if (!forecastResponse.ok) return null;
 
-    const currentTemperature = forecastData?.current?.temperature_2m ?? null;
-    const precipitationProbability =
-        forecastData?.daily?.precipitation_probability_max?.[0] ?? null;
+        const forecastData = await forecastResponse.json();
 
-    const suggestedProfiles: ClimateOption[] = [];
+        const currentTemperature = forecastData?.current?.temperature_2m ?? null;
+        const precipitationProbability =
+            forecastData?.daily?.precipitation_probability_max?.[0] ?? null;
 
-    if (typeof currentTemperature === "number" && currentTemperature >= 27) {
-        suggestedProfiles.push("Hot");
+        const suggestedProfiles: ClimateOption[] = [];
+
+        if (typeof currentTemperature === "number" && currentTemperature >= 27) {
+            suggestedProfiles.push("Hot");
+        }
+
+        if (typeof currentTemperature === "number" && currentTemperature <= 8) {
+            suggestedProfiles.push("Cold");
+        }
+
+        if (
+            typeof precipitationProbability === "number" &&
+            precipitationProbability >= 50
+        ) {
+            suggestedProfiles.push("Rainy");
+        }
+
+        return {
+            locationName: `${location.name}${location.country ? `, ${location.country}` : ""}`,
+            temperature: currentTemperature,
+            precipitationProbability,
+            weatherLabel: getWeatherLabel(forecastData?.current?.weather_code),
+            suggestedProfiles,
+        };
+    } catch (error) {
+        console.error("Failed to load trip weather summary", error);
+        return null;
     }
-
-    if (typeof currentTemperature === "number" && currentTemperature <= 8) {
-        suggestedProfiles.push("Cold");
-    }
-
-    if (
-        typeof precipitationProbability === "number" &&
-        precipitationProbability >= 50
-    ) {
-        suggestedProfiles.push("Rainy");
-    }
-
-    return {
-        locationName: `${location.name}${location.country ? `, ${location.country}` : ""}`,
-        temperature: currentTemperature,
-        precipitationProbability,
-        weatherLabel: getWeatherLabel(forecastData?.current?.weather_code),
-        suggestedProfiles,
-    };
 }
 
 function getWeatherLabel(code?: number) {

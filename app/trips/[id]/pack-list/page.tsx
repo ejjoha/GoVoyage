@@ -32,6 +32,8 @@ export default function PackListPage() {
     const [tripDays, setTripDays] = useState(1);
     const [profileOpen, setProfileOpen] = useState(false);
     const [items, setItems] = useState<PackingItem[]>([]);
+    const [personalItems, setPersonalItems] = useState<PackingItem[]>([]);
+    const [saveAsPersonalDefault, setSaveAsPersonalDefault] = useState(false);
     const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
     const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentOption[]>([]);
     const [selectedTripStyles, setSelectedTripStyles] = useState<TripStyleOption[]>([]);
@@ -124,13 +126,33 @@ export default function PackListPage() {
                         category: item.category,
                         packed: item.packed,
                         quantity: item.quantity || 1,
-                        source: item.source === "custom" ? "custom" : "suggested",
+                        source:
+                            item.source === "custom"
+                                ? "custom"
+                                : item.source === "personal"
+                                    ? "personal"
+                                    : "suggested",
                     });
                 });
 
                 setItems(Array.from(uniqueItems.values()));
             }
+            const { data: personalPackingItems } = await supabase
+                .from("personal_packing_items")
+                .select("*");
 
+            if (personalPackingItems) {
+                setPersonalItems(
+                    personalPackingItems.map((item) => ({
+                        key: createKey(item.category, item.name),
+                        name: item.name,
+                        category: item.category,
+                        packed: false,
+                        quantity: item.quantity || 1,
+                        source: "personal",
+                    }))
+                );
+            }
             setLoaded(true);
         }
 
@@ -147,6 +169,7 @@ export default function PackListPage() {
                 selectedTripStyles,
                 tripDays,
                 currentItems,
+                personalItems,
             })
         );
 
@@ -155,8 +178,9 @@ export default function PackListPage() {
         selectedClimates,
         selectedEnvironments,
         selectedTripStyles,
-        tripDays,
         loaded,
+        tripDays,
+        personalItems,
     ]);
 
     useEffect(() => {
@@ -283,6 +307,33 @@ export default function PackListPage() {
         }, 4000);
     }
 
+    async function removePersonalDefault(item: PackingItem) {
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData.user?.id;
+
+        if (!userId) return;
+
+        const { error } = await supabase
+            .from("personal_packing_items")
+            .delete()
+            .eq("user_id", userId)
+            .eq("name", item.name)
+            .eq("category", item.category);
+
+        if (error) {
+            console.error("Failed to remove personal packing item", error);
+            return;
+        }
+
+        setPersonalItems((currentItems) =>
+            currentItems.filter((personalItem) => personalItem.key !== item.key)
+        );
+
+        setItems((currentItems) =>
+            currentItems.filter((currentItem) => currentItem.key !== item.key)
+        );
+    }
+
     function undoDeleteItem() {
         if (!deletedItem) return;
 
@@ -307,7 +358,7 @@ export default function PackListPage() {
         );
     }
 
-    function addCustomItem() {
+    async function addCustomItem() {
         const trimmedName = newItemName.trim();
         if (!trimmedName) return;
 
@@ -328,8 +379,35 @@ export default function PackListPage() {
             },
         ]);
 
+        if (saveAsPersonalDefault) {
+            const { data: userData } = await supabase.auth.getUser();
+            const userId = userData.user?.id;
+
+            if (userId) {
+
+                const { error } = await supabase
+                    .from("personal_packing_items")
+                    .upsert(
+                        {
+                            user_id: userId,
+                            name: trimmedName,
+                            category: "Custom",
+                            quantity: 1,
+                        },
+                        {
+                            onConflict: "user_id,name,category",
+                        }
+                    );
+
+                if (error) {
+                    console.error("Failed to save personal packing item", error);
+                }
+            }
+        }
+
         setNewItemName("");
         setShowAddItem(false);
+        setSaveAsPersonalDefault(false);
     }
 
     return (
@@ -396,7 +474,7 @@ export default function PackListPage() {
                                     {tripDays} {tripDays === 1 ? "day" : "days"} · {tripNights}{" "}
                                     {tripNights === 1 ? "night" : "nights"}
                                 </div>
-                                
+
                                 {weatherSummary && (
                                     <div className="mt-3 truncate text-sm font-medium text-neutral-500 [text-shadow:0_1px_1px_rgba(255,255,255,0.25)]">
                                         {weatherSummary.temperature !== null
@@ -563,34 +641,37 @@ export default function PackListPage() {
 
                                 return (
                                     <div key={category} className="rounded-3xl bg-white p-4 shadow-sm">
-                                        <button
-                                            type="button"
-                                            onClick={() => toggleCategory(category)}
-                                            className="flex w-full items-center justify-between gap-4 text-left"
-                                        >
-                                            <div>
-                                                <h2 className="text-lg font-bold text-neutral-950">{category}</h2>
-                                                <p className="mt-1 text-xs font-semibold text-neutral-400">
-                                                    {packedInCategory} / {totalInCategory} packed
-                                                </p>
-                                            </div>
+                                        <div className="flex items-start justify-between gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleCategory(category)}
+                                                className="flex flex-1 items-center justify-between gap-4 text-left"
+                                            >
+                                                <div>
+                                                    <h2 className="text-lg font-bold text-neutral-950">{category}</h2>
 
-                                            <div className="flex items-center gap-3">
-                                                <div className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500">
-                                                    {Math.round((packedInCategory / totalInCategory) * 100)}%
+                                                    <p className="mt-1 text-xs font-semibold text-neutral-400">
+                                                        {packedInCategory} / {totalInCategory} packed
+                                                    </p>
                                                 </div>
 
-                                                <img
-                                                    src="/icons/chevron-down.svg"
-                                                    alt=""
-                                                    className={
-                                                        isOpen
-                                                            ? "h-5 w-5 text-neutral-400 transition-transform"
-                                                            : "h-5 w-5 rotate-[-90deg] text-neutral-400 transition-transform"
-                                                    }
-                                                />
-                                            </div>
-                                        </button>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500">
+                                                        {Math.round((packedInCategory / totalInCategory) * 100)}%
+                                                    </div>
+
+                                                    <img
+                                                        src="/icons/chevron-down.svg"
+                                                        alt=""
+                                                        className={
+                                                            isOpen
+                                                                ? "h-5 w-5 text-neutral-400 transition-transform"
+                                                                : "h-5 w-5 rotate-[-90deg] text-neutral-400 transition-transform"
+                                                        }
+                                                    />
+                                                </div>
+                                            </button>
+                                        </div>
 
                                         {isOpen && (
                                             <div className="mt-4 space-y-3">
@@ -624,15 +705,17 @@ export default function PackListPage() {
                                                                 />
 
                                                                 <div className="flex flex-1 items-center justify-between gap-3">
-                                                                    <span
-                                                                        className={
-                                                                            item.packed
-                                                                                ? "text-neutral-400 line-through"
-                                                                                : "text-neutral-800"
-                                                                        }
-                                                                    >
-                                                                        {item.name}
-                                                                    </span>
+                                                                    <div>
+                                                                        <span
+                                                                            className={
+                                                                                item.packed
+                                                                                    ? "text-neutral-400 line-through"
+                                                                                    : "text-neutral-800"
+                                                                            }
+                                                                        >
+                                                                            {item.name}
+                                                                        </span>
+                                                                    </div>
 
                                                                     <div
                                                                         className="flex items-center gap-2"
@@ -751,6 +834,17 @@ export default function PackListPage() {
                                         className="mt-5 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-4 text-base outline-none"
                                         autoFocus
                                     />
+
+                                    <label className="mt-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-neutral-700">
+                                        <input
+                                            type="checkbox"
+                                            checked={saveAsPersonalDefault}
+                                            onChange={(event) => setSaveAsPersonalDefault(event.target.checked)}
+                                            className="h-5 w-5 rounded border-neutral-300"
+                                        />
+
+                                        <span>Always bring this on future trips</span>
+                                    </label>
 
                                     <button
                                         type="button"

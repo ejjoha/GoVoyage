@@ -5,7 +5,7 @@ export type PackingItem = {
     packed: boolean;
     quantity: number;
     protected?: boolean;
-    source: "suggested" | "custom";
+    source: "suggested" | "custom" | "personal";
 };
 
 export const packingCategories = [
