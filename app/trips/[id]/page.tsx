@@ -875,8 +875,6 @@ export default function TripPage() {
               className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">
-                <span className="text-l">≋</span>
-
                 <span className="text-[15px] font-bold text-stone-950">
                   Expenses
                 </span>
@@ -888,8 +886,6 @@ export default function TripPage() {
               className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">
-                <span className="text-l">✓</span>
-
                 <span className="text-[15px] font-bold text-stone-950">
                   Pack List
                 </span>
@@ -901,8 +897,6 @@ export default function TripPage() {
               className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">
-                <span className="text-l">✦</span>
-
                 <span className="text-[15px] font-bold text-stone-950">
                   Memories
                 </span>

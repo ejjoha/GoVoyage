@@ -47,6 +47,7 @@ export default function PackListPage() {
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
 
 
     useEffect(() => {
@@ -724,12 +725,18 @@ export default function PackListPage() {
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => {
+                                                                                if (item.quantity <= 1) {
+                                                                                    setItemPendingDelete(item);
+
+                                                                                    return;
+                                                                                }
+
                                                                                 setItems((currentItems) =>
                                                                                     currentItems.map((currentItem) =>
                                                                                         currentItem.key === item.key
                                                                                             ? {
                                                                                                 ...currentItem,
-                                                                                                quantity: Math.max(1, currentItem.quantity - 1),
+                                                                                                quantity: currentItem.quantity - 1,
                                                                                                 protected: true,
                                                                                             }
                                                                                             : currentItem
@@ -776,6 +783,45 @@ export default function PackListPage() {
                                 );
                             })}
                         </div>
+
+                        {itemPendingDelete && (
+                            <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 px-6">
+                                <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 text-center shadow-2xl">
+                                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl">
+                                        🧳
+                                    </div>
+
+                                    <h2 className="text-xl font-bold text-neutral-950">
+                                        Remove item?
+                                    </h2>
+
+                                    <p className="mt-2 text-sm text-neutral-500">
+                                        Remove “{itemPendingDelete.name}” from your pack list?
+                                    </p>
+
+                                    <div className="mt-6 grid grid-cols-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setItemPendingDelete(null)}
+                                            className="rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
+                                        >
+                                            Keep it
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                deleteItem(itemPendingDelete.key);
+                                                setItemPendingDelete(null);
+                                            }}
+                                            className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {deleteSuccess && deletedItem && (
                             <div className="fixed inset-0 z-[70] flex items-center justify-center px-4 pointer-events-none">
