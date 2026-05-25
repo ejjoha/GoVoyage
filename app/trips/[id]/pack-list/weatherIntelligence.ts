@@ -1,9 +1,11 @@
+import { ClimateOption } from "./tripProfiles";
+
 export type TripWeatherSummary = {
     locationName: string;
     temperature: number | null;
     precipitationProbability: number | null;
     weatherLabel: string;
-    suggestedProfiles: string[];
+    suggestedProfiles: ClimateOption[];
 };
 
 export async function getTripWeatherSummary(
@@ -31,7 +33,7 @@ export async function getTripWeatherSummary(
     const precipitationProbability =
         forecastData?.daily?.precipitation_probability_max?.[0] ?? null;
 
-    const suggestedProfiles: string[] = [];
+    const suggestedProfiles: ClimateOption[] = [];
 
     if (typeof currentTemperature === "number" && currentTemperature >= 27) {
         suggestedProfiles.push("Hot");

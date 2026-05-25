@@ -21,6 +21,7 @@ export const packingCategories = [
     "Beach & Swim",
     "Outdoor & Hiking",
     "City & Business",
+    "Kids & Family",
 ] as const;
 
 type PackingCategory = (typeof packingCategories)[number];
@@ -150,7 +151,7 @@ export const climateSuggestions: Record<string, PackingTemplateItem[]> = {
     ],
 };
 
-export const tripTypeSuggestions: Record<string, PackingTemplateItem[]> = {
+export const environmentSuggestions: Record<string, PackingTemplateItem[]> = {
     beach: [
         item("swimsuit", "Swimsuit", "Beach & Swim", 2),
         item("beach-towel", "Beach towel", "Beach & Swim", 1),
@@ -190,7 +191,9 @@ export const tripTypeSuggestions: Record<string, PackingTemplateItem[]> = {
         item("portable-tote-bag", "Portable tote bag", "City & Business", 1),
         item("evening-shoes", "Evening shoes", "Footwear", 1),
     ],
+};
 
+export const tripStyleSuggestions: Record<string, PackingTemplateItem[]> = {
     business: [
         item("business-outfit", "Business outfit", "City & Business", 1, {
             quantityRule: "onePerOutfitDay",
@@ -203,10 +206,60 @@ export const tripTypeSuggestions: Record<string, PackingTemplateItem[]> = {
     ],
 
     "traveling with kids": [
-        item("kids-documents", "Kids’ documents", "Essentials", 1, { protected: true }),
-        item("small-toys-or-books", "Small toys or books", "Comfort & Travel", 2),
-        item("wet-wipes", "Wet wipes", "Health & Safety", 1),
-        item("extra-snacks", "Extra snacks", "Comfort & Travel", 1),
+        item("kids-documents", "Kids’ documents", "Kids & Family", 1, { protected: true }),
+        item("kids-passports-ids", "Passports/IDs", "Kids & Family", 1, { protected: true }),
+        item("kids-boarding-passes", "Boarding passes", "Kids & Family", 1, { protected: true }),
+        item("kids-insurance-cards", "Insurance cards", "Kids & Family", 1, { protected: true }),
+        item("kids-consent-letter", "Consent letter (if needed)", "Kids & Family", 1),
+        item("kids-emergency-contacts", "Emergency contacts", "Kids & Family", 1, { protected: true }),
+
+        item("kids-snacks", "Snacks", "Kids & Family", 1),
+        item("kids-refillable-water-bottles", "Refillable water bottles", "Kids & Family", 1),
+        item("kids-spill-proof-snack-cups", "Spill-proof snack cups", "Kids & Family", 1),
+        item("kids-ziplock-bags", "Ziplock bags", "Kids & Family", 1),
+
+        item("kids-toys-books", "Toys/books", "Kids & Family", 1),
+        item("kids-coloring-books-crayons", "Coloring books/crayons", "Kids & Family", 1),
+        item("kids-sticker-books", "Sticker books", "Kids & Family", 1),
+        item("kids-tablet-headphones", "Tablet + headphones", "Kids & Family", 1),
+        item("kids-chargers-power-bank", "Chargers/power bank", "Kids & Family", 1),
+        item("kids-favorite-stuffed-animal", "Favorite stuffed animal", "Kids & Family", 1),
+
+        item("kids-wipes", "Wipes", "Kids & Family", 1),
+        item("kids-hand-sanitizer", "Hand sanitizer", "Kids & Family", 1),
+        item("kids-disinfecting-wipes", "Disinfecting wipes", "Kids & Family", 1),
+        item("kids-tissues", "Tissues", "Kids & Family", 1),
+        item("kids-plastic-bags", "Plastic bags for trash/dirty clothes", "Kids & Family", 1),
+
+        item("kids-medication", "Medication", "Kids & Family", 1),
+        item("kids-fever-medicine", "Fever medicine", "Kids & Family", 1),
+        item("kids-band-aids", "Band-aids", "Kids & Family", 1),
+        item("kids-prescription-meds", "Prescription meds", "Kids & Family", 1, { protected: true }),
+        item("kids-thermometer", "Thermometer", "Kids & Family", 1),
+        item("kids-sunscreen", "Sunscreen", "Kids & Family", 1),
+
+        item("kids-spare-clothes", "Spare clothes", "Kids & Family", 1),
+        item("kids-pajamas", "Pajamas", "Kids & Family", 1),
+        item("kids-socks-underwear", "Socks/underwear", "Kids & Family", 1),
+        item("kids-sweater-jacket", "Sweater/jacket", "Kids & Family", 1),
+        item("parents-extra-shirt", "Extra shirt for parents", "Kids & Family", 1),
+
+        item("kids-diapers-pull-ups", "Diapers/pull-ups", "Kids & Family", 1),
+        item("kids-diaper-cream", "Diaper cream", "Kids & Family", 1),
+        item("kids-changing-pad", "Changing pad", "Kids & Family", 1),
+        item("kids-disposable-diaper-bags", "Disposable diaper bags", "Kids & Family", 1),
+        item("kids-portable-potty-seat", "Portable potty seat", "Kids & Family", 1),
+
+        item("kids-stroller-rain-cover", "Stroller rain cover", "Kids & Family", 1),
+        item("kids-stroller-blanket", "Stroller blanket", "Kids & Family", 1),
+        item("kids-stroller-fan", "Stroller fan", "Kids & Family", 1),
+        item("kids-stroller-organizer-hooks", "Stroller organizer/hooks", "Kids & Family", 1),
+
+        item("kids-car-seat", "Car seat", "Kids & Family", 1),
+        item("kids-car-seat-travel-bag", "Car seat travel bag", "Kids & Family", 1),
+        item("kids-window-shade", "Window shade", "Kids & Family", 1),
+        item("kids-neck-pillow", "Neck pillow", "Kids & Family", 1),
+        item("kids-blanket", "Blanket", "Kids & Family", 1),
     ],
 };
 
