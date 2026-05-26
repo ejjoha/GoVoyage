@@ -32,8 +32,6 @@ export default function PackListPage() {
     const [tripDays, setTripDays] = useState(1);
     const [profileOpen, setProfileOpen] = useState(false);
     const [items, setItems] = useState<PackingItem[]>([]);
-    const [personalItems, setPersonalItems] = useState<PackingItem[]>([]);
-    const [saveAsPersonalDefault, setSaveAsPersonalDefault] = useState(false);
     const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
     const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentOption[]>([]);
     const [selectedTripStyles, setSelectedTripStyles] = useState<TripStyleOption[]>([]);
@@ -138,22 +136,6 @@ export default function PackListPage() {
 
                 setItems(Array.from(uniqueItems.values()));
             }
-            const { data: personalPackingItems } = await supabase
-                .from("personal_packing_items")
-                .select("*");
-
-            if (personalPackingItems) {
-                setPersonalItems(
-                    personalPackingItems.map((item) => ({
-                        key: createKey(item.category, item.name),
-                        name: item.name,
-                        category: item.category,
-                        packed: false,
-                        quantity: item.quantity || 1,
-                        source: "personal",
-                    }))
-                );
-            }
             setLoaded(true);
         }
 
@@ -170,7 +152,6 @@ export default function PackListPage() {
                 selectedTripStyles,
                 tripDays,
                 currentItems,
-                personalItems,
             })
         );
 
@@ -181,7 +162,6 @@ export default function PackListPage() {
         selectedTripStyles,
         loaded,
         tripDays,
-        personalItems,
     ]);
 
     useEffect(() => {
@@ -308,68 +288,6 @@ export default function PackListPage() {
         }, 4000);
     }
 
-    async function removePersonalDefault(item: PackingItem) {
-        const { data: userData } = await supabase.auth.getUser();
-        const userId = userData.user?.id;
-
-        if (!userId) return;
-
-        const { error } = await supabase
-            .from("personal_packing_items")
-            .delete()
-            .eq("user_id", userId)
-            .eq("name", item.name)
-            .eq("category", item.category);
-
-        if (error) {
-            console.error("Failed to remove personal packing item", error);
-            return;
-        }
-
-        setPersonalItems((currentItems) =>
-            currentItems.filter((personalItem) => personalItem.key !== item.key)
-        );
-
-        setItems((currentItems) =>
-            currentItems.filter((currentItem) => currentItem.key !== item.key)
-        );
-    }
-
-    async function removeFromFutureTripsOnly(item: PackingItem) {
-        const { data: userData } = await supabase.auth.getUser();
-        const userId = userData.user?.id;
-
-        if (!userId) return;
-
-        const { error } = await supabase
-            .from("personal_packing_items")
-            .delete()
-            .eq("user_id", userId)
-            .eq("name", item.name)
-            .eq("category", item.category);
-
-        if (error) {
-            console.error("Failed to remove future packing item", error);
-            return;
-        }
-
-        setPersonalItems((currentItems) =>
-            currentItems.filter((personalItem) => personalItem.key !== item.key)
-        );
-
-        setItems((currentItems) =>
-            currentItems.map((currentItem) =>
-                currentItem.key === item.key
-                    ? {
-                        ...currentItem,
-                        source: "custom",
-                    }
-                    : currentItem
-            )
-        );
-        setItemPendingDelete(null);
-    }
-
     function undoDeleteItem() {
         if (!deletedItem) return;
 
@@ -411,39 +329,12 @@ export default function PackListPage() {
                 category: "Custom",
                 packed: false,
                 quantity: 1,
-                source: saveAsPersonalDefault ? "personal" : "custom",
+                source: "custom",
             },
         ]);
 
-        if (saveAsPersonalDefault) {
-            const { data: userData } = await supabase.auth.getUser();
-            const userId = userData.user?.id;
-
-            if (userId) {
-
-                const { error } = await supabase
-                    .from("personal_packing_items")
-                    .upsert(
-                        {
-                            user_id: userId,
-                            name: trimmedName,
-                            category: "Custom",
-                            quantity: 1,
-                        },
-                        {
-                            onConflict: "user_id,name,category",
-                        }
-                    );
-
-                if (error) {
-                    console.error("Failed to save personal packing item", error);
-                }
-            }
-        }
-
         setNewItemName("");
         setShowAddItem(false);
-        setSaveAsPersonalDefault(false);
     }
 
     return (
@@ -855,18 +746,6 @@ export default function PackListPage() {
                                                 Remove
                                             </button>
                                         </div>
-
-                                        {personalItems.some((personalItem) => personalItem.key === itemPendingDelete.key) && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    removeFromFutureTripsOnly(itemPendingDelete);
-                                                }}
-                                                className="mt-3 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-bold text-neutral-700"
-                                            >
-                                                Remove from future trips
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -939,18 +818,6 @@ export default function PackListPage() {
                                         className="mt-5 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-4 text-base outline-none"
                                         autoFocus
                                     />
-
-                                    <label className="mt-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-neutral-700">
-                                        <input
-                                            type="checkbox"
-                                            checked={saveAsPersonalDefault}
-                                            onChange={(event) => setSaveAsPersonalDefault(event.target.checked)}
-                                            className="h-5 w-5 rounded border-neutral-300"
-                                        />
-
-                                        <span>Always bring this on future trips</span>
-                                    </label>
-
                                     <button
                                         type="button"
                                         onClick={addCustomItem}
