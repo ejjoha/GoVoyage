@@ -411,7 +411,7 @@ export default function PackListPage() {
                 category: "Custom",
                 packed: false,
                 quantity: 1,
-                source: "custom",
+                source: saveAsPersonalDefault ? "personal" : "custom",
             },
         ]);
 
