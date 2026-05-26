@@ -270,17 +270,25 @@ export default function PackListPage() {
         }));
     }
 
-    function deleteItem(itemKey: string) {
+    function deleteItem(
+        itemKey: string,
+        options: { showUndo?: boolean } = { showUndo: true }
+    ) {
         const itemToDelete = items.find((item) => item.key === itemKey);
 
         if (!itemToDelete) return;
 
-        setDeletedItem(itemToDelete);
-        setDeleteSuccess(true);
-
         setItems((currentItems) =>
             currentItems.filter((item) => item.key !== itemKey)
         );
+
+        if (!options.showUndo) {
+            setItemPendingDelete(null);
+            return;
+        }
+
+        setDeletedItem(itemToDelete);
+        setDeleteSuccess(true);
 
         setTimeout(() => {
             setDeleteSuccess(false);
@@ -738,8 +746,7 @@ export default function PackListPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    deleteItem(itemPendingDelete.key);
-                                                    setItemPendingDelete(null);
+                                                    deleteItem(itemPendingDelete.key, { showUndo: false });
                                                 }}
                                                 className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
                                             >
