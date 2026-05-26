@@ -47,8 +47,6 @@ export default function PackListPage() {
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
-    const [personalItemPendingRemoval, setPersonalItemPendingRemoval] =
-        useState<PackingItem | null>(null);
     const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
 
 
@@ -369,8 +367,7 @@ export default function PackListPage() {
                     : currentItem
             )
         );
-
-        setPersonalItemPendingRemoval(null);
+        setItemPendingDelete(null);
     }
 
     function undoDeleteItem() {
@@ -754,17 +751,6 @@ export default function PackListPage() {
                                                                         >
                                                                             {item.name}
                                                                         </span>
-
-                                                                        {item.source === "personal" && (
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => setPersonalItemPendingRemoval(item)}
-                                                                                onPointerDown={(event) => event.stopPropagation()}
-                                                                                className="mt-1 inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-bold text-rose-500"
-                                                                            >
-                                                                                Future trips
-                                                                            </button>
-                                                                        )}
                                                                     </div>
 
                                                                     <div
@@ -816,7 +802,7 @@ export default function PackListPage() {
                                                                                     )
                                                                                 );
                                                                             }}
-                                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white transition active:scale-95"
+                                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700 transition active:scale-95"
                                                                         >
                                                                             +
                                                                         </button>
@@ -848,72 +834,39 @@ export default function PackListPage() {
                                         Remove “{itemPendingDelete.name}” from your pack list?
                                     </p>
 
-                                    <div className="mt-6 grid grid-cols-2 gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => setItemPendingDelete(null)}
-                                            className="rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
-                                        >
-                                            Keep it
-                                        </button>
+                                    <div className="mt-6">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setItemPendingDelete(null)}
+                                                className="rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
+                                            >
+                                                Keep it
+                                            </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                deleteItem(itemPendingDelete.key);
-                                                setItemPendingDelete(null);
-                                            }}
-                                            className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    deleteItem(itemPendingDelete.key);
+                                                    setItemPendingDelete(null);
+                                                }}
+                                                className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
 
-                        {personalItemPendingRemoval && (
-                            <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 px-6">
-                                <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 text-center shadow-2xl">
-                                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl">
-                                        ⭐
-                                    </div>
-
-                                    <h2 className="text-xl font-bold text-neutral-950">
-                                        Remove from future trips?
-                                    </h2>
-
-                                    <p className="mt-2 text-sm text-neutral-500">
-                                        “{personalItemPendingRemoval.name}” will no longer be added automatically to new pack lists.
-                                    </p>
-
-                                    <div className="mt-6 space-y-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => removeFromFutureTripsOnly(personalItemPendingRemoval)}
-                                            className="w-full rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
-                                        >
-                                            Remove from future trips only
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                removePersonalDefault(personalItemPendingRemoval);
-                                                setPersonalItemPendingRemoval(null);
-                                            }}
-                                            className="w-full rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
-                                        >
-                                            Remove from this trip too
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setPersonalItemPendingRemoval(null)}
-                                            className="w-full px-4 py-2 text-sm font-bold text-neutral-400"
-                                        >
-                                            Cancel
-                                        </button>
+                                        {personalItems.some((personalItem) => personalItem.key === itemPendingDelete.key) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    removeFromFutureTripsOnly(itemPendingDelete);
+                                                }}
+                                                className="mt-3 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm font-bold text-neutral-700"
+                                            >
+                                                Remove from future trips
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -921,15 +874,25 @@ export default function PackListPage() {
 
                         {deleteSuccess && deletedItem && (
                             <div className="fixed inset-0 z-[70] flex items-center justify-center px-4 pointer-events-none">
-                                <div className="toast-in pointer-events-auto flex items-center justify-between gap-4 rounded-2xl bg-neutral-950/95 px-5 py-4 text-white shadow-2xl backdrop-blur-sm">
-                                    <p className="text-sm font-medium">
-                                        Removed “{deletedItem.name}”
-                                    </p>
+                                <div className="toast-in pointer-events-auto flex w-full max-w-sm items-center gap-4 rounded-[1.75rem] border border-white/70 bg-white/95 px-4 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.16)] backdrop-blur-xl">
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-50 text-xl">
+                                        🧳
+                                    </div>
+
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-bold text-neutral-950">
+                                            Removed “{deletedItem.name}”
+                                        </p>
+
+                                        <p className="mt-0.5 text-xs font-medium text-neutral-500">
+                                            Item removed from this trip.
+                                        </p>
+                                    </div>
 
                                     <button
                                         type="button"
                                         onClick={undoDeleteItem}
-                                        className="text-sm font-bold text-rose-300"
+                                        className="shrink-0 rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-bold text-rose-500 transition active:scale-95"
                                     >
                                         Undo
                                     </button>
