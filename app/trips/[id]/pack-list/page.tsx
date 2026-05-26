@@ -48,7 +48,6 @@ export default function PackListPage() {
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
     const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
-    const [showScrollTop, setShowScrollTop] = useState(false);
 
 
     useEffect(() => {
@@ -149,18 +148,6 @@ export default function PackListPage() {
     }, [tripId]);
 
     useEffect(() => {
-        function handleScroll() {
-            setShowScrollTop(window.scrollY > 500);
-        }
-
-        window.addEventListener("scroll", handleScroll);
-
-        return () => {
-            window.removeEventListener("scroll", handleScroll);
-        };
-    }, []);
-
-    useEffect(() => {
         if (!loaded) return;
 
         setItems((currentItems) =>
@@ -237,13 +224,6 @@ export default function PackListPage() {
             return groups;
         }, {});
     }, [items]);
-
-    function scrollToTop() {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
-    }
 
     function calculateTripDays(startDate?: string, endDate?: string) {
         if (!startDate || !endDate) return 1;
@@ -917,20 +897,6 @@ export default function PackListPage() {
                         >
                             +
                         </button>
-                        {showScrollTop && (
-                            <button
-                                type="button"
-                                onClick={scrollToTop}
-                                className="fixed bottom-16 left-1/2 z-[90] flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-white/60 bg-white/95 shadow-[0_12px_30px_rgba(0,0,0,0.14)] transition-all duration-200 active:scale-95"
-                                aria-label="Scroll to top"
-                            >
-                                <img
-                                    src="/icons/chevron-up-line.svg"
-                                    alt=""
-                                    className="h-5 w-5"
-                                />
-                            </button>
-                        )}
                     </>
                 )}
             </div>
