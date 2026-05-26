@@ -22,6 +22,7 @@ import {
     getTripWeatherSummary,
     TripWeatherSummary,
 } from "./weatherIntelligence";
+import ScrollToTopButton from "../components/ScrollToTopButton";
 
 export default function PackListPage() {
     const params = useParams();
@@ -900,6 +901,7 @@ export default function PackListPage() {
                     </>
                 )}
             </div>
+            <ScrollToTopButton />
         </main>
     );
 }

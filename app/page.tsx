@@ -11,6 +11,7 @@ import { addTripMembers, createTrip, getTrips } from "@/services/trips";
 import { createTripInvite } from "@/app/trips/[id]/api";
 import type { Trip } from "@/types/trip";
 import { PastTripsCarousel } from "@/components/PastTripsCarousel";
+import ScrollToTopButton from "./trips/[id]/components/ScrollToTopButton";
 
 type NewTraveller = {
   id: number;
@@ -477,6 +478,7 @@ export default function HomePage() {
           </div>
         )}
       </div>
+      <ScrollToTopButton />
     </main>
   );
 }

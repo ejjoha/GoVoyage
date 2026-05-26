@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useTripMembers } from "./hooks/useTripMembers";
 import { useTripBookings } from "./hooks/useTripBookings";
 import Link from "next/link";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 
 import {
   createBooking,
@@ -131,7 +132,6 @@ export default function TripPage() {
   const [confirmState, setConfirmState] = useState<ConfirmState>({
     open: false,
   });
-  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const bookingFormRef = useRef<HTMLFormElement | null>(null);
   const timelineRef = useRef<HTMLDivElement | null>(null);
@@ -274,18 +274,6 @@ export default function TripPage() {
     showStaysSheet,
     confirmState.open,
   ]);
-
-  useEffect(() => {
-    function handleScroll() {
-      setShowScrollTop(window.scrollY > 500);
-    }
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   function scrollToTop() {
     window.scrollTo({
@@ -891,7 +879,7 @@ export default function TripPage() {
                 </span>
               </span>
             </Link>
-            
+
             <Link
               href={`/trips/${trip.id}/journal`}
               className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
@@ -1262,20 +1250,7 @@ export default function TripPage() {
           </div>
         </div>
       )}
-      {showScrollTop && (
-        <button
-          type="button"
-          onClick={scrollToTop}
-          className="fixed bottom-16 left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-white/60 bg-white/90 shadow-[0_12px_30px_rgba(0,0,0,0.14)] backdrop-blur-xl transition-all duration-200 hover:scale-105 active:scale-95"
-          aria-label="Scroll to top"
-        >
-          <img
-            src="/icons/chevron-up-line.svg"
-            alt=""
-            className="h-5 w-5"
-          />
-        </button>
-      )}
+      <ScrollToTopButton />
     </>
   );
 }
