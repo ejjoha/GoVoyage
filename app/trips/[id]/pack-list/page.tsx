@@ -29,7 +29,9 @@ export default function PackListPage() {
 
     const [packingListId, setPackingListId] = useState<string | null>(null);
     const [tripTitle, setTripTitle] = useState("Trip");
+    const [tripDestination, setTripDestination] = useState("");
     const [tripDays, setTripDays] = useState(1);
+    const [tripImageUrl, setTripImageUrl] = useState<string | null>(null);
     const [profileOpen, setProfileOpen] = useState(false);
     const [items, setItems] = useState<PackingItem[]>([]);
     const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
@@ -46,18 +48,22 @@ export default function PackListPage() {
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
     const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
 
     useEffect(() => {
         async function loadPackList() {
             const { data: trip } = await supabase
                 .from("trips")
-                .select("title, destination, start_date, end_date")
+                .select("title, destination, image_url, start_date, end_date")
                 .eq("id", tripId)
                 .single();
 
-            if (trip?.title) setTripTitle(trip.title);
+            if (trip?.image_url) setTripImageUrl(trip.image_url);
+
             if (trip?.destination) {
+                setTripDestination(trip.destination);
+
                 const summary = await getTripWeatherSummary(trip.destination);
                 setWeatherSummary(summary);
             }
@@ -143,6 +149,18 @@ export default function PackListPage() {
     }, [tripId]);
 
     useEffect(() => {
+        function handleScroll() {
+            setShowScrollTop(window.scrollY > 500);
+        }
+
+        window.addEventListener("scroll", handleScroll);
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
+
+    useEffect(() => {
         if (!loaded) return;
 
         setItems((currentItems) =>
@@ -219,6 +237,13 @@ export default function PackListPage() {
             return groups;
         }, {});
     }, [items]);
+
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    }
 
     function calculateTripDays(startDate?: string, endDate?: string) {
         if (!startDate || !endDate) return 1;
@@ -347,7 +372,7 @@ export default function PackListPage() {
 
     return (
         <main className="min-h-screen bg-[#f6f1e8] px-4 py-6">
-            <div className="mx-auto mb-2 flex max-w-2xl">
+            <div className="mx-auto mb-1 flex max-w-2xl">
                 <Link
                     href={`/trips/${tripId}`}
                     className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
@@ -363,18 +388,47 @@ export default function PackListPage() {
             <div className="mx-auto max-w-2xl">
 
                 {!loaded && (
-                    <div className="space-y-5">
-                        <div className="h-[260px] animate-pulse rounded-[2.5rem] bg-white/70" />
+                    <div className="space-y-3 animate-pulse">
+                        <div className="mb-5">
+                            <div className="mb-4 flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                    <div className="mt-4 h-8 w-56 rounded-full bg-white/70" />
+                                    <div className="mt-3 h-4 w-28 rounded-full bg-white/60" />
+                                </div>
 
-                        <div className="h-[92px] animate-pulse rounded-3xl bg-white/70" />
+                                <div className="mt-4 h-14 w-14 rounded-full bg-white/80 shadow-sm" />
+                            </div>
 
-                        <div className="rounded-3xl bg-white/70 p-5">
-                            <div className="mb-5 h-8 w-44 rounded-full bg-neutral-200" />
+                            <div className="h-48 rounded-[2rem] bg-white/70 shadow-[0_18px_50px_rgba(0,0,0,0.10)]" />
+                        </div>
 
-                            <div className="space-y-3">
-                                <div className="h-14 rounded-2xl bg-neutral-100" />
-                                <div className="h-14 rounded-2xl bg-neutral-100" />
-                                <div className="h-14 rounded-2xl bg-neutral-100" />
+                        <div className="rounded-3xl bg-white/70 px-5 py-4 shadow-sm">
+                            <div className="h-6 w-32 rounded-full bg-neutral-200/70" />
+                            <div className="mt-2 h-4 w-44 rounded-full bg-neutral-100" />
+                        </div>
+
+                        <div className="rounded-3xl bg-white/70 px-5 py-4 shadow-sm">
+                            <div className="h-6 w-36 rounded-full bg-neutral-200/70" />
+                            <div className="mt-2 h-4 w-20 rounded-full bg-neutral-100" />
+
+                            <div className="mt-3 divide-y divide-neutral-100 border-t border-neutral-100">
+                                <div className="flex items-center gap-4 py-3">
+                                    <div className="h-5 w-5 rounded-md bg-neutral-200" />
+                                    <div className="h-4 flex-1 rounded-full bg-neutral-100" />
+                                    <div className="h-6 w-20 rounded-full bg-neutral-100" />
+                                </div>
+
+                                <div className="flex items-center gap-4 py-3">
+                                    <div className="h-5 w-5 rounded-md bg-neutral-200" />
+                                    <div className="h-4 flex-1 rounded-full bg-neutral-100" />
+                                    <div className="h-6 w-20 rounded-full bg-neutral-100" />
+                                </div>
+
+                                <div className="flex items-center gap-4 py-3">
+                                    <div className="h-5 w-5 rounded-md bg-neutral-200" />
+                                    <div className="h-4 flex-1 rounded-full bg-neutral-100" />
+                                    <div className="h-6 w-20 rounded-full bg-neutral-100" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -382,48 +436,68 @@ export default function PackListPage() {
 
                 {loaded && (
                     <>
+                        <div className="mb-5">
+                            <div className="mb-4 flex items-start justify-between gap-4">
+                                <div>
+                                    <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-950">
+                                        {tripDestination || tripTitle} Packing List
+                                    </h1>
 
-                        <div className="relative mb-6 overflow-hidden rounded-[2.5rem] bg-[#f6f1e9] px-6 py-10 shadow-sm">
-                            <img
-                                src="/illustrations/pack-list-hero.png"
-                                alt=""
-                                className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-70"
-                            />
-
-                            <div className="absolute right-5 top-5 z-20 flex h-16 w-16 flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff8ef] to-[#f4eadb] shadow-sm">
-                                <span className="text-lg font-bold text-rose-500">{progress}%</span>
-                                <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
-                                    {packedCount}/{totalCount}
-                                </span>
-                            </div>
-
-                            <div className="relative z-10">
-                                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                                    Smart Pack List
-                                </p>
-
-                                <h1 className="mt-2 text-4xl font-bold tracking-tight text-neutral-950 [text-shadow:0_1px_2px_rgba(255,255,255,0.35)]">
-                                    {tripTitle} Packing
-                                </h1>
-                                <div className="mt-3 text-sm font-medium text-neutral-500 [text-shadow:0_1px_1px_rgba(255,255,255,0.25)]">
-                                    {tripDays} {tripDays === 1 ? "day" : "days"} · {tripNights}{" "}
-                                    {tripNights === 1 ? "night" : "nights"}
+                                    <p className="mt-3 text-sm font-medium text-neutral-500">
+                                        {tripDays} {tripDays === 1 ? "day" : "days"} · {tripNights}{" "}
+                                        {tripNights === 1 ? "night" : "nights"}
+                                    </p>
                                 </div>
 
+                                <div className="mt-4 flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-full bg-white shadow-sm">
+                                    <span className="text-sm font-semibold text-rose-600">{progress}%</span>
+                                    <span className="text-[11px] font-semibold text-neutral-500">
+                                        {packedCount}/{totalCount}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="relative overflow-hidden rounded-[2rem] bg-neutral-200 shadow-[0_18px_50px_rgba(0,0,0,0.16)]">
+                                {tripImageUrl ? (
+                                    <img
+                                        src={tripImageUrl}
+                                        alt={tripTitle}
+                                        className="h-48 w-full object-cover"
+                                    />
+                                ) : (
+                                    <img
+                                        src="/illustrations/pack-list-hero.png"
+                                        alt=""
+                                        className="h-48 w-full object-cover"
+                                    />
+                                )}
+
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+
                                 {weatherSummary && (
-                                    <div className="mt-3 truncate text-sm font-medium text-neutral-500 [text-shadow:0_1px_1px_rgba(255,255,255,0.25)]">
-                                        {weatherSummary.temperature !== null
-                                            ? `${Math.round(weatherSummary.temperature)}°`
-                                            : "—"}{" "}
-                                        · {weatherSummary.weatherLabel}
-                                        {weatherSummary.precipitationProbability !== null &&
-                                            ` · ${weatherSummary.precipitationProbability}% rain chance`}
+                                    <div className="absolute bottom-5 left-5 text-white">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl font-bold">
+                                                {weatherSummary.temperature !== null
+                                                    ? `${Math.round(weatherSummary.temperature)}°`
+                                                    : "—"}
+                                            </span>
+                                        </div>
+                                        <p className="mt-2 text-xs font-semibold">
+                                            {weatherSummary.weatherLabel}
+                                        </p>
+
+                                        {weatherSummary.precipitationProbability !== null && (
+                                            <p className="mt-2 text-sm">
+                                                {weatherSummary.precipitationProbability}% rain chance
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="mb-4 rounded-3xl bg-white p-4 shadow-sm">
+                        <div className="mb-2 rounded-3xl bg-white px-5 py-4 shadow-sm">
                             <button
                                 type="button"
                                 onClick={() => setProfileOpen((open) => !open)}
@@ -560,7 +634,7 @@ export default function PackListPage() {
                                     <button
                                         type="button"
                                         onClick={resetPackList}
-                                        className="mt-5 w-full rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700 transition active:scale-[0.98]"
+                                        className="mt-10 w-full rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700 transition active:scale-[0.98]"
                                     >
                                         Reset pack list
                                     </button>
@@ -568,14 +642,14 @@ export default function PackListPage() {
                             )}
                         </div>
 
-                        <div className="space-y-4 pb-24">
+                        <div className="space-y-3 pb-24">
                             {Object.entries(groupedItems).map(([category, categoryItems]) => {
                                 const isOpen = openCategories[category] ?? true;
                                 const packedInCategory = categoryItems.filter((item) => item.packed).length;
                                 const totalInCategory = categoryItems.length;
 
                                 return (
-                                    <div key={category} className="rounded-3xl bg-white p-4 shadow-sm">
+                                    <div key={category} className="rounded-3xl bg-white px-5 py-4 shadow-sm">
                                         <div className="flex items-start justify-between gap-3">
                                             <button
                                                 type="button"
@@ -609,11 +683,11 @@ export default function PackListPage() {
                                         </div>
 
                                         {isOpen && (
-                                            <div className="mt-4 space-y-3">
+                                            <div className="mt-2 divide-y divide-neutral-100 border-t border-neutral-100">
                                                 {categoryItems.map((item) => {
 
                                                     return (
-                                                        <div key={item.key} className="relative overflow-hidden rounded-2xl">
+                                                        <div key={item.key} className="relative overflow-hidden">
                                                             <div className="absolute inset-0 flex items-center justify-end rounded-2xl bg-red-500 px-5 text-sm font-bold text-white">
                                                                 Delete
                                                             </div>
@@ -629,14 +703,14 @@ export default function PackListPage() {
                                                                         deleteItem(item.key);
                                                                     }
                                                                 }}
-                                                                className="relative flex touch-pan-y items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-2.5 shadow-sm"
+                                                                className="relative flex touch-pan-y items-center gap-4 bg-white px-1 py-3"
                                                             >
                                                                 <input
                                                                     type="checkbox"
                                                                     checked={item.packed}
                                                                     onChange={() => toggleItem(item.key)}
                                                                     onPointerDown={(event) => event.stopPropagation()}
-                                                                    className="h-5 w-5 rounded border-neutral-300"
+                                                                    className="h-4 w-4 rounded-md border-neutral-300"
                                                                 />
 
                                                                 <div className="flex flex-1 items-center justify-between gap-3">
@@ -813,7 +887,7 @@ export default function PackListPage() {
                                     onClick={() => setShowAddItem(false)}
                                 />
 
-                                <div className="relative w-full rounded-t-[2rem] bg-[#faf7ef] p-4 shadow-2xl">
+                                <div className="relative w-full rounded-t-3xl bg-white px-5 py-5 shadow-2xl">
                                     <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300" />
 
                                     <h2 className="text-2xl font-bold text-neutral-950">Add packing item</h2>
@@ -822,7 +896,7 @@ export default function PackListPage() {
                                         value={newItemName}
                                         onChange={(event) => setNewItemName(event.target.value)}
                                         placeholder="Example: GoPro battery"
-                                        className="mt-5 w-full rounded-2xl border border-neutral-200 bg-white px-4 py-4 text-base outline-none"
+                                        className="mt-5 w-full rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4 text-base outline-none"
                                         autoFocus
                                     />
                                     <button
@@ -843,6 +917,20 @@ export default function PackListPage() {
                         >
                             +
                         </button>
+                        {showScrollTop && (
+                            <button
+                                type="button"
+                                onClick={scrollToTop}
+                                className="fixed bottom-10 left-1/2 z-50 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-white/60 bg-white/90 shadow-[0_12px_30px_rgba(0,0,0,0.14)] backdrop-blur-xl transition-all duration-200 active:scale-95"
+                                aria-label="Scroll to top"
+                            >
+                                <img
+                                    src="/icons/chevron-up-line.svg"
+                                    alt=""
+                                    className="h-5 w-5"
+                                />
+                            </button>
+                        )}
                     </>
                 )}
             </div>
