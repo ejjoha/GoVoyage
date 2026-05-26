@@ -47,6 +47,8 @@ export default function PackListPage() {
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [personalItemPendingRemoval, setPersonalItemPendingRemoval] =
+        useState<PackingItem | null>(null);
     const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
 
 
@@ -333,6 +335,42 @@ export default function PackListPage() {
         setItems((currentItems) =>
             currentItems.filter((currentItem) => currentItem.key !== item.key)
         );
+    }
+
+    async function removeFromFutureTripsOnly(item: PackingItem) {
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData.user?.id;
+
+        if (!userId) return;
+
+        const { error } = await supabase
+            .from("personal_packing_items")
+            .delete()
+            .eq("user_id", userId)
+            .eq("name", item.name)
+            .eq("category", item.category);
+
+        if (error) {
+            console.error("Failed to remove future packing item", error);
+            return;
+        }
+
+        setPersonalItems((currentItems) =>
+            currentItems.filter((personalItem) => personalItem.key !== item.key)
+        );
+
+        setItems((currentItems) =>
+            currentItems.map((currentItem) =>
+                currentItem.key === item.key
+                    ? {
+                        ...currentItem,
+                        source: "custom",
+                    }
+                    : currentItem
+            )
+        );
+
+        setPersonalItemPendingRemoval(null);
     }
 
     function undoDeleteItem() {
@@ -716,6 +754,17 @@ export default function PackListPage() {
                                                                         >
                                                                             {item.name}
                                                                         </span>
+
+                                                                        {item.source === "personal" && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => setPersonalItemPendingRemoval(item)}
+                                                                                onPointerDown={(event) => event.stopPropagation()}
+                                                                                className="mt-1 inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-bold text-rose-500"
+                                                                            >
+                                                                                Future trips
+                                                                            </button>
+                                                                        )}
                                                                     </div>
 
                                                                     <div
@@ -817,6 +866,53 @@ export default function PackListPage() {
                                             className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
                                         >
                                             Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {personalItemPendingRemoval && (
+                            <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 px-6">
+                                <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 text-center shadow-2xl">
+                                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl">
+                                        ⭐
+                                    </div>
+
+                                    <h2 className="text-xl font-bold text-neutral-950">
+                                        Remove from future trips?
+                                    </h2>
+
+                                    <p className="mt-2 text-sm text-neutral-500">
+                                        “{personalItemPendingRemoval.name}” will no longer be added automatically to new pack lists.
+                                    </p>
+
+                                    <div className="mt-6 space-y-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => removeFromFutureTripsOnly(personalItemPendingRemoval)}
+                                            className="w-full rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
+                                        >
+                                            Remove from future trips only
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                removePersonalDefault(personalItemPendingRemoval);
+                                                setPersonalItemPendingRemoval(null);
+                                            }}
+                                            className="w-full rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
+                                        >
+                                            Remove from this trip too
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setPersonalItemPendingRemoval(null)}
+                                            className="w-full px-4 py-2 text-sm font-bold text-neutral-400"
+                                        >
+                                            Cancel
                                         </button>
                                     </div>
                                 </div>
