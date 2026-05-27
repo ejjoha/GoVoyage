@@ -155,6 +155,7 @@ export default function TripPage() {
       setInviteMessage("Enter an email address.");
       return;
     }
+
     const { error } = await createTripInvite(id, email);
 
     if (error) {
@@ -162,8 +163,33 @@ export default function TripPage() {
       return;
     }
 
+    const emailResponse = await fetch("/api/send-trip-invite", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        tripTitle: trip?.title || "a trip",
+        inviterName: "Someone",
+      }),
+    });
+
+    if (!emailResponse.ok) {
+      setInviteEmail("");
+      setInviteMessage(
+        "Invite saved, but the email could not be sent. You may need to tell them manually."
+      );
+
+      fetchTripInvites();
+      return;
+    }
+
     setInviteEmail("");
-    setInviteMessage("Invite saved. They can join when they sign in.");
+    setInviteMessage(
+      "Invite sent. They’ll receive an email with instructions."
+    );
+
     fetchTripInvites();
   }
 
