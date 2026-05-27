@@ -1,5 +1,6 @@
 "use client";
 
+import { usePackingList } from "./hooks/usePackingList";
 import PackProfileCard from "./components/PackProfileCard";
 import { generatePackingItems } from "./packingEngine";
 import PackItemRow from "./components/PackItemRow";
@@ -39,7 +40,7 @@ export default function PackListPage() {
     const [tripDays, setTripDays] = useState(1);
     const [tripImageUrl, setTripImageUrl] = useState<string | null>(null);
     const [profileOpen, setProfileOpen] = useState(false);
-    const [items, setItems] = useState<PackingItem[]>([]);
+    const { items, setItems } = usePackingList();
     const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
     const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentOption[]>([]);
     const [selectedTripStyles, setSelectedTripStyles] = useState<TripStyleOption[]>([]);
