@@ -2,6 +2,7 @@
 
 import { generatePackingItems } from "./packingEngine";
 import PackItemRow from "./components/PackItemRow";
+ import PackCategoryCard from "./components/PackCategoryCard";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -705,87 +706,44 @@ export default function PackListPage() {
                         </div>
 
                         <div className="space-y-3 pb-24">
-                            {Object.entries(groupedItems).map(([category, categoryItems]) => {
-                                const isOpen = openCategories[category] ?? true;
-                                const packedInCategory = categoryItems.filter((item) => item.packed).length;
-                                const totalInCategory = categoryItems.length;
-
-                                return (
-                                    <div key={category} className="rounded-3xl bg-white px-5 py-4 shadow-sm">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleCategory(category)}
-                                                className="flex flex-1 items-center justify-between gap-4 text-left"
-                                            >
-                                                <div>
-                                                    <h2 className="text-lg font-bold text-neutral-950">{category}</h2>
-
-                                                    <p className="mt-1 text-xs font-semibold text-neutral-400">
-                                                        {packedInCategory} / {totalInCategory} packed
-                                                    </p>
-                                                </div>
-
-                                                <div className="flex items-center gap-3">
-                                                    <div className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500">
-                                                        {Math.round((packedInCategory / totalInCategory) * 100)}%
-                                                    </div>
-
-                                                    <img
-                                                        src="/icons/chevron-down.svg"
-                                                        alt=""
-                                                        className={
-                                                            isOpen
-                                                                ? "h-5 w-5 text-neutral-400 transition-transform"
-                                                                : "h-5 w-5 rotate-[-90deg] text-neutral-400 transition-transform"
-                                                        }
-                                                    />
-                                                </div>
-                                            </button>
-                                        </div>
-
-                                        {isOpen && (
-                                            <div className="mt-2 divide-y divide-neutral-100 border-t border-neutral-100">
-                                                {categoryItems.map((item) => (
-                                                    <PackItemRow
-                                                        key={item.key}
-                                                        item={item}
-                                                        onToggle={toggleItem}
-                                                        onDelete={deleteItem}
-                                                        onRequestDelete={setItemPendingDelete}
-                                                        onDecreaseQuantity={(item) => {
-                                                            setItems((currentItems) =>
-                                                                currentItems.map((currentItem) =>
-                                                                    currentItem.key === item.key
-                                                                        ? {
-                                                                            ...currentItem,
-                                                                            quantity: currentItem.quantity - 1,
-                                                                            protected: true,
-                                                                        }
-                                                                        : currentItem
-                                                                )
-                                                            );
-                                                        }}
-                                                        onIncreaseQuantity={(item) => {
-                                                            setItems((currentItems) =>
-                                                                currentItems.map((currentItem) =>
-                                                                    currentItem.key === item.key
-                                                                        ? {
-                                                                            ...currentItem,
-                                                                            quantity: currentItem.quantity + 1,
-                                                                            protected: true,
-                                                                        }
-                                                                        : currentItem
-                                                                )
-                                                            );
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                            {Object.entries(groupedItems).map(([category, categoryItems]) => (
+                                <PackCategoryCard
+                                    key={category}
+                                    category={category}
+                                    items={categoryItems}
+                                    isOpen={openCategories[category] ?? true}
+                                    onToggleCategory={toggleCategory}
+                                    onToggleItem={toggleItem}
+                                    onDeleteItem={deleteItem}
+                                    onRequestDelete={setItemPendingDelete}
+                                    onDecreaseQuantity={(item) => {
+                                        setItems((currentItems) =>
+                                            currentItems.map((currentItem) =>
+                                                currentItem.key === item.key
+                                                    ? {
+                                                        ...currentItem,
+                                                        quantity: currentItem.quantity - 1,
+                                                        protected: true,
+                                                    }
+                                                    : currentItem
+                                            )
+                                        );
+                                    }}
+                                    onIncreaseQuantity={(item) => {
+                                        setItems((currentItems) =>
+                                            currentItems.map((currentItem) =>
+                                                currentItem.key === item.key
+                                                    ? {
+                                                        ...currentItem,
+                                                        quantity: currentItem.quantity + 1,
+                                                        protected: true,
+                                                    }
+                                                    : currentItem
+                                            )
+                                        );
+                                    }}
+                                />
+                            ))}
                         </div>
 
                         {itemPendingDelete && (
