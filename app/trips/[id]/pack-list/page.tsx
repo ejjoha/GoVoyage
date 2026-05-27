@@ -21,10 +21,6 @@ import {
     PackingItem,
     createKey,
 } from "./packingSuggestions";
-import {
-    getTripWeatherSummary,
-    TripWeatherSummary,
-} from "./weatherIntelligence";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 
 export default function PackListPage() {
@@ -35,10 +31,6 @@ export default function PackListPage() {
     const [packingProfileId, setPackingProfileId] = useState<string | null>(null);
     const [packingProfileName, setPackingProfileName] = useState("");
     const [packingProfileType, setPackingProfileType] = useState("");
-    const [tripTitle, setTripTitle] = useState("Trip");
-    const [tripDestination, setTripDestination] = useState("");
-    const [tripDays, setTripDays] = useState(1);
-    const [tripImageUrl, setTripImageUrl] = useState<string | null>(null);
     const [profileOpen, setProfileOpen] = useState(false);
     const {
         items,
@@ -49,6 +41,12 @@ export default function PackListPage() {
         totalCount,
         progress,
         groupedItems,
+        tripTitle,
+        tripDestination,
+        tripDays,
+        tripImageUrl,
+        weatherSummary,
+        loadTripOverview,
         toggleItem,
         decreaseQuantity,
         increaseQuantity,
@@ -63,29 +61,13 @@ export default function PackListPage() {
     const [loaded, setLoaded] = useState(false);
     const [hydrated, setHydrated] = useState(false);
     const [resetSuccess, setResetSuccess] = useState(false);
-    const [weatherSummary, setWeatherSummary] =
-        useState<TripWeatherSummary | null>(null);
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
     const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
 
 
     useEffect(() => {
         async function loadPackList() {
-            const { data: trip } = await supabase
-                .from("trips")
-                .select("title, destination, image_url, start_date, end_date")
-                .eq("id", tripId)
-                .single();
-
-            if (trip?.image_url) setTripImageUrl(trip.image_url);
-
-            if (trip?.destination) {
-                setTripDestination(trip.destination);
-
-                const summary = await getTripWeatherSummary(trip.destination);
-                setWeatherSummary(summary);
-            }
-            setTripDays(calculateTripDays(trip?.start_date, trip?.end_date));
+            await loadTripOverview(tripId);
 
             const {
                 data: { user },
@@ -274,18 +256,6 @@ export default function PackListPage() {
         loaded,
         hydrated,
     ]);
-
-    function calculateTripDays(startDate?: string, endDate?: string) {
-        if (!startDate || !endDate) return 1;
-
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-
-        const differenceInMs = end.getTime() - start.getTime();
-        const days = Math.ceil(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
-
-        return Math.max(days, 1);
-    }
 
     const tripNights = Math.max(tripDays - 1, 0);
 
