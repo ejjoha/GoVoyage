@@ -40,7 +40,7 @@ export default function PackListPage() {
     const [tripDays, setTripDays] = useState(1);
     const [tripImageUrl, setTripImageUrl] = useState<string | null>(null);
     const [profileOpen, setProfileOpen] = useState(false);
-    const { items, setItems } = usePackingList();
+    const { items, setItems, toggleItem } = usePackingList();
     const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
     const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentOption[]>([]);
     const [selectedTripStyles, setSelectedTripStyles] = useState<TripStyleOption[]>([]);
@@ -306,19 +306,6 @@ export default function PackListPage() {
         setTimeout(() => {
             setResetSuccess(false);
         }, 2200);
-    }
-
-    function toggleItem(itemKey: string) {
-        setItems((currentItems) =>
-            currentItems.map((item) =>
-                item.key === itemKey
-                    ? {
-                        ...item,
-                        packed: !item.packed,
-                    }
-                    : item
-            )
-        );
     }
 
     function toggleCategory(category: string) {
