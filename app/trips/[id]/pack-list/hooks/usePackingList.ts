@@ -19,9 +19,39 @@ export function usePackingList() {
         );
     }
 
+    function decreaseQuantity(itemKey: string) {
+        setItems((currentItems) =>
+            currentItems.map((item) =>
+                item.key === itemKey
+                    ? {
+                        ...item,
+                        quantity: item.quantity - 1,
+                        protected: true,
+                    }
+                    : item
+            )
+        );
+    }
+
+    function increaseQuantity(itemKey: string) {
+        setItems((currentItems) =>
+            currentItems.map((item) =>
+                item.key === itemKey
+                    ? {
+                        ...item,
+                        quantity: item.quantity + 1,
+                        protected: true,
+                    }
+                    : item
+            )
+        );
+    }
+
     return {
         items,
         setItems,
         toggleItem,
+        decreaseQuantity,
+        increaseQuantity,
     };
 }

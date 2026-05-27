@@ -40,7 +40,13 @@ export default function PackListPage() {
     const [tripDays, setTripDays] = useState(1);
     const [tripImageUrl, setTripImageUrl] = useState<string | null>(null);
     const [profileOpen, setProfileOpen] = useState(false);
-    const { items, setItems, toggleItem } = usePackingList();
+    const {
+        items,
+        setItems,
+        toggleItem,
+        decreaseQuantity,
+        increaseQuantity,
+    } = usePackingList();
     const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
     const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentOption[]>([]);
     const [selectedTripStyles, setSelectedTripStyles] = useState<TripStyleOption[]>([]);
@@ -177,6 +183,7 @@ export default function PackListPage() {
                         packed: item.packed,
                         quantity: item.quantity || 1,
                         hidden: item.hidden || false,
+                        protected: item.protected || false,
                         source:
                             item.source === "custom"
                                 ? "custom"
@@ -245,6 +252,7 @@ export default function PackListPage() {
                         quantity: item.quantity,
                         source: item.source,
                         hidden: item.hidden || false,
+                        protected: item.protected || false,
                     }))
                 );
             }
@@ -692,32 +700,8 @@ export default function PackListPage() {
                                     onToggleItem={toggleItem}
                                     onDeleteItem={deleteItem}
                                     onRequestDelete={setItemPendingDelete}
-                                    onDecreaseQuantity={(item) => {
-                                        setItems((currentItems) =>
-                                            currentItems.map((currentItem) =>
-                                                currentItem.key === item.key
-                                                    ? {
-                                                        ...currentItem,
-                                                        quantity: currentItem.quantity - 1,
-                                                        protected: true,
-                                                    }
-                                                    : currentItem
-                                            )
-                                        );
-                                    }}
-                                    onIncreaseQuantity={(item) => {
-                                        setItems((currentItems) =>
-                                            currentItems.map((currentItem) =>
-                                                currentItem.key === item.key
-                                                    ? {
-                                                        ...currentItem,
-                                                        quantity: currentItem.quantity + 1,
-                                                        protected: true,
-                                                    }
-                                                    : currentItem
-                                            )
-                                        );
-                                    }}
+                                    onDecreaseQuantity={(item) => decreaseQuantity(item.key)}
+                                    onIncreaseQuantity={(item) => increaseQuantity(item.key)}
                                 />
                             ))}
                         </div>
