@@ -1,8 +1,9 @@
 "use client";
 
+import PackProfileCard from "./components/PackProfileCard";
 import { generatePackingItems } from "./packingEngine";
 import PackItemRow from "./components/PackItemRow";
- import PackCategoryCard from "./components/PackCategoryCard";
+import PackCategoryCard from "./components/PackCategoryCard";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -542,23 +543,10 @@ export default function PackListPage() {
                             </div>
                         </div>
 
-                        <div className="mb-3 rounded-3xl bg-white px-5 py-4 shadow-sm">
-                            <div className="flex items-center justify-between gap-4">
-                                <div>
-                                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400">
-                                        Packing profile
-                                    </p>
-
-                                    <h2 className="mt-1 text-lg font-bold text-neutral-950">
-                                        {packingProfileName || "My Packing List"}
-                                    </h2>
-                                </div>
-
-                                <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold capitalize text-rose-500">
-                                    {packingProfileType || "personal"}
-                                </span>
-                            </div>
-                        </div>
+                        <PackProfileCard
+                            name={packingProfileName}
+                            type={packingProfileType}
+                        />
 
                         <div className="mb-2 rounded-3xl bg-white px-5 py-4 shadow-sm">
                             <button
