@@ -29,6 +29,9 @@ export default function PackListPage() {
     const tripId = Number(params.id);
 
     const [packingListId, setPackingListId] = useState<string | null>(null);
+    const [packingProfileId, setPackingProfileId] = useState<string | null>(null);
+    const [packingProfileName, setPackingProfileName] = useState("");
+    const [packingProfileType, setPackingProfileType] = useState("");
     const [tripTitle, setTripTitle] = useState("Trip");
     const [tripDestination, setTripDestination] = useState("");
     const [tripDays, setTripDays] = useState(1);
@@ -68,6 +71,45 @@ export default function PackListPage() {
                 setWeatherSummary(summary);
             }
             setTripDays(calculateTripDays(trip?.start_date, trip?.end_date));
+
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (!user) return;
+
+            let { data: profile } = await supabase
+                .from("packing_profiles")
+                .select("*")
+                .eq("trip_id", tripId)
+                .eq("owner_user_id", user.id)
+                .maybeSingle();
+
+            if (!profile) {
+                const { data: createdProfile, error: profileError } = await supabase
+                    .from("packing_profiles")
+                    .insert({
+                        trip_id: tripId,
+                        name: "My Packing List",
+                        type: "personal",
+                        is_shared: false,
+                        owner_user_id: user.id,
+                        created_by: user.id,
+                    })
+                    .select()
+                    .single();
+
+                if (profileError) {
+                    console.error(profileError);
+                    return;
+                }
+
+                profile = createdProfile;
+            }
+
+            setPackingProfileId(profile.id);
+            setPackingProfileName(profile.name);
+            setPackingProfileType(profile.type);
 
             let { data: list } = await supabase
                 .from("packing_lists")
@@ -475,6 +517,24 @@ export default function PackListPage() {
                                         )}
                                     </div>
                                 )}
+                            </div>
+                        </div>
+
+                        <div className="mb-3 rounded-3xl bg-white px-5 py-4 shadow-sm">
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400">
+                                        Packing profile
+                                    </p>
+
+                                    <h2 className="mt-1 text-lg font-bold text-neutral-950">
+                                        {packingProfileName || "My Packing List"}
+                                    </h2>
+                                </div>
+
+                                <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold capitalize text-rose-500">
+                                    {packingProfileType || "personal"}
+                                </span>
                             </div>
                         </div>
 
