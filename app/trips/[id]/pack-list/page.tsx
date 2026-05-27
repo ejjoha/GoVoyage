@@ -158,7 +158,7 @@ export default function PackListPage() {
             const { data: savedItems } = await supabase
                 .from("packing_items")
                 .select("*")
-                .eq("packing_list_id", list.id)
+                .eq("packing_profile_id", profile.id)
                 .order("created_at", { ascending: true });
 
             if (savedItems && savedItems.length > 0) {
@@ -173,6 +173,7 @@ export default function PackListPage() {
                         category: item.category,
                         packed: item.packed,
                         quantity: item.quantity || 1,
+                        hidden: item.hidden || false,
                         source:
                             item.source === "custom"
                                 ? "custom"
@@ -214,7 +215,7 @@ export default function PackListPage() {
 
     useEffect(() => {
         async function savePackList() {
-            if (!loaded || !hydrated || !packingListId) return;
+            if (!loaded || !hydrated || !packingListId || !packingProfileId) return;
 
             await supabase
                 .from("packing_lists")
@@ -228,17 +229,19 @@ export default function PackListPage() {
                 })
                 .eq("id", packingListId);
 
-            await supabase.from("packing_items").delete().eq("packing_list_id", packingListId);
+            await supabase.from("packing_items").delete().eq("packing_profile_id", packingProfileId);
 
             if (items.length > 0) {
                 await supabase.from("packing_items").insert(
                     items.map((item) => ({
                         packing_list_id: packingListId,
+                        packing_profile_id: packingProfileId,
                         name: item.name,
                         category: item.category,
                         packed: item.packed,
                         quantity: item.quantity,
                         source: item.source,
+                        hidden: item.hidden || false,
                     }))
                 );
             }
@@ -255,18 +258,22 @@ export default function PackListPage() {
         hydrated,
     ]);
 
-    const packedCount = items.filter((item) => item.packed).length;
-    const totalCount = items.length;
+    const visibleItems = useMemo(() => {
+        return items.filter((item) => !item.hidden);
+    }, [items]);
+
+    const packedCount = visibleItems.filter((item) => item.packed).length;
+    const totalCount = visibleItems.length;
     const progress = totalCount === 0 ? 0 : Math.round((packedCount / totalCount) * 100);
     const tripNights = Math.max(tripDays - 1, 0);
 
     const groupedItems = useMemo(() => {
-        return items.reduce<Record<string, PackingItem[]>>((groups, item) => {
+        return visibleItems.reduce<Record<string, PackingItem[]>>((groups, item) => {
             if (!groups[item.category]) groups[item.category] = [];
             groups[item.category].push(item);
             return groups;
         }, {});
-    }, [items]);
+    }, [visibleItems]);
 
     function calculateTripDays(startDate?: string, endDate?: string) {
         if (!startDate || !endDate) return 1;
@@ -327,7 +334,21 @@ export default function PackListPage() {
         if (!itemToDelete) return;
 
         setItems((currentItems) =>
-            currentItems.filter((item) => item.key !== itemKey)
+            currentItems.map((item) => {
+                if (item.key !== itemKey) return item;
+
+                if (item.source === "suggested") {
+                    return {
+                        ...item,
+                        hidden: true,
+                    };
+                }
+
+                return {
+                    ...item,
+                    hidden: true,
+                };
+            })
         );
 
         if (!options.showUndo) {

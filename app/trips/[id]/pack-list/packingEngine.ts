@@ -42,7 +42,7 @@ export function generatePackingItems({
     }));
 
     const preservedItems = currentItems.filter(
-        (item) => item.source === "custom" || item.protected || item.packed
+        (item) => item.source === "custom" || item.protected || item.packed || item.hidden
     );
 
     const preservedGeneratedItems = generatedItems.map((generatedItem) => {
@@ -56,6 +56,7 @@ export function generatePackingItems({
             ? {
                 ...generatedItem,
                 packed: existingItem.packed,
+                hidden: existingItem.hidden,
                 quantity: existingItem.protected
                     ? existingItem.quantity
                     : generatedItem.quantity,
