@@ -28,7 +28,15 @@ export async function getTripWeatherSummary(
 
         const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,precipitation,weather_code&daily=precipitation_probability_max,temperature_2m_max,temperature_2m_min&timezone=auto`;
 
-        const forecastResponse = await fetch(forecastUrl);
+        let forecastResponse: Response;
+
+        try {
+            forecastResponse = await fetch(forecastUrl);
+        } catch (error) {
+            console.error("Failed to fetch weather forecast", error);
+            return null;
+        }
+
         if (!forecastResponse.ok) return null;
 
         const forecastData = await forecastResponse.json();

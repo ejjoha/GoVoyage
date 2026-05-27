@@ -1,12 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { PackingItem } from "../packingSuggestions";
 
 export function usePackingList() {
     const [items, setItems] = useState<PackingItem[]>([]);
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const visibleItems = useMemo(() => {
+        return items.filter((item) => !item.hidden);
+    }, [items]);
+
+    const packedCount = visibleItems.filter((item) => item.packed).length;
+    const totalCount = visibleItems.length;
+    const progress = totalCount === 0 ? 0 : Math.round((packedCount / totalCount) * 100);
+
+    const groupedItems = useMemo(() => {
+        return visibleItems.reduce<Record<string, PackingItem[]>>((groups, item) => {
+            if (!groups[item.category]) groups[item.category] = [];
+            groups[item.category].push(item);
+            return groups;
+        }, {});
+    }, [visibleItems]);
 
     function toggleItem(itemKey: string) {
         setItems((currentItems) =>
@@ -109,5 +124,10 @@ export function usePackingList() {
         increaseQuantity,
         deleteItem,
         undoDeleteItem,
+        visibleItems,
+        packedCount,
+        totalCount,
+        progress,
+        groupedItems,
     };
 }

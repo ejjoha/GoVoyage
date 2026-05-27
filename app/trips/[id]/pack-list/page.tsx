@@ -45,6 +45,10 @@ export default function PackListPage() {
         setItems,
         deletedItem,
         deleteSuccess,
+        packedCount,
+        totalCount,
+        progress,
+        groupedItems,
         toggleItem,
         decreaseQuantity,
         increaseQuantity,
@@ -271,23 +275,6 @@ export default function PackListPage() {
         hydrated,
     ]);
 
-    const visibleItems = useMemo(() => {
-        return items.filter((item) => !item.hidden);
-    }, [items]);
-
-    const packedCount = visibleItems.filter((item) => item.packed).length;
-    const totalCount = visibleItems.length;
-    const progress = totalCount === 0 ? 0 : Math.round((packedCount / totalCount) * 100);
-    const tripNights = Math.max(tripDays - 1, 0);
-
-    const groupedItems = useMemo(() => {
-        return visibleItems.reduce<Record<string, PackingItem[]>>((groups, item) => {
-            if (!groups[item.category]) groups[item.category] = [];
-            groups[item.category].push(item);
-            return groups;
-        }, {});
-    }, [visibleItems]);
-
     function calculateTripDays(startDate?: string, endDate?: string) {
         if (!startDate || !endDate) return 1;
 
@@ -299,6 +286,8 @@ export default function PackListPage() {
 
         return Math.max(days, 1);
     }
+
+    const tripNights = Math.max(tripDays - 1, 0);
 
     function resetPackList() {
         setSelectedClimates([]);
