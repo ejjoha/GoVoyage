@@ -1,7 +1,7 @@
 "use client";
 
 import { generatePackingItems } from "./packingEngine";
-import { motion } from "framer-motion";
+import PackItemRow from "./components/PackItemRow";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -746,107 +746,41 @@ export default function PackListPage() {
 
                                         {isOpen && (
                                             <div className="mt-2 divide-y divide-neutral-100 border-t border-neutral-100">
-                                                {categoryItems.map((item) => {
-
-                                                    return (
-                                                        <div key={item.key} className="relative overflow-hidden">
-                                                            <div className="absolute inset-0 flex items-center justify-end rounded-2xl bg-red-500 px-5 text-sm font-bold text-white">
-                                                                Delete
-                                                            </div>
-
-                                                            <motion.div
-                                                                drag="x"
-                                                                dragDirectionLock
-                                                                dragConstraints={{ left: -120, right: 0 }}
-                                                                dragElastic={0.08}
-                                                                whileTap={{ scale: 0.99 }}
-                                                                onDragEnd={(_, info) => {
-                                                                    if (info.offset.x < -80 || info.velocity.x < -500) {
-                                                                        deleteItem(item.key);
-                                                                    }
-                                                                }}
-                                                                className="relative flex touch-pan-y items-center gap-4 bg-white px-1 py-3"
-                                                            >
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={item.packed}
-                                                                    onChange={() => toggleItem(item.key)}
-                                                                    onPointerDown={(event) => event.stopPropagation()}
-                                                                    className="h-4 w-4 rounded-md border-neutral-300"
-                                                                />
-
-                                                                <div className="flex flex-1 items-center justify-between gap-3">
-                                                                    <div>
-                                                                        <span
-                                                                            className={
-                                                                                item.packed
-                                                                                    ? "text-neutral-400 line-through"
-                                                                                    : "text-neutral-800"
-                                                                            }
-                                                                        >
-                                                                            {item.name}
-                                                                        </span>
-                                                                    </div>
-
-                                                                    <div
-                                                                        className="flex items-center gap-2"
-                                                                        onPointerDown={(event) => event.stopPropagation()}
-                                                                    >
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                if (item.quantity <= 1) {
-                                                                                    setItemPendingDelete(item);
-
-                                                                                    return;
-                                                                                }
-
-                                                                                setItems((currentItems) =>
-                                                                                    currentItems.map((currentItem) =>
-                                                                                        currentItem.key === item.key
-                                                                                            ? {
-                                                                                                ...currentItem,
-                                                                                                quantity: currentItem.quantity - 1,
-                                                                                                protected: true,
-                                                                                            }
-                                                                                            : currentItem
-                                                                                    )
-                                                                                );
-                                                                            }}
-                                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700 transition active:scale-95"
-                                                                        >
-                                                                            −
-                                                                        </button>
-
-                                                                        <span className="min-w-[22px] rounded-full bg-neutral-100 px-2 py-1 text-center text-xs font-semibold text-neutral-700">
-                                                                            {item.quantity}
-                                                                        </span>
-
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                setItems((currentItems) =>
-                                                                                    currentItems.map((currentItem) =>
-                                                                                        currentItem.key === item.key
-                                                                                            ? {
-                                                                                                ...currentItem,
-                                                                                                quantity: currentItem.quantity + 1,
-                                                                                                protected: true,
-                                                                                            }
-                                                                                            : currentItem
-                                                                                    )
-                                                                                );
-                                                                            }}
-                                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700 transition active:scale-95"
-                                                                        >
-                                                                            +
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </motion.div>
-                                                        </div>
-                                                    );
-                                                })}
+                                                {categoryItems.map((item) => (
+                                                    <PackItemRow
+                                                        key={item.key}
+                                                        item={item}
+                                                        onToggle={toggleItem}
+                                                        onDelete={deleteItem}
+                                                        onRequestDelete={setItemPendingDelete}
+                                                        onDecreaseQuantity={(item) => {
+                                                            setItems((currentItems) =>
+                                                                currentItems.map((currentItem) =>
+                                                                    currentItem.key === item.key
+                                                                        ? {
+                                                                            ...currentItem,
+                                                                            quantity: currentItem.quantity - 1,
+                                                                            protected: true,
+                                                                        }
+                                                                        : currentItem
+                                                                )
+                                                            );
+                                                        }}
+                                                        onIncreaseQuantity={(item) => {
+                                                            setItems((currentItems) =>
+                                                                currentItems.map((currentItem) =>
+                                                                    currentItem.key === item.key
+                                                                        ? {
+                                                                            ...currentItem,
+                                                                            quantity: currentItem.quantity + 1,
+                                                                            protected: true,
+                                                                        }
+                                                                        : currentItem
+                                                                )
+                                                            );
+                                                        }}
+                                                    />
+                                                ))}
                                             </div>
                                         )}
                                     </div>
