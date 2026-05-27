@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
         const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-        const loginUrl = `${appUrl}/login`;
+        const inviteUrl = `${appUrl}/invite`;
 
         const { error } = await resend.emails.send({
             from: "GoVoyage <onboarding@resend.dev>",
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
           </p>
 
           <a
-            href="${loginUrl}"
+            href="${inviteUrl}"
             style="
               display: inline-block;
               margin-top: 16px;
