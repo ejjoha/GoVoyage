@@ -478,7 +478,7 @@ export default function HomePage() {
           </div>
         )}
       </div>
-      {/* <ScrollToTopButton /> */}
+      <ScrollToTopButton />
     </main>
   );
 }
