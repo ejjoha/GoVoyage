@@ -311,6 +311,17 @@ export default function HomePage() {
 
                     <button
                       type="button"
+                      onClick={() => {
+                        setShowAccountMenu(false);
+                        router.push("/account");
+                      }}
+                      className="mb-2 flex w-full items-center justify-center rounded-2xl bg-stone-100 px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-200 active:scale-[0.98]"
+                    >
+                      Account settings
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={async () => {
                         await supabase.auth.signOut();
                         setUserEmail("");
