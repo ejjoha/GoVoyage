@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import ScrollToTopButton from "../components/ScrollToTopButton";
 
 type JournalEntry = {
     id: number;
@@ -555,6 +556,7 @@ export default function TravelJournalPage() {
                     </div>
                 </div>
             )}
+            <ScrollToTopButton />
         </main>
     );
 }
