@@ -43,9 +43,13 @@ export default function PackListPage() {
     const {
         items,
         setItems,
+        deletedItem,
+        deleteSuccess,
         toggleItem,
         decreaseQuantity,
         increaseQuantity,
+        deleteItem,
+        undoDeleteItem,
     } = usePackingList();
     const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
     const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentOption[]>([]);
@@ -58,8 +62,6 @@ export default function PackListPage() {
     const [weatherSummary, setWeatherSummary] =
         useState<TripWeatherSummary | null>(null);
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
-    const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
-    const [deleteSuccess, setDeleteSuccess] = useState(false);
     const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
 
 
@@ -321,54 +323,6 @@ export default function PackListPage() {
             ...current,
             [category]: !(current[category] ?? true),
         }));
-    }
-
-    function deleteItem(
-        itemKey: string,
-        options: { showUndo?: boolean } = { showUndo: true }
-    ) {
-        const itemToDelete = items.find((item) => item.key === itemKey);
-
-        if (!itemToDelete) return;
-
-        setItems((currentItems) =>
-            currentItems.map((item) => {
-                if (item.key !== itemKey) return item;
-
-                if (item.source === "suggested") {
-                    return {
-                        ...item,
-                        hidden: true,
-                    };
-                }
-
-                return {
-                    ...item,
-                    hidden: true,
-                };
-            })
-        );
-
-        if (!options.showUndo) {
-            setItemPendingDelete(null);
-            return;
-        }
-
-        setDeletedItem(itemToDelete);
-        setDeleteSuccess(true);
-
-        setTimeout(() => {
-            setDeleteSuccess(false);
-            setDeletedItem(null);
-        }, 4000);
-    }
-
-    function undoDeleteItem() {
-        if (!deletedItem) return;
-
-        setItems((currentItems) => [...currentItems, deletedItem]);
-        setDeletedItem(null);
-        setDeleteSuccess(false);
     }
 
     function toggleClimate(climate: ClimateOption) {
@@ -735,6 +689,7 @@ export default function PackListPage() {
                                                 type="button"
                                                 onClick={() => {
                                                     deleteItem(itemPendingDelete.key, { showUndo: false });
+                                                    setItemPendingDelete(null);
                                                 }}
                                                 className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
                                             >
