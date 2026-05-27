@@ -9,12 +9,17 @@ export default function LoginPage() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
 
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState("");
 
     async function handleSignIn(e: React.FormEvent) {
         e.preventDefault();
+        if (!email.trim() || !password) {
+            setMessage("Please enter both email and password.");
+            return;
+        }
         setIsLoading(true);
         setMessage("Signing in...");
 
@@ -44,6 +49,10 @@ export default function LoginPage() {
 
     async function handleSignUp(e: React.FormEvent) {
         e.preventDefault();
+        if (!email.trim() || !password) {
+            setMessage("Please enter both email and password.");
+            return;
+        }
         setIsLoading(true);
         setMessage("");
 
@@ -74,10 +83,12 @@ export default function LoginPage() {
                 <div className="mb-6">
                     <p className="text-sm font-semibold text-rose-500">GoVoyage</p>
                     <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-stone-900">
-                        Sign in
+                        {mode === "signIn" ? "Sign in" : "Create account"}
                     </h1>
                     <p className="mt-2 text-sm text-stone-500">
-                        Access your trips, itinerary and shared expenses.
+                        {mode === "signIn"
+                            ? "Access your trips, itinerary and shared expenses."
+                            : "Create your GoVoyage account and start planning."}
                     </p>
                 </div>
 
@@ -106,20 +117,27 @@ export default function LoginPage() {
 
                     <button
                         type="button"
-                        onClick={handleSignIn}
+                        onClick={mode === "signIn" ? handleSignIn : handleSignUp}
                         disabled={isLoading}
                         className="w-full rounded-2xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:bg-stone-300"
                     >
-                        {isLoading ? "Working..." : "Sign in"}
+                        {isLoading
+                            ? "Working..."
+                            : mode === "signIn"
+                                ? "Sign in"
+                                : "Create account"}
                     </button>
 
                     <button
                         type="button"
-                        onClick={handleSignUp}
+                        onClick={() => {
+                            setMessage("");
+                            setMode(mode === "signIn" ? "signUp" : "signIn");
+                        }}
                         disabled={isLoading}
                         className="w-full rounded-2xl bg-stone-100 px-5 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-200 disabled:bg-stone-100"
                     >
-                        Create account
+                        {mode === "signIn" ? "Create account" : "Already have an account? Sign in"}
                     </button>
                 </form>
             </div>

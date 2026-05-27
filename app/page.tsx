@@ -26,6 +26,19 @@ function getTodayDateString() {
   return `${year}-${month}-${day}`;
 }
 
+function HomeHeroSkeleton() {
+  return (
+    <section className="relative mb-5 overflow-hidden rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
+      <div className="-mx-4 -mt-4 mb-4 h-49 animate-pulse rounded-t-[2rem] bg-stone-200 sm:-mx-5 sm:-mt-5" />
+
+      <div className="mt-3 space-y-2">
+        <div className="h-4 w-40 animate-pulse rounded-full bg-stone-200" />
+        <div className="h-4 w-56 animate-pulse rounded-full bg-stone-200" />
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
@@ -97,16 +110,10 @@ export default function HomePage() {
         error,
       } = await supabase.auth.getUser();
 
-      if (error) {
-        console.error("Error loading user:", error);
-        setErrorMessage(error.message);
+      if (error || !user) {
+        console.error("User is not signed in:", error);
         setIsLoading(false);
-        return;
-      }
-
-      if (!user) {
-        setIsLoading(false);
-        router.push("/login");
+        router.replace("/login");
         return;
       }
 
@@ -265,73 +272,77 @@ export default function HomePage() {
   return (
     <main className="min-h-screen overflow-x-clip px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto w-full max-w-2xl min-w-0">
-        <section className="relative mb-5 overflow-visible rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
-          <div className="absolute right-4 top-4 z-10">
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={() => setShowAccountMenu((current) => !current)}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600"
-              >
-                {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
-              </button>
+        {isLoading ? (
+          <HomeHeroSkeleton />
+        ) : (
+          <section className="relative mb-5 overflow-visible rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
+            <div className="absolute right-4 top-4 z-10">
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={() => setShowAccountMenu((current) => !current)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600"
+                >
+                  {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
+                </button>
 
-              {showAccountMenu && (
-                <div className="absolute right-0 top-12 w-[280px] rounded-[1.75rem] border border-stone-200/70 bg-white/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl">
-                  <p className="text-sm font-medium text-stone-500">
-                    Signed in as
-                  </p>
+                {showAccountMenu && (
+                  <div className="absolute right-0 top-12 w-[280px] rounded-[1.75rem] border border-stone-200/70 bg-white/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl">
+                    <p className="text-sm font-medium text-stone-500">
+                      Signed in as
+                    </p>
 
-                  <div className="mt-4 flex items-center gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-500 text-lg font-semibold text-white shadow-sm">
-                      {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-500 text-lg font-semibold text-white shadow-sm">
+                        {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-stone-900">
+                          {userEmail || "Unknown user"}
+                        </p>
+                        <p className="mt-0.5 text-xs text-stone-500">
+                          GoVoyage account
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-stone-900">
-                        {userEmail || "Unknown user"}
-                      </p>
-                      <p className="mt-0.5 text-xs text-stone-500">
-                        GoVoyage account
-                      </p>
-                    </div>
+                    <div className="my-4 h-px bg-stone-200" />
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        setUserEmail("");
+                        window.location.href = "/login";
+                      }}
+                      className="flex w-full items-center justify-center rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 active:scale-[0.98]"
+                    >
+                      Sign out
+                    </button>
                   </div>
-
-                  <div className="my-4 h-px bg-stone-200" />
-
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await supabase.auth.signOut();
-                      setUserEmail("");
-                      window.location.href = "/login";
-                    }}
-                    className="flex w-full items-center justify-center rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 active:scale-[0.98]"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="-mx-4 -mt-4 mb-4 sm:-mx-5 sm:-mt-5">
-            <img
-              src="/logos/app-hero-logo.png"
-              alt="Travel Organizer"
-              className="h-auto w-full rounded-t-[2rem] object-cover"
-            />
-          </div>
+            <div className="-mx-4 -mt-4 mb-4 sm:-mx-5 sm:-mt-5">
+              <img
+                src="/logos/app-hero-logo.png"
+                alt="Travel Organizer"
+                className="h-auto w-full rounded-t-[2rem] object-cover"
+              />
+            </div>
 
-          <div className="mt-3 max-w-md">
-            <p className="text-sm text-stone-500 sm:text-base">
-              Plan it. See it. Enjoy it.
-            </p>
-            <p className="text-sm text-stone-500 sm:text-base">
-              Where every journey comes together.
-            </p>
-          </div>
-        </section>
+            <div className="mt-3 max-w-md">
+              <p className="text-sm text-stone-500 sm:text-base">
+                Plan it. See it. Enjoy it.
+              </p>
+              <p className="text-sm text-stone-500 sm:text-base">
+                Where every journey comes together.
+              </p>
+            </div>
+          </section>
+        )}
 
         {!isOnline && (
           <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
