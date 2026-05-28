@@ -1,14 +1,14 @@
 "use client";
 
+import { supabase } from "@/lib/supabase";
+import { createKey, type PackingItem } from "./packingSuggestions";
 import { usePackingList } from "./hooks/usePackingList";
 import PackProfileCard from "./components/PackProfileCard";
-import { generatePackingItems } from "./packingEngine";
 import PackItemRow from "./components/PackItemRow";
 import PackCategoryCard from "./components/PackCategoryCard";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import {
     climateOptions,
     environmentOptions,
@@ -17,199 +17,57 @@ import {
     EnvironmentOption,
     TripStyleOption,
 } from "./tripProfiles";
-import {
-    PackingItem,
-    createKey,
-} from "./packingSuggestions";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 
 export default function PackListPage() {
     const params = useParams();
     const tripId = Number(params.id);
-
-    const [packingListId, setPackingListId] = useState<string | null>(null);
-    const [packingProfileId, setPackingProfileId] = useState<string | null>(null);
-    const [packingProfileName, setPackingProfileName] = useState("");
-    const [packingProfileType, setPackingProfileType] = useState("");
     const [profileOpen, setProfileOpen] = useState(false);
     const {
         items,
         setItems,
+
+        packingListId,
+        packingProfileId,
+        packingProfileName,
+        packingProfileType,
+
+        selectedClimates,
+        setSelectedClimates,
+        selectedEnvironments,
+        setSelectedEnvironments,
+        selectedTripStyles,
+        setSelectedTripStyles,
+
+        loaded,
+        hydrated,
+        setHydrated,
+
         deletedItem,
         deleteSuccess,
         packedCount,
         totalCount,
         progress,
         groupedItems,
+
         tripTitle,
         tripDestination,
         tripDays,
         tripImageUrl,
         weatherSummary,
-        loadTripOverview,
+
         toggleItem,
         decreaseQuantity,
         increaseQuantity,
         deleteItem,
         undoDeleteItem,
-    } = usePackingList();
-    const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
-    const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentOption[]>([]);
-    const [selectedTripStyles, setSelectedTripStyles] = useState<TripStyleOption[]>([]);
+    } = usePackingList(tripId);
+
     const [newItemName, setNewItemName] = useState("");
     const [showAddItem, setShowAddItem] = useState(false);
-    const [loaded, setLoaded] = useState(false);
-    const [hydrated, setHydrated] = useState(false);
     const [resetSuccess, setResetSuccess] = useState(false);
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
     const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
-
-
-    useEffect(() => {
-        async function loadPackList() {
-            await loadTripOverview(tripId);
-
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-
-            if (!user) return;
-
-            let { data: profile } = await supabase
-                .from("packing_profiles")
-                .select("*")
-                .eq("trip_id", tripId)
-                .eq("owner_user_id", user.id)
-                .maybeSingle();
-
-            if (!profile) {
-                const { data: createdProfile, error: profileError } = await supabase
-                    .from("packing_profiles")
-                    .upsert({
-                        trip_id: tripId,
-                        name: "My Packing List",
-                        type: "personal",
-                        is_shared: false,
-                        owner_user_id: user.id,
-                        created_by: user.id,
-                    })
-                    .select()
-                    .single();
-
-                if (profileError) {
-                    console.error(profileError);
-                    return;
-                }
-
-                profile = createdProfile;
-            }
-
-            setPackingProfileId(profile.id);
-            setPackingProfileName(profile.name);
-            setPackingProfileType(profile.type);
-
-            let { data: list } = await supabase
-                .from("packing_lists")
-                .select("*")
-                .eq("trip_id", tripId)
-                .maybeSingle();
-
-            if (!list) {
-                const { data: newList, error } = await supabase
-                    .from("packing_lists")
-                    .upsert(
-                        {
-                            trip_id: tripId,
-                            selected_climates: [],
-                            selected_trip_types: [],
-                        },
-                        { onConflict: "trip_id" }
-                    )
-                    .select("*")
-                    .single();
-
-                if (error) {
-                    console.error(error);
-                    return;
-                }
-
-                list = newList;
-            }
-
-            setPackingListId(list.id);
-            setSelectedClimates(list.selected_climates || []);
-            const savedProfiles = list.selected_trip_types || [];
-
-            setSelectedEnvironments(
-                savedProfiles.filter((profile: string) =>
-                    environmentOptions.includes(profile as any)
-                )
-            );
-
-            setSelectedTripStyles(
-                savedProfiles.filter((profile: string) =>
-                    tripStyleOptions.includes(profile as any)
-                )
-            );
-
-            const { data: savedItems } = await supabase
-                .from("packing_items")
-                .select("*")
-                .eq("packing_profile_id", profile.id)
-                .order("created_at", { ascending: true });
-
-            if (savedItems && savedItems.length > 0) {
-                const uniqueItems = new Map<string, PackingItem>();
-
-                savedItems.forEach((item) => {
-                    const key = createKey(item.category, item.name);
-
-                    uniqueItems.set(key, {
-                        key,
-                        name: item.name,
-                        category: item.category,
-                        packed: item.packed,
-                        quantity: item.quantity || 1,
-                        hidden: item.hidden || false,
-                        protected: item.protected || false,
-                        source:
-                            item.source === "custom"
-                                ? "custom"
-                                : item.source === "personal"
-                                    ? "personal"
-                                    : "suggested",
-                    });
-                });
-
-                setItems(Array.from(uniqueItems.values()));
-            }
-            setLoaded(true);
-        }
-
-        if (tripId) loadPackList();
-    }, [tripId]);
-
-    useEffect(() => {
-        if (!loaded) return;
-
-        setItems((currentItems) =>
-            generatePackingItems({
-                selectedClimates,
-                selectedEnvironments,
-                selectedTripStyles,
-                tripDays,
-                currentItems,
-            })
-        );
-
-        setHydrated(true);
-    }, [
-        selectedClimates,
-        selectedEnvironments,
-        selectedTripStyles,
-        loaded,
-        tripDays,
-    ]);
 
     useEffect(() => {
         async function savePackList() {

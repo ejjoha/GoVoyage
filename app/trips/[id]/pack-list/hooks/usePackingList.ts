@@ -1,14 +1,25 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { PackingItem } from "../packingSuggestions";
+import {
+    createKey,
+    type PackingItem,
+} from "../packingSuggestions";
 import { supabase } from "@/lib/supabase";
 import {
     getTripWeatherSummary,
     TripWeatherSummary,
 } from "../weatherIntelligence";
+import { generatePackingItems } from "../packingEngine";
+import {
+    environmentOptions,
+    tripStyleOptions,
+    ClimateOption,
+    EnvironmentOption,
+    TripStyleOption,
+} from "../tripProfiles";
 
-export function usePackingList() {
+export function usePackingList(tripId: number) {
     const [items, setItems] = useState<PackingItem[]>([]);
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
@@ -18,6 +29,17 @@ export function usePackingList() {
     const [tripImageUrl, setTripImageUrl] = useState<string | null>(null);
     const [weatherSummary, setWeatherSummary] =
         useState<TripWeatherSummary | null>(null);
+    const [packingListId, setPackingListId] = useState<string | null>(null);
+    const [packingProfileId, setPackingProfileId] = useState<string | null>(null);
+    const [packingProfileName, setPackingProfileName] = useState("");
+    const [packingProfileType, setPackingProfileType] = useState("");
+
+    const [selectedClimates, setSelectedClimates] = useState<ClimateOption[]>([]);
+    const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentOption[]>([]);
+    const [selectedTripStyles, setSelectedTripStyles] = useState<TripStyleOption[]>([]);
+
+    const [loaded, setLoaded] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
     const visibleItems = useMemo(() => {
         return items.filter((item) => !item.hidden);
     }, [items]);
@@ -156,10 +178,182 @@ export function usePackingList() {
 
         setTripDays(calculateTripDays(trip?.start_date, trip?.end_date));
     }
+    useEffect(() => {
+        async function loadPackList() {
+            if (!tripId) return;
+
+            await loadTripOverview(tripId);
+
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (!user) return;
+
+            let { data: profile } = await supabase
+                .from("packing_profiles")
+                .select("*")
+                .eq("trip_id", tripId)
+                .eq("owner_user_id", user.id)
+                .eq("type", "personal")
+                .maybeSingle();
+
+            if (!profile) {
+                const { data: createdProfile, error: profileError } = await supabase
+                    .from("packing_profiles")
+                    .upsert(
+                        {
+                            trip_id: tripId,
+                            name: "My Packing List",
+                            type: "personal",
+                            is_shared: false,
+                            owner_user_id: user.id,
+                            created_by: user.id,
+                        },
+                        {
+                            onConflict: "trip_id,owner_user_id,type",
+                        }
+                    )
+                    .select()
+                    .single();
+
+                if (profileError) {
+                    console.error(profileError);
+                    return;
+                }
+
+                profile = createdProfile;
+            }
+
+            setPackingProfileId(profile.id);
+            setPackingProfileName(profile.name);
+            setPackingProfileType(profile.type);
+
+            let { data: list } = await supabase
+                .from("packing_lists")
+                .select("*")
+                .eq("trip_id", tripId)
+                .maybeSingle();
+
+            if (!list) {
+                const { data: newList, error } = await supabase
+                    .from("packing_lists")
+                    .upsert(
+                        {
+                            trip_id: tripId,
+                            selected_climates: [],
+                            selected_trip_types: [],
+                        },
+                        { onConflict: "trip_id" }
+                    )
+                    .select("*")
+                    .single();
+
+                if (error) {
+                    console.error(error);
+                    return;
+                }
+
+                list = newList;
+            }
+
+            setPackingListId(list.id);
+            setSelectedClimates(list.selected_climates || []);
+
+            const savedProfiles = list.selected_trip_types || [];
+
+            setSelectedEnvironments(
+                savedProfiles.filter((profile: string) =>
+                    environmentOptions.includes(profile as EnvironmentOption)
+                )
+            );
+
+            setSelectedTripStyles(
+                savedProfiles.filter((profile: string) =>
+                    tripStyleOptions.includes(profile as TripStyleOption)
+                )
+            );
+
+            const { data: savedItems } = await supabase
+                .from("packing_items")
+                .select("*")
+                .eq("packing_profile_id", profile.id)
+                .order("created_at", { ascending: true });
+
+            if (savedItems && savedItems.length > 0) {
+                const uniqueItems = new Map<string, PackingItem>();
+
+                savedItems.forEach((item) => {
+                    const key = createKey(item.category, item.name);
+
+                    uniqueItems.set(key, {
+                        key,
+                        name: item.name,
+                        category: item.category,
+                        packed: item.packed,
+                        quantity: item.quantity || 1,
+                        hidden: item.hidden || false,
+                        protected: item.protected || false,
+                        source:
+                            item.source === "custom"
+                                ? "custom"
+                                : item.source === "personal"
+                                    ? "personal"
+                                    : "suggested",
+                    });
+                });
+
+                setItems(Array.from(uniqueItems.values()));
+            }
+
+            setLoaded(true);
+        }
+
+        loadPackList();
+    }, [tripId]);
+
+    useEffect(() => {
+        if (!loaded) return;
+
+        setItems((currentItems) =>
+            generatePackingItems({
+                selectedClimates,
+                selectedEnvironments,
+                selectedTripStyles,
+                tripDays,
+                currentItems,
+            })
+        );
+
+        setHydrated(true);
+    }, [
+        selectedClimates,
+        selectedEnvironments,
+        selectedTripStyles,
+        loaded,
+        tripDays,
+    ]);
 
     return {
         items,
         setItems,
+
+        packingListId,
+        packingProfileId,
+        packingProfileName,
+        packingProfileType,
+
+        selectedClimates,
+        setSelectedClimates,
+        selectedEnvironments,
+        setSelectedEnvironments,
+        selectedTripStyles,
+        setSelectedTripStyles,
+
+        loaded,
+        hydrated,
+        setHydrated,
+
         deletedItem,
         deleteSuccess,
         toggleItem,
@@ -172,12 +366,11 @@ export function usePackingList() {
         totalCount,
         progress,
         groupedItems,
-        
+
         tripTitle,
         tripDestination,
         tripDays,
         tripImageUrl,
         weatherSummary,
-        loadTripOverview,
     };
 }
