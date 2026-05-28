@@ -45,11 +45,11 @@ export async function createPackingList({
 export async function createPackingItem({
     packingListId,
     name,
-    category,
+    category = "General",
 }: {
     packingListId: string;
     name: string;
-    category: string;
+    category?: string;
 }) {
     const {
         data: { user },

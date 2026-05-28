@@ -5,17 +5,20 @@ import type {
     PackingListItem,
 } from "../types/packing.types";
 import PackingItemRow from "./packing-item-row";
+import AddPackingItemForm from "./add-packing-item-form";
 
 type Props = {
     list: PackingList;
     items: PackingListItem[];
     onToggleItem: (item: PackingListItem) => void;
+    onCreateItem: (listId: string, item: PackingListItem) => void;
 };
 
 export default function PackingListCard({
     list,
     items,
     onToggleItem,
+    onCreateItem,
 }: Props) {
     const packedCount = items.filter((item) => item.packed).length;
     const totalCount = items.length;
@@ -55,6 +58,12 @@ export default function PackingListCard({
                         />
                     ))
                 )}
+            </div>
+            <div className="border-t border-neutral-100 px-5 pb-5">
+                <AddPackingItemForm
+                    packingListId={list.id}
+                    onCreated={(item) => onCreateItem(list.id, item)}
+                />
             </div>
         </section>
     );

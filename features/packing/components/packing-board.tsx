@@ -102,7 +102,7 @@ export default function PackingBoard({ tripId }: Props) {
                     }));
                 }}
             />
-            
+
             {loading && (
                 <div className="rounded-[2rem] bg-white p-6 shadow-sm">
                     <p className="text-sm font-medium text-neutral-400">
@@ -142,6 +142,12 @@ export default function PackingBoard({ tripId }: Props) {
                             list={list}
                             items={itemsByList[list.id] ?? []}
                             onToggleItem={handleToggleItem}
+                            onCreateItem={(listId, item) => {
+                                setItemsByList((current) => ({
+                                    ...current,
+                                    [listId]: [...(current[listId] ?? []), item],
+                                }));
+                            }}
                         />
                     ))}
                 </div>
