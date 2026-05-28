@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import CreatePackingListButton from "./create-packing-list-button";
+import NewPackingListButton from "./new-packing-list-button";
 import PackingHeader from "./packing-header";
 import PackingListCard from "./packing-list-card";
 
@@ -91,6 +92,17 @@ export default function PackingBoard({ tripId }: Props) {
                 totalCount={totalCount}
             />
 
+            <NewPackingListButton
+                tripId={tripId}
+                onCreated={(list) => {
+                    setLists((current) => [...current, list]);
+                    setItemsByList((current) => ({
+                        ...current,
+                        [list.id]: [],
+                    }));
+                }}
+            />
+            
             {loading && (
                 <div className="rounded-[2rem] bg-white p-6 shadow-sm">
                     <p className="text-sm font-medium text-neutral-400">
