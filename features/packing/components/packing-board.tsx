@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
+import CreatePackingListButton from "./create-packing-list-button";
 import PackingHeader from "./packing-header";
 import PackingListCard from "./packing-list-card";
 
@@ -108,6 +108,17 @@ export default function PackingBoard({ tripId }: Props) {
                     <p className="mt-2 text-sm leading-6 text-neutral-500">
                         Create a list for yourself, a family member, or something shared.
                     </p>
+
+                    <CreatePackingListButton
+                        tripId={tripId}
+                        onCreated={(list) => {
+                            setLists((current) => [...current, list]);
+                            setItemsByList((current) => ({
+                                ...current,
+                                [list.id]: [],
+                            }));
+                        }}
+                    />
                 </div>
             )}
 

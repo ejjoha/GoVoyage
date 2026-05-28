@@ -5,11 +5,13 @@ export async function createPackingList({
     memberId,
     title,
     type,
+    emoji,
 }: {
     tripId: number;
     memberId?: number | null;
     title: string;
     type: "personal" | "shared" | "luggage" | "activity";
+    emoji?: string | null;
 }) {
     const {
         data: { user },
@@ -26,6 +28,7 @@ export async function createPackingList({
             member_id: memberId ?? null,
             title,
             type,
+            emoji: emoji ?? null,
             created_by: user.id,
         })
         .select()
