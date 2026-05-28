@@ -2,6 +2,7 @@
 
 import { createKey, type PackingItem } from "./packingSuggestions";
 import { usePackingList } from "./hooks/usePackingList";
+import { usePackingProfiles } from "./hooks/usePackingProfiles";
 import PackProfileCard from "./components/PackProfileCard";
 import PackCategoryCard from "./components/PackCategoryCard";
 import Link from "next/link";
@@ -20,6 +21,12 @@ export default function PackListPage() {
     const params = useParams();
     const tripId = Number(params.id);
     const [profileOpen, setProfileOpen] = useState(false);
+    const {
+        profiles,
+        activeProfileId,
+        setActiveProfileId,
+        loaded: profilesLoaded,
+    } = usePackingProfiles(tripId);
     const {
         items,
         setItems,
@@ -58,7 +65,7 @@ export default function PackListPage() {
         increaseQuantity,
         deleteItem,
         undoDeleteItem,
-    } = usePackingList(tripId);
+    } = usePackingList(tripId, activeProfileId);
 
     const [newItemName, setNewItemName] = useState("");
     const [showAddItem, setShowAddItem] = useState(false);
@@ -265,6 +272,28 @@ export default function PackListPage() {
                             name={packingProfileName}
                             type={packingProfileType}
                         />
+                        {profilesLoaded && profiles.length > 1 && (
+                            <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+                                {profiles.map((profile) => {
+                                    const active = profile.id === activeProfileId;
+
+                                    return (
+                                        <button
+                                            key={profile.id}
+                                            type="button"
+                                            onClick={() => setActiveProfileId(profile.id)}
+                                            className={
+                                                active
+                                                    ? "shrink-0 rounded-full bg-rose-500 px-4 py-2 text-sm font-bold text-white"
+                                                    : "shrink-0 rounded-full bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm"
+                                            }
+                                        >
+                                            {profile.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
 
                         <div className="mb-2 rounded-3xl bg-white px-5 py-4 shadow-sm">
                             <button

@@ -14,7 +14,7 @@ import {
     TripStyleOption,
 } from "../tripProfiles";
 
-export function usePackingList(tripId: number) {
+export function usePackingList(tripId: number, activeProfileId?: string | null) {
     const [items, setItems] = useState<PackingItem[]>([]);
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
@@ -163,6 +163,11 @@ export function usePackingList(tripId: number) {
     useEffect(() => {
         async function loadPackList() {
             if (!tripId) return;
+            if (!activeProfileId) return;
+            setLoaded(false);
+            setHydrated(false);
+            setPackingProfileId(null);
+            setItems([]);
 
             await loadTripOverview(tripId);
 
@@ -175,35 +180,9 @@ export function usePackingList(tripId: number) {
             let { data: profile } = await supabase
                 .from("packing_profiles")
                 .select("*")
-                .eq("trip_id", tripId)
-                .eq("owner_user_id", user.id)
-                .eq("type", "personal")
+                .eq("id", activeProfileId)
                 .maybeSingle();
-
-            if (!profile) {
-                const { data: createdProfile, error: profileError } = await supabase
-                    .from("packing_profiles")
-                    .insert({
-                        trip_id: tripId,
-                        name: "My Packing List",
-                        type: "personal",
-                        visibility: "private",
-                        owner_user_id: user.id,
-                        created_by: user.id,
-                        selected_climates: [],
-                        selected_environments: [],
-                        selected_trip_styles: [],
-                    })
-                    .select("*")
-                    .single();
-
-                if (profileError) {
-                    console.error(profileError);
-                    return;
-                }
-
-                profile = createdProfile;
-            }
+            if (!profile) return;
 
             setPackingProfileId(profile.id);
             setPackingProfileName(profile.name);
@@ -243,13 +222,15 @@ export function usePackingList(tripId: number) {
                 });
 
                 setItems(Array.from(uniqueItems.values()));
+            } else {
+                setItems([]);
             }
 
             setLoaded(true);
         }
 
         loadPackList();
-    }, [tripId]);
+    }, [tripId, activeProfileId]);
 
     useEffect(() => {
         if (!loaded) return;
