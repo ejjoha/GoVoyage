@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase";
 import { createKey, type PackingItem } from "./packingSuggestions";
 import { usePackingList } from "./hooks/usePackingList";
 import PackProfileCard from "./components/PackProfileCard";
-import PackItemRow from "./components/PackItemRow";
 import PackCategoryCard from "./components/PackCategoryCard";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -15,7 +14,6 @@ import {
     tripStyleOptions,
     ClimateOption,
     EnvironmentOption,
-    TripStyleOption,
 } from "./tripProfiles";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 
