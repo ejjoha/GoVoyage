@@ -1,12 +1,11 @@
 "use client";
 
-import { supabase } from "@/lib/supabase";
 import { createKey, type PackingItem } from "./packingSuggestions";
 import { usePackingList } from "./hooks/usePackingList";
 import PackProfileCard from "./components/PackProfileCard";
 import PackCategoryCard from "./components/PackCategoryCard";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import {
     climateOptions,
@@ -66,52 +65,6 @@ export default function PackListPage() {
     const [resetSuccess, setResetSuccess] = useState(false);
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
     const [itemPendingDelete, setItemPendingDelete] = useState<PackingItem | null>(null);
-
-    useEffect(() => {
-        async function savePackList() {
-            if (!loaded || !hydrated || !packingListId || !packingProfileId) return;
-
-            await supabase
-                .from("packing_lists")
-                .update({
-                    selected_climates: selectedClimates,
-                    selected_trip_types: [
-                        ...selectedEnvironments,
-                        ...selectedTripStyles,
-                    ],
-                    updated_at: new Date().toISOString(),
-                })
-                .eq("id", packingListId);
-
-            await supabase.from("packing_items").delete().eq("packing_profile_id", packingProfileId);
-
-            if (items.length > 0) {
-                await supabase.from("packing_items").insert(
-                    items.map((item) => ({
-                        packing_list_id: packingListId,
-                        packing_profile_id: packingProfileId,
-                        name: item.name,
-                        category: item.category,
-                        packed: item.packed,
-                        quantity: item.quantity,
-                        source: item.source,
-                        hidden: item.hidden || false,
-                        protected: item.protected || false,
-                    }))
-                );
-            }
-        }
-
-        savePackList();
-    }, [
-        items,
-        selectedClimates,
-        selectedEnvironments,
-        selectedTripStyles,
-        packingListId,
-        loaded,
-        hydrated,
-    ]);
 
     const tripNights = Math.max(tripDays - 1, 0);
 

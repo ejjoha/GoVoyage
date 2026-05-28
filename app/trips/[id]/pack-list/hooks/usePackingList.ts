@@ -334,6 +334,56 @@ export function usePackingList(tripId: number) {
         tripDays,
     ]);
 
+    useEffect(() => {
+        async function savePackList() {
+            if (!loaded || !hydrated || !packingListId || !packingProfileId) return;
+
+            await supabase
+                .from("packing_lists")
+                .update({
+                    selected_climates: selectedClimates,
+                    selected_trip_types: [
+                        ...selectedEnvironments,
+                        ...selectedTripStyles,
+                    ],
+                    updated_at: new Date().toISOString(),
+                })
+                .eq("id", packingListId);
+
+            await supabase
+                .from("packing_items")
+                .delete()
+                .eq("packing_profile_id", packingProfileId);
+
+            if (items.length > 0) {
+                await supabase.from("packing_items").insert(
+                    items.map((item) => ({
+                        packing_list_id: packingListId,
+                        packing_profile_id: packingProfileId,
+                        name: item.name,
+                        category: item.category,
+                        packed: item.packed,
+                        quantity: item.quantity,
+                        source: item.source,
+                        hidden: item.hidden || false,
+                        protected: item.protected || false,
+                    }))
+                );
+            }
+        }
+
+        savePackList();
+    }, [
+        items,
+        selectedClimates,
+        selectedEnvironments,
+        selectedTripStyles,
+        packingListId,
+        packingProfileId,
+        loaded,
+        hydrated,
+    ]);
+
     return {
         items,
         setItems,
