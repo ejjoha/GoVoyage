@@ -85,7 +85,7 @@ export default function PackListPage() {
             if (!profile) {
                 const { data: createdProfile, error: profileError } = await supabase
                     .from("packing_profiles")
-                    .insert({
+                    .upsert({
                         trip_id: tripId,
                         name: "My Packing List",
                         type: "personal",
