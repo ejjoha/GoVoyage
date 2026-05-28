@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-    createKey,
-    type PackingItem,
-} from "../packingSuggestions";
+import { createKey, type PackingItem } from "../packingSuggestions";
 import { supabase } from "@/lib/supabase";
 import {
     getTripWeatherSummary,
@@ -12,8 +9,6 @@ import {
 } from "../weatherIntelligence";
 import { generatePackingItems } from "../packingEngine";
 import {
-    environmentOptions,
-    tripStyleOptions,
     ClimateOption,
     EnvironmentOption,
     TripStyleOption,
@@ -23,13 +18,14 @@ export function usePackingList(tripId: number) {
     const [items, setItems] = useState<PackingItem[]>([]);
     const [deletedItem, setDeletedItem] = useState<PackingItem | null>(null);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
+
     const [tripTitle, setTripTitle] = useState("Trip");
     const [tripDestination, setTripDestination] = useState("");
     const [tripDays, setTripDays] = useState(1);
     const [tripImageUrl, setTripImageUrl] = useState<string | null>(null);
     const [weatherSummary, setWeatherSummary] =
         useState<TripWeatherSummary | null>(null);
-    const [packingListId, setPackingListId] = useState<string | null>(null);
+
     const [packingProfileId, setPackingProfileId] = useState<string | null>(null);
     const [packingProfileName, setPackingProfileName] = useState("");
     const [packingProfileType, setPackingProfileType] = useState("");
@@ -40,6 +36,7 @@ export function usePackingList(tripId: number) {
 
     const [loaded, setLoaded] = useState(false);
     const [hydrated, setHydrated] = useState(false);
+
     const visibleItems = useMemo(() => {
         return items.filter((item) => !item.hidden);
     }, [items]);
@@ -60,10 +57,7 @@ export function usePackingList(tripId: number) {
         setItems((currentItems) =>
             currentItems.map((item) =>
                 item.key === itemKey
-                    ? {
-                        ...item,
-                        packed: !item.packed,
-                    }
+                    ? { ...item, packed: !item.packed }
                     : item
             )
         );
@@ -75,7 +69,7 @@ export function usePackingList(tripId: number) {
                 item.key === itemKey
                     ? {
                         ...item,
-                        quantity: item.quantity - 1,
+                        quantity: Math.max(1, item.quantity - 1),
                         protected: true,
                     }
                     : item
@@ -102,23 +96,15 @@ export function usePackingList(tripId: number) {
         options: { showUndo?: boolean } = { showUndo: true }
     ) {
         const itemToDelete = items.find((item) => item.key === itemKey);
-
         if (!itemToDelete) return;
 
         setItems((currentItems) =>
             currentItems.map((item) =>
-                item.key === itemKey
-                    ? {
-                        ...item,
-                        hidden: true,
-                    }
-                    : item
+                item.key === itemKey ? { ...item, hidden: true } : item
             )
         );
 
-        if (!options.showUndo) {
-            return;
-        }
+        if (!options.showUndo) return;
 
         setDeletedItem(itemToDelete);
         setDeleteSuccess(true);
@@ -134,12 +120,7 @@ export function usePackingList(tripId: number) {
 
         setItems((currentItems) =>
             currentItems.map((item) =>
-                item.key === deletedItem.key
-                    ? {
-                        ...item,
-                        hidden: false,
-                    }
-                    : item
+                item.key === deletedItem.key ? { ...item, hidden: false } : item
             )
         );
 
@@ -178,6 +159,7 @@ export function usePackingList(tripId: number) {
 
         setTripDays(calculateTripDays(trip?.start_date, trip?.end_date));
     }
+
     useEffect(() => {
         async function loadPackList() {
             if (!tripId) return;
@@ -201,20 +183,18 @@ export function usePackingList(tripId: number) {
             if (!profile) {
                 const { data: createdProfile, error: profileError } = await supabase
                     .from("packing_profiles")
-                    .upsert(
-                        {
-                            trip_id: tripId,
-                            name: "My Packing List",
-                            type: "personal",
-                            is_shared: false,
-                            owner_user_id: user.id,
-                            created_by: user.id,
-                        },
-                        {
-                            onConflict: "trip_id,owner_user_id,type",
-                        }
-                    )
-                    .select()
+                    .insert({
+                        trip_id: tripId,
+                        name: "My Packing List",
+                        type: "personal",
+                        visibility: "private",
+                        owner_user_id: user.id,
+                        created_by: user.id,
+                        selected_climates: [],
+                        selected_environments: [],
+                        selected_trip_styles: [],
+                    })
+                    .select("*")
                     .single();
 
                 if (profileError) {
@@ -229,50 +209,9 @@ export function usePackingList(tripId: number) {
             setPackingProfileName(profile.name);
             setPackingProfileType(profile.type);
 
-            let { data: list } = await supabase
-                .from("packing_lists")
-                .select("*")
-                .eq("trip_id", tripId)
-                .maybeSingle();
-
-            if (!list) {
-                const { data: newList, error } = await supabase
-                    .from("packing_lists")
-                    .upsert(
-                        {
-                            trip_id: tripId,
-                            selected_climates: [],
-                            selected_trip_types: [],
-                        },
-                        { onConflict: "trip_id" }
-                    )
-                    .select("*")
-                    .single();
-
-                if (error) {
-                    console.error(error);
-                    return;
-                }
-
-                list = newList;
-            }
-
-            setPackingListId(list.id);
-            setSelectedClimates(list.selected_climates || []);
-
-            const savedProfiles = list.selected_trip_types || [];
-
-            setSelectedEnvironments(
-                savedProfiles.filter((profile: string) =>
-                    environmentOptions.includes(profile as EnvironmentOption)
-                )
-            );
-
-            setSelectedTripStyles(
-                savedProfiles.filter((profile: string) =>
-                    tripStyleOptions.includes(profile as TripStyleOption)
-                )
-            );
+            setSelectedClimates(profile.selected_climates || []);
+            setSelectedEnvironments(profile.selected_environments || []);
+            setSelectedTripStyles(profile.selected_trip_styles || []);
 
             const { data: savedItems } = await supabase
                 .from("packing_items")
@@ -284,7 +223,7 @@ export function usePackingList(tripId: number) {
                 const uniqueItems = new Map<string, PackingItem>();
 
                 savedItems.forEach((item) => {
-                    const key = createKey(item.category, item.name);
+                    const key = item.item_key || createKey(item.category, item.name);
 
                     uniqueItems.set(key, {
                         key,
@@ -336,40 +275,43 @@ export function usePackingList(tripId: number) {
 
     useEffect(() => {
         async function savePackList() {
-            if (!loaded || !hydrated || !packingListId || !packingProfileId) return;
+            if (!loaded || !hydrated || !packingProfileId) return;
+
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
 
             await supabase
-                .from("packing_lists")
+                .from("packing_profiles")
                 .update({
                     selected_climates: selectedClimates,
-                    selected_trip_types: [
-                        ...selectedEnvironments,
-                        ...selectedTripStyles,
-                    ],
+                    selected_environments: selectedEnvironments,
+                    selected_trip_styles: selectedTripStyles,
                     updated_at: new Date().toISOString(),
                 })
-                .eq("id", packingListId);
+                .eq("id", packingProfileId);
 
-            await supabase
-                .from("packing_items")
-                .delete()
-                .eq("packing_profile_id", packingProfileId);
+            if (items.length === 0) return;
 
-            if (items.length > 0) {
-                await supabase.from("packing_items").insert(
-                    items.map((item) => ({
-                        packing_list_id: packingListId,
-                        packing_profile_id: packingProfileId,
-                        name: item.name,
-                        category: item.category,
-                        packed: item.packed,
-                        quantity: item.quantity,
-                        source: item.source,
-                        hidden: item.hidden || false,
-                        protected: item.protected || false,
-                    }))
-                );
-            }
+            await supabase.from("packing_items").upsert(
+                items.map((item) => ({
+                    packing_profile_id: packingProfileId,
+                    item_key: item.key,
+                    template_key: item.source === "suggested" ? item.key : null,
+                    name: item.name,
+                    category: item.category,
+                    packed: item.packed,
+                    quantity: item.quantity,
+                    source: item.source,
+                    hidden: item.hidden || false,
+                    protected: item.protected || false,
+                    updated_by: user?.id || null,
+                    updated_at: new Date().toISOString(),
+                })),
+                {
+                    onConflict: "packing_profile_id,item_key",
+                }
+            );
         }
 
         savePackList();
@@ -378,7 +320,6 @@ export function usePackingList(tripId: number) {
         selectedClimates,
         selectedEnvironments,
         selectedTripStyles,
-        packingListId,
         packingProfileId,
         loaded,
         hydrated,
@@ -388,7 +329,7 @@ export function usePackingList(tripId: number) {
         items,
         setItems,
 
-        packingListId,
+        packingListId: null,
         packingProfileId,
         packingProfileName,
         packingProfileType,
