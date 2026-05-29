@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import type { PackingListItem } from "../types/packing.types";
 
 export async function createPackingList({
     tripId,
@@ -114,4 +115,45 @@ export async function archivePackingList(listId: string) {
         console.error(error);
         throw error;
     }
+}
+
+export async function createSuggestedPackingItems({
+    packingListId,
+    items,
+}: {
+    packingListId: string;
+    items: Array<
+        Pick<
+            PackingListItem,
+            "name" | "category" | "quantity" | "source" | "packed" | "hidden" | "protected"
+        >
+    >;
+}) {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase
+        .from("packing_list_items")
+        .insert(
+            items.map((item) => ({
+                packing_list_id: packingListId,
+                name: item.name,
+                category: item.category,
+                quantity: item.quantity,
+                source: item.source,
+                packed: item.packed,
+                hidden: item.hidden,
+                protected: item.protected,
+                added_by: user?.id ?? null,
+            }))
+        )
+        .select();
+
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+
+    return data;
 }

@@ -166,6 +166,7 @@ export default function PackingBoard({ tripId }: Props) {
                             key={list.id}
                             list={list}
                             items={itemsByList[list.id] ?? []}
+                            tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
                             onToggleItem={handleToggleItem}
                             onCreateItem={(listId, item) => {
                                 setItemsByList((current) => ({

@@ -7,10 +7,12 @@ import type {
 } from "../types/packing.types";
 import PackingItemRow from "./packing-item-row";
 import AddPackingItemForm from "./add-packing-item-form";
+import SmartSuggestionsPrompt from "./smart-suggestions-prompt";
 
 type Props = {
     list: PackingList;
     items: PackingListItem[];
+    tripDays: number;
     onToggleItem: (item: PackingListItem) => void;
     onCreateItem: (listId: string, item: PackingListItem) => void;
     onArchiveList: (listId: string) => void;
@@ -19,6 +21,7 @@ type Props = {
 export default function PackingListCard({
     list,
     items,
+    tripDays,
     onToggleItem,
     onCreateItem,
     onArchiveList,
@@ -56,9 +59,13 @@ export default function PackingListCard({
                 <>
                     <div className="mt-4 divide-y divide-neutral-100 px-5 pb-3">
                         {items.length === 0 ? (
-                            <p className="py-5 text-sm font-medium text-neutral-400">
-                                Nothing here yet.
-                            </p>
+                            <SmartSuggestionsPrompt
+                                list={list}
+                                tripDays={tripDays}
+                                onCreated={(createdItems) => {
+                                    createdItems.forEach((item) => onCreateItem(list.id, item));
+                                }}
+                            />
                         ) : (
                             items.map((item) => (
                                 <PackingItemRow
