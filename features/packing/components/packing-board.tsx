@@ -127,6 +127,7 @@ export default function PackingBoard({ tripId }: Props) {
 
             <NewPackingListButton
                 tripId={tripId}
+                existingLists={lists}
                 onCreated={(list) => {
                     setLists((current) => [...current, list]);
                     setItemsByList((current) => ({
