@@ -157,3 +157,39 @@ export async function createSuggestedPackingItems({
 
     return data;
 }
+
+export async function updatePackingItemQuantity({
+    itemId,
+    quantity,
+}: {
+    itemId: string;
+    quantity: number;
+}) {
+    const { error } = await supabase
+        .from("packing_list_items")
+        .update({
+            quantity,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", itemId);
+
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function hidePackingItem(itemId: string) {
+    const { error } = await supabase
+        .from("packing_list_items")
+        .update({
+            hidden: true,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", itemId);
+
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+}

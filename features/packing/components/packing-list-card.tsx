@@ -16,6 +16,8 @@ type Props = {
     onToggleItem: (item: PackingListItem) => void;
     onCreateItem: (listId: string, item: PackingListItem) => void;
     onArchiveList: (listId: string) => void;
+    onDecreaseQuantity: (item: PackingListItem) => void;
+    onIncreaseQuantity: (item: PackingListItem) => void;
 };
 
 export default function PackingListCard({
@@ -25,6 +27,8 @@ export default function PackingListCard({
     onToggleItem,
     onCreateItem,
     onArchiveList,
+    onDecreaseQuantity,
+    onIncreaseQuantity,
 }: Props) {
     const packedCount = items.filter((item) => item.packed).length;
     const totalCount = items.length;
@@ -72,6 +76,8 @@ export default function PackingListCard({
                                     key={item.id}
                                     item={item}
                                     onToggle={onToggleItem}
+                                    onDecreaseQuantity={onDecreaseQuantity}
+                                    onIncreaseQuantity={onIncreaseQuantity}
                                 />
                             ))
                         )}
