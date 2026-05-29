@@ -5,9 +5,9 @@ import type {
     PackingList,
     PackingListItem,
 } from "../types/packing.types";
-import PackingItemRow from "./packing-item-row";
 import AddPackingItemForm from "./add-packing-item-form";
 import SmartSuggestionsPrompt from "./smart-suggestions-prompt";
+import PackingCategorySection from "./packing-category-section";
 
 type Props = {
     list: PackingList;
@@ -35,6 +35,17 @@ export default function PackingListCard({
     const packedCount = items.filter((item) => item.packed).length;
     const totalCount = items.length;
     const [open, setOpen] = useState(false);
+    const groupedItems = items.reduce<Record<string, PackingListItem[]>>(
+        (groups, item) => {
+            const category = item.category || "Other";
+
+            return {
+                ...groups,
+                [category]: [...(groups[category] ?? []), item],
+            };
+        },
+        {}
+    );
 
     return (
         <section className="overflow-hidden rounded-[2rem] bg-white shadow-sm">
@@ -74,15 +85,18 @@ export default function PackingListCard({
                                 }}
                             />
                         ) : (
-                            items.map((item) => (
-                                <PackingItemRow
-                                    key={item.id}
-                                    item={item}
-                                    onToggle={onToggleItem}
-                                    onDecreaseQuantity={onDecreaseQuantity}
-                                    onIncreaseQuantity={onIncreaseQuantity}
-                                />
-                            ))
+                            <div className="space-y-3">
+                                {Object.entries(groupedItems).map(([category, categoryItems]) => (
+                                    <PackingCategorySection
+                                        key={category}
+                                        category={category}
+                                        items={categoryItems}
+                                        onToggleItem={onToggleItem}
+                                        onDecreaseQuantity={onDecreaseQuantity}
+                                        onIncreaseQuantity={onIncreaseQuantity}
+                                    />
+                                ))}
+                            </div>
                         )}
                     </div>
 

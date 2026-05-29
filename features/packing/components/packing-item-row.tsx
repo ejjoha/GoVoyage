@@ -39,10 +39,6 @@ export default function PackingItemRow({
                 >
                     {item.name}
                 </p>
-
-                <p className="mt-0.5 text-xs font-medium text-neutral-400">
-                    {item.category}
-                </p>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
