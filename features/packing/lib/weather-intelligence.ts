@@ -46,7 +46,7 @@ export async function getTripWeatherSummary(
 
         const suggestedProfiles: ClimateOption[] = [];
 
-        if (typeof currentTemperature === "number" && currentTemperature >= 27) {
+        if (typeof currentTemperature === "number" && currentTemperature >= 24) {
             suggestedProfiles.push("Hot");
         }
 
