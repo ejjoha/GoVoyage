@@ -1,9 +1,11 @@
 "use client";
 
+import PackingFocusCard from "./packing-focus-card";
 import PackingTripHero from "./packing-trip-hero";
 import { useEffect, useMemo, useState } from "react";
 import CreatePackingListButton from "./create-packing-list-button";
-import NewPackingListButton from "./new-packing-list-button";
+import PackingSpaceSummary from "./packing-space-summary";
+import PackingSpaceSelector from "./packing-space-selector";
 import PackingListCard from "./packing-list-card";
 
 import {
@@ -55,6 +57,7 @@ export default function PackingBoard({ tripId }: Props) {
     const [loading, setLoading] = useState(true);
 
     const [trip, setTrip] = useState<TripForPacking | null>(null);
+    const [activeListId, setActiveListId] = useState<string | null>(null);
     const [weatherSummary, setWeatherSummary] =
         useState<TripWeatherSummary | null>(null);
     const [itemPendingRemove, setItemPendingRemove] =
@@ -75,6 +78,7 @@ export default function PackingBoard({ tripId }: Props) {
 
         const packingLists = await getPackingLists(tripId);
         setLists(packingLists);
+        setActiveListId((current) => current ?? packingLists[0]?.id ?? null);
 
         const itemEntries = await Promise.all(
             packingLists.map(async (list) => {
@@ -98,6 +102,7 @@ export default function PackingBoard({ tripId }: Props) {
 
     const packedCount = allItems.filter((item) => item.packed).length;
     const totalCount = allItems.length;
+    const activeList = lists.find((list) => list.id === activeListId) ?? lists[0] ?? null;
 
     async function handleToggleItem(item: PackingListItem) {
         const nextPacked = !item.packed;
@@ -144,17 +149,9 @@ export default function PackingBoard({ tripId }: Props) {
                 />
             )}
 
-            <NewPackingListButton
-                tripId={tripId}
-                existingLists={lists}
-                onCreated={(list) => {
-                    setLists((current) => [...current, list]);
-                    setItemsByList((current) => ({
-                        ...current,
-                        [list.id]: [],
-                    }));
-                }}
-            />
+            {!loading && totalCount > 0 && (
+                <PackingFocusCard items={allItems} />
+            )}
 
             {loading && (
                 <div className="rounded-[2rem] bg-white p-6 shadow-sm">
@@ -187,90 +184,116 @@ export default function PackingBoard({ tripId }: Props) {
                 </div>
             )}
 
-            {!loading && lists.length > 0 && (
-                <div className="space-y-4 pb-24">
-                    {lists.map((list) => (
-                        <PackingListCard
-                            key={list.id}
-                            list={list}
-                            items={itemsByList[list.id] ?? []}
-                            defaultClimates={weatherSummary?.suggestedProfiles ?? []}
-                            tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
-                            onToggleItem={handleToggleItem}
-                            onCreateItem={(listId, item) => {
-                                setItemsByList((current) => ({
-                                    ...current,
-                                    [listId]: [...(current[listId] ?? []), item],
-                                }));
-                            }}
-                            onDecreaseQuantity={async (item) => {
-                                if (item.quantity <= 1) {
-                                    setItemPendingRemove(item);
-                                    return;
-                                }
-                                const nextQuantity = Math.max(1, item.quantity - 1);
+            {!loading && lists.length > 0 && activeList && (
+                <div className="pb-24">
+                    <PackingSpaceSelector
+                        tripId={tripId}
+                        lists={lists}
+                        itemsByList={itemsByList}
+                        activeListId={activeList.id}
+                        onSelectList={setActiveListId}
+                        onCreated={(list) => {
+                            setLists((current) => [...current, list]);
+                            setItemsByList((current) => ({
+                                ...current,
+                                [list.id]: [],
+                            }));
+                            setActiveListId(list.id);
+                        }}
+                    />
+                    <PackingSpaceSummary
+                        list={activeList}
+                        items={itemsByList[activeList.id] ?? []}
+                    />
 
-                                setItemsByList((current) => ({
-                                    ...current,
-                                    [item.packing_list_id]: (current[item.packing_list_id] ?? []).map(
-                                        (currentItem) =>
-                                            currentItem.id === item.id
-                                                ? { ...currentItem, quantity: nextQuantity }
-                                                : currentItem
-                                    ),
-                                }));
+                    <PackingListCard
+                        key={activeList.id}
+                        list={activeList}
+                        items={itemsByList[activeList.id] ?? []}
+                        defaultClimates={weatherSummary?.suggestedProfiles ?? []}
+                        tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
+                        onToggleItem={handleToggleItem}
+                        onCreateItem={(listId, item) => {
+                            setItemsByList((current) => ({
+                                ...current,
+                                [listId]: [...(current[listId] ?? []), item],
+                            }));
+                        }}
+                        onDecreaseQuantity={async (item) => {
+                            if (item.quantity <= 1) {
+                                setItemPendingRemove(item);
+                                return;
+                            }
 
-                                try {
-                                    await updatePackingItemQuantity({
-                                        itemId: item.id,
-                                        quantity: nextQuantity,
-                                    });
-                                } catch (error) {
-                                    console.error(error);
-                                    await loadPacking();
-                                }
-                            }}
-                            onIncreaseQuantity={async (item) => {
-                                const nextQuantity = item.quantity + 1;
+                            const nextQuantity = Math.max(1, item.quantity - 1);
 
-                                setItemsByList((current) => ({
-                                    ...current,
-                                    [item.packing_list_id]: (current[item.packing_list_id] ?? []).map(
-                                        (currentItem) =>
-                                            currentItem.id === item.id
-                                                ? { ...currentItem, quantity: nextQuantity }
-                                                : currentItem
-                                    ),
-                                }));
+                            setItemsByList((current) => ({
+                                ...current,
+                                [item.packing_list_id]: (current[item.packing_list_id] ?? []).map(
+                                    (currentItem) =>
+                                        currentItem.id === item.id
+                                            ? { ...currentItem, quantity: nextQuantity }
+                                            : currentItem
+                                ),
+                            }));
 
-                                try {
-                                    await updatePackingItemQuantity({
-                                        itemId: item.id,
-                                        quantity: nextQuantity,
-                                    });
-                                } catch (error) {
-                                    console.error(error);
-                                    await loadPacking();
-                                }
-                            }}
-                            onArchiveList={async (listId) => {
-                                setLists((current) => current.filter((list) => list.id !== listId));
-
-                                setItemsByList((current) => {
-                                    const next = { ...current };
-                                    delete next[listId];
-                                    return next;
+                            try {
+                                await updatePackingItemQuantity({
+                                    itemId: item.id,
+                                    quantity: nextQuantity,
                                 });
+                            } catch (error) {
+                                console.error(error);
+                                await loadPacking();
+                            }
+                        }}
+                        onIncreaseQuantity={async (item) => {
+                            const nextQuantity = item.quantity + 1;
 
-                                try {
-                                    await archivePackingList(listId);
-                                } catch (error) {
-                                    console.error(error);
-                                    await loadPacking();
-                                }
-                            }}
-                        />
-                    ))}
+                            setItemsByList((current) => ({
+                                ...current,
+                                [item.packing_list_id]: (current[item.packing_list_id] ?? []).map(
+                                    (currentItem) =>
+                                        currentItem.id === item.id
+                                            ? { ...currentItem, quantity: nextQuantity }
+                                            : currentItem
+                                ),
+                            }));
+
+                            try {
+                                await updatePackingItemQuantity({
+                                    itemId: item.id,
+                                    quantity: nextQuantity,
+                                });
+                            } catch (error) {
+                                console.error(error);
+                                await loadPacking();
+                            }
+                        }}
+                        onArchiveList={async (listId) => {
+                            setLists((current) => current.filter((list) => list.id !== listId));
+
+                            setItemsByList((current) => {
+                                const next = { ...current };
+                                delete next[listId];
+                                return next;
+                            });
+
+                            setActiveListId((current) => {
+                                if (current !== listId) return current;
+
+                                const remainingLists = lists.filter((list) => list.id !== listId);
+                                return remainingLists[0]?.id ?? null;
+                            });
+
+                            try {
+                                await archivePackingList(listId);
+                            } catch (error) {
+                                console.error(error);
+                                await loadPacking();
+                            }
+                        }}
+                    />
                 </div>
             )}
             {itemPendingRemove && (

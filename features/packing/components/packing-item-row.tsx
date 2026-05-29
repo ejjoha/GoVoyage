@@ -4,6 +4,7 @@ import type { PackingListItem } from "../types/packing.types";
 
 type Props = {
     item: PackingListItem;
+    isLast?: boolean;
     onToggle: (item: PackingListItem) => void;
     onDecreaseQuantity: (item: PackingListItem) => void;
     onIncreaseQuantity: (item: PackingListItem) => void;
@@ -11,57 +12,88 @@ type Props = {
 
 export default function PackingItemRow({
     item,
+    isLast = false,
     onToggle,
     onDecreaseQuantity,
     onIncreaseQuantity,
 }: Props) {
+    const showQuantityControls = item.quantity > 1;
+
     return (
-        <div className="flex w-full items-center gap-4 py-3">
+        <div
+            className={
+                isLast
+                    ? "flex w-full items-center gap-4 px-4 py-3.5"
+                    : "flex w-full items-center gap-4 border-b border-white px-4 py-3.5"
+            }
+        >
             <button
                 type="button"
                 onClick={() => onToggle(item)}
                 className={
                     item.packed
-                        ? "flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white"
-                        : "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white"
+                        ? "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white shadow-sm transition active:scale-95"
+                        : "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white transition active:scale-95"
                 }
+                aria-label={item.packed ? "Mark as unpacked" : "Mark as packed"}
             >
                 {item.packed ? "✓" : ""}
             </button>
 
-            <div className="min-w-0 flex-1">
+            <button
+                type="button"
+                onClick={() => onToggle(item)}
+                className="min-w-0 flex-1 text-left"
+            >
                 <p
                     className={
                         item.packed
-                            ? "truncate text-neutral-400 line-through"
-                            : "truncate text-neutral-850"
+                            ? "truncate text-base font-medium text-neutral-400 line-through"
+                            : "truncate text-base font-medium text-neutral-900"
                     }
                 >
                     {item.name}
                 </p>
-            </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-                <button
-                    type="button"
-                    onClick={() => onDecreaseQuantity(item)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-sm font-bold text-neutral-600 transition active:scale-95"
-                >
-                    −
-                </button>
+                {!showQuantityControls && item.quantity > 1 && (
+                    <p className="mt-0.5 text-xs font-semibold text-neutral-400">
+                        Quantity {item.quantity}
+                    </p>
+                )}
+            </button>
 
-                <span className="flex h-8 min-w-8 items-center justify-center rounded-full bg-neutral-50 px-2 text-sm font-bold text-neutral-700">
-                    {item.quantity}
-                </span>
+            {showQuantityControls ? (
+                <div className="flex shrink-0 items-center gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => onDecreaseQuantity(item)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-neutral-500 shadow-sm transition active:scale-95"
+                    >
+                        −
+                    </button>
 
+                    <span className="flex h-8 min-w-7 items-center justify-center text-sm font-bold text-neutral-700">
+                        {item.quantity}
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={() => onIncreaseQuantity(item)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-neutral-500 shadow-sm transition active:scale-95"
+                    >
+                        +
+                    </button>
+                </div>
+            ) : (
                 <button
                     type="button"
                     onClick={() => onIncreaseQuantity(item)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-sm font-bold text-neutral-600 transition active:scale-95"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-neutral-300 shadow-sm transition hover:text-neutral-600 active:scale-95"
+                    aria-label="Increase quantity"
                 >
                     +
                 </button>
-            </div>
+            )}
         </div>
     );
 }

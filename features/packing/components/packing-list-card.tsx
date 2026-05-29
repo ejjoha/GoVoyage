@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type {
-    PackingList,
-    PackingListItem,
-} from "../types/packing.types";
+import type { PackingList, PackingListItem } from "../types/packing.types";
 import AddPackingItemForm from "./add-packing-item-form";
 import SmartSuggestionsPrompt from "./smart-suggestions-prompt";
 import PackingCategorySection from "./packing-category-section";
@@ -32,13 +29,15 @@ export default function PackingListCard({
     onDecreaseQuantity,
     onIncreaseQuantity,
 }: Props) {
+    const [open, setOpen] = useState(true);
+
     const packedCount = items.filter((item) => item.packed).length;
     const totalCount = items.length;
-    const [open, setOpen] = useState(false);
+    const progress = totalCount === 0 ? 0 : Math.round((packedCount / totalCount) * 100);
+
     const groupedItems = items.reduce<Record<string, PackingListItem[]>>(
         (groups, item) => {
             const category = item.category || "Other";
-
             return {
                 ...groups,
                 [category]: [...(groups[category] ?? []), item],
@@ -48,74 +47,64 @@ export default function PackingListCard({
     );
 
     return (
-        <section className="overflow-hidden rounded-[2rem] bg-white shadow-sm">
-            <button
-                type="button"
-                onClick={() => setOpen((current) => !current)}
-                className="flex w-full items-start justify-between gap-4 px-5 pt-5 text-left"
-            >
-                <div>
-                    <h2 className="text-2xl font-bold tracking-[-0.03em] text-neutral-950">
-                        {list.emoji ? `${list.emoji} ` : ""}
-                        {list.title}
-                    </h2>
-                </div>
+        <section className="rounded-[2rem] bg-white px-5 py-5 shadow-sm">
+            <div className="flex items-center justify-between">
+                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400">
+                    Categories
+                </h2>
 
-                <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500">
-                        {packedCount}/{totalCount}
-                    </div>
-
-                    <span className="text-lg font-bold text-neutral-300">
-                        {open ? "−" : "+"}
-                    </span>
-                </div>
-            </button>
+                <button
+                    type="button"
+                    onClick={() => setOpen((current) => !current)}
+                    className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500 transition active:scale-95"
+                >
+                    {open ? "Hide" : "Show"}
+                </button>
+            </div>
 
             {open && (
-                <>
-                    <div className="mt-4 divide-y divide-neutral-100 px-5 pb-3">
-                        {items.length === 0 ? (
-                            <SmartSuggestionsPrompt
-                                list={list}
-                                tripDays={tripDays}
-                                defaultClimates={defaultClimates}
-                                onCreated={(createdItems) => {
-                                    createdItems.forEach((item) => onCreateItem(list.id, item));
-                                }}
-                            />
-                        ) : (
-                            <div className="space-y-3">
-                                {Object.entries(groupedItems).map(([category, categoryItems]) => (
-                                    <PackingCategorySection
-                                        key={category}
-                                        category={category}
-                                        items={categoryItems}
-                                        onToggleItem={onToggleItem}
-                                        onDecreaseQuantity={onDecreaseQuantity}
-                                        onIncreaseQuantity={onIncreaseQuantity}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                <div className="mt-5">
+                    {items.length === 0 ? (
+                        <SmartSuggestionsPrompt
+                            list={list}
+                            tripDays={tripDays}
+                            defaultClimates={defaultClimates}
+                            onCreated={(createdItems) => {
+                                createdItems.forEach((item) => onCreateItem(list.id, item));
+                            }}
+                        />
+                    ) : (
+                        <div className="space-y-7">
+                            {Object.entries(groupedItems).map(([category, categoryItems]) => (
+                                <PackingCategorySection
+                                    key={category}
+                                    category={category}
+                                    items={categoryItems}
+                                    onToggleItem={onToggleItem}
+                                    onDecreaseQuantity={onDecreaseQuantity}
+                                    onIncreaseQuantity={onIncreaseQuantity}
+                                />
+                            ))}
+                        </div>
+                    )}
 
-                    <div className="border-t border-neutral-100 px-5 pb-6 pt-4">
+                    <div className="mt-7 border-t border-neutral-100 pt-5">
                         <AddPackingItemForm
                             packingListId={list.id}
                             onCreated={(item) => onCreateItem(list.id, item)}
                         />
                     </div>
+
                     <div className="mt-5 flex justify-end">
                         <button
                             type="button"
                             onClick={() => onArchiveList(list.id)}
-                            className="rounded-full bg-neutral-100 px-4 py-2 text-sm font-bold text-neutral-400 transition active:scale-95 hover:text-rose-500"
+                            className="text-sm font-bold text-neutral-300 transition hover:text-rose-500 active:scale-95"
                         >
                             Remove list
                         </button>
                     </div>
-                </>
+                </div>
             )}
         </section>
     );
