@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type {
     PackingList,
     PackingListItem,
@@ -12,6 +13,7 @@ type Props = {
     items: PackingListItem[];
     onToggleItem: (item: PackingListItem) => void;
     onCreateItem: (listId: string, item: PackingListItem) => void;
+    onArchiveList: (listId: string) => void;
 };
 
 export default function PackingListCard({
@@ -19,52 +21,72 @@ export default function PackingListCard({
     items,
     onToggleItem,
     onCreateItem,
+    onArchiveList,
 }: Props) {
     const packedCount = items.filter((item) => item.packed).length;
     const totalCount = items.length;
+    const [open, setOpen] = useState(false);
 
     return (
         <section className="overflow-hidden rounded-[2rem] bg-white shadow-sm">
-            <div className="px-5 pt-5">
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400">
-                            {list.type}
-                        </p>
+            <button
+                type="button"
+                onClick={() => setOpen((current) => !current)}
+                className="flex w-full items-start justify-between gap-4 px-5 pt-5 text-left"
+            >
+                <div>
+                    <h2 className="text-2xl font-bold tracking-[-0.03em] text-neutral-950">
+                        {list.emoji ? `${list.emoji} ` : ""}
+                        {list.title}
+                    </h2>
+                </div>
 
-                        <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em] text-neutral-950">
-                            {list.emoji ? `${list.emoji} ` : ""}
-                            {list.title}
-                        </h2>
-                    </div>
-
+                <div className="flex items-center gap-2">
                     <div className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500">
                         {packedCount}/{totalCount}
                     </div>
-                </div>
-            </div>
 
-            <div className="mt-4 divide-y divide-neutral-100 px-5 pb-3">
-                {items.length === 0 ? (
-                    <p className="py-5 text-sm font-medium text-neutral-400">
-                        Nothing here yet.
-                    </p>
-                ) : (
-                    items.map((item) => (
-                        <PackingItemRow
-                            key={item.id}
-                            item={item}
-                            onToggle={onToggleItem}
+                    <span className="text-lg font-bold text-neutral-300">
+                        {open ? "−" : "+"}
+                    </span>
+                </div>
+            </button>
+
+            {open && (
+                <>
+                    <div className="mt-4 divide-y divide-neutral-100 px-5 pb-3">
+                        {items.length === 0 ? (
+                            <p className="py-5 text-sm font-medium text-neutral-400">
+                                Nothing here yet.
+                            </p>
+                        ) : (
+                            items.map((item) => (
+                                <PackingItemRow
+                                    key={item.id}
+                                    item={item}
+                                    onToggle={onToggleItem}
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    <div className="border-t border-neutral-100 px-5 pb-6 pt-4">
+                        <AddPackingItemForm
+                            packingListId={list.id}
+                            onCreated={(item) => onCreateItem(list.id, item)}
                         />
-                    ))
-                )}
-            </div>
-            <div className="border-t border-neutral-100 px-5 pb-5">
-                <AddPackingItemForm
-                    packingListId={list.id}
-                    onCreated={(item) => onCreateItem(list.id, item)}
-                />
-            </div>
+                    </div>
+                    <div className="mt-5 flex justify-end">
+                        <button
+                            type="button"
+                            onClick={() => onArchiveList(list.id)}
+                            className="rounded-full bg-neutral-100 px-4 py-2 text-sm font-bold text-neutral-400 transition active:scale-95 hover:text-rose-500"
+                        >
+                            Remove list
+                        </button>
+                    </div>
+                </>
+            )}
         </section>
     );
 }

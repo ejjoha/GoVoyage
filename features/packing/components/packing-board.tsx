@@ -5,14 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import CreatePackingListButton from "./create-packing-list-button";
 import NewPackingListButton from "./new-packing-list-button";
 import PackingListCard from "./packing-list-card";
+import { archivePackingList, togglePackedItem } from "../lib/packing-mutations";
 
 import {
     getPackingItems,
     getPackingLists,
     getTripForPacking,
 } from "../lib/packing-queries";
-
-import { togglePackedItem } from "../lib/packing-mutations";
 
 import type {
     PackingList,
@@ -173,6 +172,22 @@ export default function PackingBoard({ tripId }: Props) {
                                     ...current,
                                     [listId]: [...(current[listId] ?? []), item],
                                 }));
+                            }}
+                            onArchiveList={async (listId) => {
+                                setLists((current) => current.filter((list) => list.id !== listId));
+
+                                setItemsByList((current) => {
+                                    const next = { ...current };
+                                    delete next[listId];
+                                    return next;
+                                });
+
+                                try {
+                                    await archivePackingList(listId);
+                                } catch (error) {
+                                    console.error(error);
+                                    await loadPacking();
+                                }
                             }}
                         />
                     ))}

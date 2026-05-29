@@ -100,3 +100,18 @@ export async function togglePackedItem({
         throw error;
     }
 }
+
+export async function archivePackingList(listId: string) {
+    const { error } = await supabase
+        .from("packing_lists")
+        .update({
+            archived: true,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", listId);
+
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+}
