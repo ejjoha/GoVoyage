@@ -33,6 +33,9 @@ export default function SmartSuggestionsPrompt({
             const suggestions = getSuggestedItemsForList({
                 list,
                 tripDays,
+                selectedClimates: ["Hot"],
+                selectedEnvironments: ["Beach"],
+                selectedTripStyles: [],
             });
 
             const createdItems = await createSuggestedPackingItems({
