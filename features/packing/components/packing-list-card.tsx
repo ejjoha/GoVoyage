@@ -13,6 +13,7 @@ type Props = {
     list: PackingList;
     items: PackingListItem[];
     tripDays: number;
+    defaultClimates: string[];
     onToggleItem: (item: PackingListItem) => void;
     onCreateItem: (listId: string, item: PackingListItem) => void;
     onArchiveList: (listId: string) => void;
@@ -24,6 +25,7 @@ export default function PackingListCard({
     list,
     items,
     tripDays,
+    defaultClimates,
     onToggleItem,
     onCreateItem,
     onArchiveList,
@@ -66,6 +68,7 @@ export default function PackingListCard({
                             <SmartSuggestionsPrompt
                                 list={list}
                                 tripDays={tripDays}
+                                defaultClimates={defaultClimates}
                                 onCreated={(createdItems) => {
                                     createdItems.forEach((item) => onCreateItem(list.id, item));
                                 }}

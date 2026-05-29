@@ -11,6 +11,7 @@ import { createSuggestedPackingItems } from "../lib/packing-mutations";
 type Props = {
     list: PackingList;
     tripDays: number;
+    defaultClimates: string[];
     onCreated: (items: PackingListItem[]) => void;
 };
 
@@ -21,12 +22,14 @@ const tripStyleOptions = ["Business", "Traveling with kids"];
 export default function SmartSuggestionsPrompt({
     list,
     tripDays,
+    defaultClimates,
     onCreated,
 }: Props) {
     const [loading, setLoading] = useState(false);
     const [dismissed, setDismissed] = useState(false);
 
-    const [selectedClimates, setSelectedClimates] = useState<string[]>([]);
+    const [selectedClimates, setSelectedClimates] =
+        useState<string[]>(defaultClimates);
     const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
     const [selectedTripStyles, setSelectedTripStyles] = useState<string[]>([]);
 

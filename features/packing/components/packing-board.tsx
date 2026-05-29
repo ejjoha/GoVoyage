@@ -136,6 +136,9 @@ export default function PackingBoard({ tripId }: Props) {
                     days={calculateTripDays(trip.start_date, trip.end_date)}
                     nights={Math.max(calculateTripDays(trip.start_date, trip.end_date) - 1, 0)}
                     imageUrl={trip.image_url}
+                    temperature={weatherSummary?.temperature ?? null}
+                    weatherLabel={weatherSummary?.weatherLabel ?? null}
+                    rainChance={weatherSummary?.precipitationProbability ?? null}
                     packedCount={packedCount}
                     totalCount={totalCount}
                 />
@@ -191,6 +194,7 @@ export default function PackingBoard({ tripId }: Props) {
                             key={list.id}
                             list={list}
                             items={itemsByList[list.id] ?? []}
+                            defaultClimates={weatherSummary?.suggestedProfiles ?? []}
                             tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
                             onToggleItem={handleToggleItem}
                             onCreateItem={(listId, item) => {
