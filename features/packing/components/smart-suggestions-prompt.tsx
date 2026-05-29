@@ -14,6 +14,10 @@ type Props = {
     onCreated: (items: PackingListItem[]) => void;
 };
 
+const climateOptions = ["Hot", "Cold", "Rainy"];
+const environmentOptions = ["City", "Beach", "Mountain"];
+const tripStyleOptions = ["Business", "Traveling with kids"];
+
 export default function SmartSuggestionsPrompt({
     list,
     tripDays,
@@ -22,7 +26,19 @@ export default function SmartSuggestionsPrompt({
     const [loading, setLoading] = useState(false);
     const [dismissed, setDismissed] = useState(false);
 
+    const [selectedClimates, setSelectedClimates] = useState<string[]>([]);
+    const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
+    const [selectedTripStyles, setSelectedTripStyles] = useState<string[]>([]);
+
     if (dismissed) return null;
+
+    function toggleValue(value: string, setter: React.Dispatch<React.SetStateAction<string[]>>) {
+        setter((current) =>
+            current.includes(value)
+                ? current.filter((item) => item !== value)
+                : [...current, value]
+        );
+    }
 
     async function handleAddSuggestions() {
         if (loading) return;
@@ -33,9 +49,9 @@ export default function SmartSuggestionsPrompt({
             const suggestions = getSuggestedItemsForList({
                 list,
                 tripDays,
-                selectedClimates: ["Hot"],
-                selectedEnvironments: ["Beach"],
-                selectedTripStyles: [],
+                selectedClimates,
+                selectedEnvironments,
+                selectedTripStyles,
             });
 
             const createdItems = await createSuggestedPackingItems({
@@ -57,17 +73,38 @@ export default function SmartSuggestionsPrompt({
             </p>
 
             <p className="mt-1 text-sm leading-6 text-neutral-500">
-                We can add a simple starter list based on this packing space.
+                Choose what fits this trip. We’ll add a starter list you can edit.
             </p>
 
-            <div className="mt-4 flex gap-2">
+            <SuggestionGroup
+                title="Climate"
+                options={climateOptions}
+                selected={selectedClimates}
+                onToggle={(value) => toggleValue(value, setSelectedClimates)}
+            />
+
+            <SuggestionGroup
+                title="Environment"
+                options={environmentOptions}
+                selected={selectedEnvironments}
+                onToggle={(value) => toggleValue(value, setSelectedEnvironments)}
+            />
+
+            <SuggestionGroup
+                title="Trip style"
+                options={tripStyleOptions}
+                selected={selectedTripStyles}
+                onToggle={(value) => toggleValue(value, setSelectedTripStyles)}
+            />
+
+            <div className="mt-5 flex gap-2">
                 <button
                     type="button"
                     onClick={handleAddSuggestions}
                     disabled={loading}
                     className="rounded-full bg-neutral-950 px-4 py-2.5 text-sm font-bold text-white transition active:scale-95 disabled:opacity-50"
                 >
-                    {loading ? "Adding…" : "Add essentials"}
+                    {loading ? "Adding…" : "Generate suggestions"}
                 </button>
 
                 <button
@@ -77,6 +114,47 @@ export default function SmartSuggestionsPrompt({
                 >
                     Skip
                 </button>
+            </div>
+        </div>
+    );
+}
+
+function SuggestionGroup({
+    title,
+    options,
+    selected,
+    onToggle,
+}: {
+    title: string;
+    options: string[];
+    selected: string[];
+    onToggle: (value: string) => void;
+}) {
+    return (
+        <div className="mt-4">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-neutral-400">
+                {title}
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+                {options.map((option) => {
+                    const active = selected.includes(option);
+
+                    return (
+                        <button
+                            key={option}
+                            type="button"
+                            onClick={() => onToggle(option)}
+                            className={
+                                active
+                                    ? "rounded-full bg-rose-500 px-3 py-1.5 text-sm font-bold text-white"
+                                    : "rounded-full bg-white px-3 py-1.5 text-sm font-bold text-neutral-500 shadow-sm"
+                            }
+                        >
+                            {option}
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );
