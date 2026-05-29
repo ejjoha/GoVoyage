@@ -46,3 +46,18 @@ export async function getTripMembers(tripId: number) {
 
     return data;
 }
+
+export async function getTripForPacking(tripId: number) {
+    const { data, error } = await supabase
+        .from("trips")
+        .select("id, title, destination, image_url, start_date, end_date")
+        .eq("id", tripId)
+        .single();
+
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+
+    return data;
+}

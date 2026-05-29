@@ -11,19 +11,19 @@ type Props = {
 
 const suggestions = [
     {
-        title: "My list",
+        title: "My List",
         type: "personal" as const,
         emoji: "🧳",
-    },
-    {
-        title: "Shared toiletries",
-        type: "shared" as const,
-        emoji: "🧴",
     },
     {
         title: "Carry-on",
         type: "luggage" as const,
         emoji: "🎒",
+    },
+    {
+        title: "Shared Bag",
+        type: "shared" as const,
+        emoji: "👜",
     },
 ];
 

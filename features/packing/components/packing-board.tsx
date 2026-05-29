@@ -1,14 +1,15 @@
 "use client";
 
+import PackingTripHero from "./packing-trip-hero";
 import { useEffect, useMemo, useState } from "react";
 import CreatePackingListButton from "./create-packing-list-button";
 import NewPackingListButton from "./new-packing-list-button";
-import PackingHeader from "./packing-header";
 import PackingListCard from "./packing-list-card";
 
 import {
     getPackingItems,
     getPackingLists,
+    getTripForPacking,
 } from "../lib/packing-queries";
 
 import { togglePackedItem } from "../lib/packing-mutations";
@@ -18,9 +19,23 @@ import type {
     PackingListItem,
 } from "../types/packing.types";
 
+type TripForPacking = Awaited<ReturnType<typeof getTripForPacking>>;
+
 type Props = {
     tripId: number;
 };
+
+function calculateTripDays(startDate?: string | null, endDate?: string | null) {
+    if (!startDate || !endDate) return 1;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const differenceInMs = end.getTime() - start.getTime();
+    const days = Math.ceil(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
+
+    return Math.max(days, 1);
+}
 
 export default function PackingBoard({ tripId }: Props) {
     const [lists, setLists] = useState<PackingList[]>([]);
@@ -28,9 +43,12 @@ export default function PackingBoard({ tripId }: Props) {
         Record<string, PackingListItem[]>
     >({});
     const [loading, setLoading] = useState(true);
+    const [trip, setTrip] = useState<TripForPacking | null>(null);
 
     async function loadPacking() {
         setLoading(true);
+        const tripData = await getTripForPacking(tripId);
+        setTrip(tripData);
 
         const packingLists = await getPackingLists(tripId);
         setLists(packingLists);
@@ -87,10 +105,18 @@ export default function PackingBoard({ tripId }: Props) {
 
     return (
         <div className="mx-auto max-w-2xl px-4 py-6">
-            <PackingHeader
-                packedCount={packedCount}
-                totalCount={totalCount}
-            />
+            {trip && (
+                <PackingTripHero
+                    tripId={tripId}
+                    title={trip.title}
+                    destination={trip.destination}
+                    days={calculateTripDays(trip.start_date, trip.end_date)}
+                    nights={Math.max(calculateTripDays(trip.start_date, trip.end_date) - 1, 0)}
+                    imageUrl={trip.image_url}
+                    packedCount={packedCount}
+                    totalCount={totalCount}
+                />
+            )}
 
             <NewPackingListButton
                 tripId={tripId}
