@@ -5,6 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 import CreatePackingListButton from "./create-packing-list-button";
 import NewPackingListButton from "./new-packing-list-button";
 import PackingListCard from "./packing-list-card";
+
+import {
+    getTripWeatherSummary,
+    type TripWeatherSummary,
+} from "../lib/weather-intelligence";
+
 import {
     archivePackingList,
     hidePackingItem,
@@ -49,6 +55,8 @@ export default function PackingBoard({ tripId }: Props) {
     const [loading, setLoading] = useState(true);
 
     const [trip, setTrip] = useState<TripForPacking | null>(null);
+    const [weatherSummary, setWeatherSummary] =
+        useState<TripWeatherSummary | null>(null);
     const [itemPendingRemove, setItemPendingRemove] =
         useState<PackingListItem | null>(null);
 
@@ -56,6 +64,14 @@ export default function PackingBoard({ tripId }: Props) {
         setLoading(true);
         const tripData = await getTripForPacking(tripId);
         setTrip(tripData);
+
+        if (tripData?.destination) {
+            const summary = await getTripWeatherSummary(
+                tripData.destination
+            );
+
+            setWeatherSummary(summary);
+        }
 
         const packingLists = await getPackingLists(tripId);
         setLists(packingLists);
