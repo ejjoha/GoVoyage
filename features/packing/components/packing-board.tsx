@@ -183,16 +183,18 @@ export default function PackingBoard({ tripId }: Props) {
             {!loading && lists.length > 0 && activeList && (
                 <div className="pb-24">
                     <PackingSpaceSelector
+                        tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
+                        defaultClimates={weatherSummary?.suggestedProfiles ?? []}
                         tripId={tripId}
                         lists={lists}
                         itemsByList={itemsByList}
                         activeListId={activeList.id}
                         onSelectList={setActiveListId}
-                        onCreated={(list) => {
+                        onCreated={(list, createdItems = []) => {
                             setLists((current) => [...current, list]);
                             setItemsByList((current) => ({
                                 ...current,
-                                [list.id]: [],
+                                [list.id]: createdItems,
                             }));
                             setActiveListId(list.id);
                         }}
