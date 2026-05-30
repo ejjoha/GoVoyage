@@ -182,11 +182,21 @@ export default function PackingBoard({ tripId }: Props) {
 
             {!loading && lists.length > 0 && activeList && (
                 <div className="pb-24">
-                    <PackingSpaceSummary
-                        list={activeList}
-                        items={itemsByList[activeList.id] ?? []}
+                    <PackingSpaceSelector
+                        tripId={tripId}
+                        lists={lists}
+                        itemsByList={itemsByList}
+                        activeListId={activeList.id}
+                        onSelectList={setActiveListId}
+                        onCreated={(list) => {
+                            setLists((current) => [...current, list]);
+                            setItemsByList((current) => ({
+                                ...current,
+                                [list.id]: [],
+                            }));
+                            setActiveListId(list.id);
+                        }}
                     />
-
                     <PackingListCard
                         key={activeList.id}
                         list={activeList}
@@ -275,21 +285,7 @@ export default function PackingBoard({ tripId }: Props) {
                             }
                         }}
                     />
-                    <PackingSpaceSelector
-                        tripId={tripId}
-                        lists={lists}
-                        itemsByList={itemsByList}
-                        activeListId={activeList.id}
-                        onSelectList={setActiveListId}
-                        onCreated={(list) => {
-                            setLists((current) => [...current, list]);
-                            setItemsByList((current) => ({
-                                ...current,
-                                [list.id]: [],
-                            }));
-                            setActiveListId(list.id);
-                        }}
-                    />
+
                     <FloatingAddPackingItemButton
                         packingListId={activeList.id}
                         existingItems={itemsByList[activeList.id] ?? []}
