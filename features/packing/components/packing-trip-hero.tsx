@@ -47,13 +47,17 @@ export default function PackingTripHero({
 
                 <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/35" />
 
-                <div className="absolute left-4 top-6">
+                <div className="absolute left-2 top-4">
                     <Link
                         href={`/trips/${tripId}`}
-                        aria-label="Back to trip"
-                        className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-xl font-semibold text-neutral-900 shadow-sm backdrop-blur transition active:scale-95"
+                        className="absolute left-5 top-5 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
+                        aria-label="Back"
                     >
-                        ←
+                        <img
+                            src="/icons/arrow-left.svg"
+                            alt=""
+                            className="h-5 w-5 opacity-80"
+                        />
                     </Link>
                 </div>
 
