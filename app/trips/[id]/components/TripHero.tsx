@@ -35,15 +35,15 @@ export default function TripHero({
 
   return (
     <>
-      <div className="relative mb-5 w-full overflow-hidden rounded-[2rem] shadow-md">
+      <div className="relative -mx-4 -mt-6 mb-8 overflow-hidden rounded-b-[2.75rem] bg-neutral-200 shadow-sm sm:-mx-6 sm:-mt-8">
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={title}
-            className="h-[300px] w-full object-cover sm:h-[360px]"
+            className="h-[18rem] w-full object-cover sm:h-[20rem]"
           />
         ) : (
-          <div className="h-[300px] w-full bg-gradient-to-br from-rose-100 via-rose-200 to-pink-300 sm:h-[360px]" />
+          <div className="h-[22rem] w-full bg-gradient-to-br from-rose-100 via-rose-200 to-pink-300 sm:h-[25rem]" />
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
@@ -79,7 +79,7 @@ export default function TripHero({
           )}
         </div>
 
-        <div className="absolute bottom-4 left-4 right-4 z-20 rounded-2xl border border-white/20 bg-white/15 p-3 backdrop-blur-md shadow-[0_10px_34px_rgba(0,0,0,0.22)]">
+        <div className="absolute bottom-5 left-5 right-5 z-20 rounded-2xl border border-white/20 bg-white/15 p-3 backdrop-blur-md shadow-[0_10px_34px_rgba(0,0,0,0.22)]">
 
           {eyebrow && <p className="text-sm text-white/80">{eyebrow}</p>}
 

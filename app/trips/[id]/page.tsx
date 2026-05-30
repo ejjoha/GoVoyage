@@ -896,7 +896,7 @@ export default function TripPage() {
             </Link>
 
             <Link
-              href={`/trips/${trip.id}/pack-list`}
+              href={`/trips/${trip.id}/packing`}
               className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">

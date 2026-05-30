@@ -1,5 +1,6 @@
 "use client";
 
+import PackingBoardSkeleton from "./packing-board-skeleton";
 import PackingTripHero from "./packing-trip-hero";
 import { useEffect, useMemo, useState } from "react";
 import CreatePackingListButton from "./create-packing-list-button";
@@ -149,13 +150,7 @@ export default function PackingBoard({ tripId }: Props) {
                 />
             )}
 
-            {loading && (
-                <div className="rounded-[1.25rem] bg-white p-6 shadow-sm">
-                    <p className="text-sm font-medium text-neutral-400">
-                        Loading packing lists…
-                    </p>
-                </div>
-            )}
+            {loading && <PackingBoardSkeleton />}
 
             {!loading && lists.length === 0 && (
                 <div className="rounded-[1.25rem] bg-white p-8 text-center shadow-sm">
