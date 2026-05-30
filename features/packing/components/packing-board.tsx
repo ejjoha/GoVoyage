@@ -150,7 +150,7 @@ export default function PackingBoard({ tripId }: Props) {
             )}
 
             {loading && (
-                <div className="rounded-[2rem] bg-white p-6 shadow-sm">
+                <div className="rounded-[1.25rem] bg-white p-6 shadow-sm">
                     <p className="text-sm font-medium text-neutral-400">
                         Loading packing lists…
                     </p>
@@ -158,7 +158,7 @@ export default function PackingBoard({ tripId }: Props) {
             )}
 
             {!loading && lists.length === 0 && (
-                <div className="rounded-[2rem] bg-white p-8 text-center shadow-sm">
+                <div className="rounded-[1.25rem] bg-white p-8 text-center shadow-sm">
                     <p className="text-base font-semibold text-neutral-900">
                         Start with your first list
                     </p>

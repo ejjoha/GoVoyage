@@ -33,7 +33,7 @@ export default function PackingTripHero({
     const remainingCount = Math.max(totalCount - packedCount, 0);
 
     return (
-        <section className="relative mb-16">
+        <section className="relative mb-15">
             <div className="relative -mx-4 -mt-6 overflow-hidden rounded-b-[2.75rem] bg-neutral-200">
                 {imageUrl ? (
                     <img
@@ -50,7 +50,7 @@ export default function PackingTripHero({
                 <div className="absolute left-2 top-4">
                     <Link
                         href={`/trips/${tripId}`}
-                        className="absolute left-5 top-5 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
+                        className="absolute left-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
                         aria-label="Back"
                     >
                         <img
@@ -70,7 +70,7 @@ export default function PackingTripHero({
                         {destination}
                     </h1>
 
-                    <p className="mt-3 text-sm font-semibold text-white/85">
+                    <p className="mt-3 text-sm text-white/85">
                         {days} {days === 1 ? "day" : "days"} · {nights}{" "}
                         {nights === 1 ? "night" : "nights"}
                     </p>
@@ -81,7 +81,7 @@ export default function PackingTripHero({
                                 <p className="text-lg font-bold">
                                     {Math.round(temperature)}°
                                 </p>
-                                <p className="mt-1 text-xs font-semibold text-white/75">
+                                <p className="mt-0 text-xs font-semibold text-white/85">
                                     Temp
                                 </p>
                             </div>
@@ -89,7 +89,7 @@ export default function PackingTripHero({
 
                         {weatherLabel && (
                             <div className="text-center">
-                                <p className="text-lg font-bold tracking-[-0.03em]">
+                                <p className="text-md font-semibold tracking-[-0.03em]">
                                     {weatherLabel}
                                 </p>
                             </div>
@@ -97,10 +97,10 @@ export default function PackingTripHero({
 
                         {typeof rainChance === "number" && (
                             <div className="text-center">
-                                <p className="text-xl font-bold">
+                                <p className="text-lg font-bold">
                                     {rainChance}%
                                 </p>
-                                <p className="mt-1 text-xs font-semibold text-white/75">
+                                <p className="mt-0 text-xs font-semibold text-white/85">
                                     Rain
                                 </p>
                             </div>
@@ -109,10 +109,10 @@ export default function PackingTripHero({
                 </div>
             </div>
 
-            <div className="absolute inset-x-0 -bottom-10 px-1">
+            <div className="absolute inset-x-0 -bottom-12 px-1">
                 <div className="rounded-[1.25rem] bg-white p-3 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
                     <div className="flex items-center gap-6">
-                        <div className="relative flex h-18 w-18 shrink-0 items-center justify-center">
+                        <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
                             <svg
                                 className="absolute inset-0 h-full w-full -rotate-90"
                                 viewBox="0 0 100 100"
@@ -150,11 +150,11 @@ export default function PackingTripHero({
                         </div>
 
                         <div className="min-w-0 flex-1">
-                            <p className="text-md font-semibold tracking-[-0.03em] text-neutral-950">
+                            <p className="text-[14px] font-semibold tracking-[-0.03em] text-neutral-950">
                                 You’re on your way!
                             </p>
 
-                            <p className="mt-1 text-sm leading-4 text-neutral-500">
+                            <p className="mt-1 text-[12px] leading-4 text-neutral-500">
                                 Keep going and you’ll be all set for your trip.
                             </p>
                         </div>

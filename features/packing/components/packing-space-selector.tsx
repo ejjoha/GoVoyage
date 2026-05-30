@@ -98,7 +98,7 @@ export default function PackingSpaceSelector({
     }
 
     return (
-        <section className="mb-5">
+        <section className="mb-2">
             {open && availableOptions.length > 0 && (
                 <div className="fixed inset-0 z-50 flex items-end bg-black/30 px-4 pb-8">
                     <div className="w-full rounded-[2rem] bg-white p-5 shadow-2xl min-h-[28rem]">
@@ -164,153 +164,154 @@ export default function PackingSpaceSelector({
                                             className="h-5 w-5 opacity-80"
                                         />
                                     </button>
-                                    </div>
-                                        <p className="text-sm font-bold text-neutral-400">
-                                            {selectedOption.title}
-                                        </p>
-
-                                        <h2 className="mt-1 text-2xl font-bold tracking-[-0.04em] text-neutral-950">
-                                            Tailor your suggestions
-                                        </h2>
-
-                                        <SuggestionGroup
-                                            title="Climate"
-                                            options={climateOptions}
-                                            selected={selectedClimates}
-                                            onToggle={(value) =>
-                                                setSelectedClimates((current) =>
-                                                    current.includes(value)
-                                                        ? current.filter((item) => item !== value)
-                                                        : [...current, value]
-                                                )
-                                            }
-                                        />
-
-                                        <SuggestionGroup
-                                            title="Environment"
-                                            options={environmentOptions}
-                                            selected={selectedEnvironments}
-                                            onToggle={(value) =>
-                                                setSelectedEnvironments((current) =>
-                                                    current.includes(value)
-                                                        ? current.filter((item) => item !== value)
-                                                        : [...current, value]
-                                                )
-                                            }
-                                        />
-
-                                        <SuggestionGroup
-                                            title="Trip style"
-                                            options={tripStyleOptions}
-                                            selected={selectedTripStyles}
-                                            onToggle={(value) =>
-                                                setSelectedTripStyles((current) =>
-                                                    current.includes(value)
-                                                        ? current.filter((item) => item !== value)
-                                                        : [...current, value]
-                                                )
-                                            }
-                                        />
-
-                                        <button
-                                            type="button"
-                                            onClick={handleCreate}
-                                            disabled={creatingTitle !== null}
-                                            className="mt-6 w-full rounded-2xl bg-neutral-950 px-5 py-4 text-base font-bold text-white transition active:scale-[0.98] disabled:opacity-40"
-                                        >
-                                            {creatingTitle ? "Generating…" : "Generate suggestions"}
-                                        </button>
-                                    </div>
-                        )}
                                 </div>
-                            </div>
-                        )}
+                                <p className="text-sm font-bold text-neutral-400">
+                                    {selectedOption.title}
+                                </p>
 
-                        <div className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 scrollbar-hide">
-                            {lists.map((list) => {
-                                const items = itemsByList[list.id] ?? [];
-                                const packedCount = items.filter((item) => item.packed).length;
-                                const isActive = list.id === activeListId;
+                                <h2 className="mt-1 text-2xl font-bold tracking-[-0.04em] text-neutral-950">
+                                    Tailor your suggestions
+                                </h2>
 
-                                return (
-                                    <button
-                                        key={list.id}
-                                        type="button"
-                                        onClick={() => onSelectList(list.id)}
-                                        className={
-                                            isActive
-                                                ? "min-w-[8.5rem] rounded-[1.25rem] bg-white px-4 py-3 text-left text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
-                                                : "min-w-[8.5rem] rounded-[1.25rem] bg-white/60 px-4 py-3 text-left text-neutral-500 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition active:scale-95"
-                                        }
-                                    >
-                                        <p className="truncate text-sm font-semibold">
-                                            {list.title}
-                                        </p>
+                                <SuggestionGroup
+                                    title="Climate"
+                                    options={climateOptions}
+                                    selected={selectedClimates}
+                                    onToggle={(value) =>
+                                        setSelectedClimates((current) =>
+                                            current.includes(value)
+                                                ? current.filter((item) => item !== value)
+                                                : [...current, value]
+                                        )
+                                    }
+                                />
 
-                                        <p className="mt-1 text-[11px] font-semibold text-neutral-400">
-                                            {packedCount} of {items.length}
-                                        </p>
-                                    </button>
-                                );
-                            })}
-                            {availableOptions.length > 0 && (
+                                <SuggestionGroup
+                                    title="Environment"
+                                    options={environmentOptions}
+                                    selected={selectedEnvironments}
+                                    onToggle={(value) =>
+                                        setSelectedEnvironments((current) =>
+                                            current.includes(value)
+                                                ? current.filter((item) => item !== value)
+                                                : [...current, value]
+                                        )
+                                    }
+                                />
+
+                                <SuggestionGroup
+                                    title="Trip style"
+                                    options={tripStyleOptions}
+                                    selected={selectedTripStyles}
+                                    onToggle={(value) =>
+                                        setSelectedTripStyles((current) =>
+                                            current.includes(value)
+                                                ? current.filter((item) => item !== value)
+                                                : [...current, value]
+                                        )
+                                    }
+                                />
+
                                 <button
                                     type="button"
-                                    onClick={() => setOpen((current) => !current)}
-                                    className="flex min-w-[8.5rem] items-center justify-center rounded-[1.25rem] bg-white/60 px-4 py-3 text-left text-neutral-500 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition active:scale-95"
-                                    aria-label="Create packing space"
+                                    onClick={handleCreate}
+                                    disabled={creatingTitle !== null}
+                                    className="mt-6 w-full rounded-2xl bg-neutral-950 px-5 py-4 text-base font-bold text-white transition active:scale-[0.98] disabled:opacity-40"
                                 >
-                                    <div className="text-center">
-                                        <p className="text-xl font-light">+</p>
-
-                                        <p className="mt-1 text-[11px] font-semibold text-neutral-400">
-                                            New List
-                                        </p>
-                                    </div>
+                                    {creatingTitle ? "Generating…" : "Generate suggestions"}
                                 </button>
-                            )}
-                        </div>
-                    </section>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <div className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 scrollbar-hide">
+                {lists.map((list) => {
+                    const items = itemsByList[list.id] ?? [];
+                    const packedCount = items.filter((item) => item.packed).length;
+                    const isActive = list.id === activeListId;
+
+                    return (
+                        <button
+                            key={list.id}
+                            type="button"
+                            onClick={() => onSelectList(list.id)}
+                            className={
+                                isActive
+                                    ? "flex h-13 min-w-[8.5rem] flex-col justify-center rounded-[1rem] bg-white/50 px-4 text-left text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
+                                    : "flex h-13 min-w-[8.5rem] flex-col justify-center rounded-[1rem] bg-white/20 px-4 text-left text-neutral-500 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition active:scale-95"
+                            }
+                        >
+                            <p className="truncate text-sm font-semibold leading-none">
+                                {list.title}
+                            </p>
+
+                            <p className="mt-1 text-[11px] leading-none text-neutral-400">
+                                {packedCount} of {items.length}
+                            </p>
+                        </button>
                     );
+                })}
+
+                {availableOptions.length > 0 && (
+                    <button
+                        type="button"
+                        onClick={() => setOpen((current) => !current)}
+                        className="flex h-13 min-w-[8.5rem] items-center justify-center rounded-[1rem] bg-white/30 px-4 text-neutral-500 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition active:scale-95"
+                        aria-label="Create packing space"
+                    >
+                        <div className="text-center">
+                            <p className="text-base font-light leading-none">+</p>
+
+                            <p className="mt-1 text-[11px] leading-none text-neutral-400">
+                                New List
+                            </p>
+                        </div>
+                    </button>
+                )}
+            </div>
+        </section>
+    );
 }
 
-                    function SuggestionGroup({
-                        title,
-                        options,
-                        selected,
-                        onToggle,
+function SuggestionGroup({
+    title,
+    options,
+    selected,
+    onToggle,
 }: {
-                        title: string;
-                    options: string[];
-                    selected: string[];
+    title: string;
+    options: string[];
+    selected: string[];
     onToggle: (value: string) => void;
 }) {
     return (
-                    <div className="mt-5">
-                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-neutral-400">
-                            {title}
-                        </p>
+        <div className="mt-5">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-neutral-400">
+                {title}
+            </p>
 
-                        <div className="flex flex-wrap gap-2">
-                            {options.map((option) => {
-                                const active = selected.includes(option);
+            <div className="flex flex-wrap gap-2">
+                {options.map((option) => {
+                    const active = selected.includes(option);
 
-                                return (
-                                    <button
-                                        key={option}
-                                        type="button"
-                                        onClick={() => onToggle(option)}
-                                        className={
-                                            active
-                                                ? "rounded-full bg-rose-500 px-3 py-1.5 text-sm font-bold text-white"
-                                                : "rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-bold text-neutral-500"
-                                        }
-                                    >
-                                        {option}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    return (
+                        <button
+                            key={option}
+                            type="button"
+                            onClick={() => onToggle(option)}
+                            className={
+                                active
+                                    ? "rounded-full bg-rose-500 px-3 py-1.5 text-sm font-bold text-white"
+                                    : "rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-bold text-neutral-500"
+                            }
+                        >
+                            {option}
+                        </button>
                     );
+                })}
+            </div>
+        </div>
+    );
 }
