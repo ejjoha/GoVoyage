@@ -64,67 +64,25 @@ export default function PackingSpaceSelector({
 
     return (
         <section className="mb-5">
-            <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-neutral-400">
-                Packing spaces
-            </p>
-
-            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
-                {lists.map((list) => {
-                    const items = itemsByList[list.id] ?? [];
-                    const packedCount = items.filter((item) => item.packed).length;
-                    const isActive = list.id === activeListId;
-
-                    return (
-                        <button
-                            key={list.id}
-                            type="button"
-                            onClick={() => onSelectList(list.id)}
-                            className={
-                                isActive
-                                    ? "min-w-[9rem] rounded-[1.5rem] bg-neutral-950 px-4 py-4 text-left text-white shadow-sm transition active:scale-95"
-                                    : "min-w-[9rem] rounded-[1.5rem] bg-white px-4 py-4 text-left text-neutral-950 shadow-sm transition active:scale-95"
-                            }
-                        >
-                            <p className="text-2xl">{list.emoji ?? "🧳"}</p>
-
-                            <p className="mt-2 truncate text-base font-bold">
-                                {list.title}
-                            </p>
-
-                            <p
-                                className={
-                                    isActive
-                                        ? "mt-1 text-xs font-bold text-white/50"
-                                        : "mt-1 text-xs font-bold text-neutral-400"
-                                }
-                            >
-                                {packedCount} of {items.length}
-                            </p>
-                        </button>
-                    );
-                })}
+            <div className="mb-3 flex items-center justify-between gap-4">
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-neutral-400">
+                    Packing spaces
+                </p>
 
                 {availableOptions.length > 0 && (
                     <button
                         type="button"
                         onClick={() => setOpen((current) => !current)}
-                        className="flex min-w-[9rem] flex-col justify-center rounded-[1.5rem] border border-dashed border-neutral-300 bg-white/60 px-4 py-4 text-left shadow-sm transition active:scale-95"
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl font-semibold text-neutral-700 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition active:scale-95"
+                        aria-label="Create packing space"
                     >
-                        <p className="text-3xl font-light text-neutral-400">+</p>
-
-                        <p className="mt-2 text-base font-bold text-neutral-700">
-                            New space
-                        </p>
-
-                        <p className="mt-1 text-xs font-bold text-neutral-400">
-                            Add list
-                        </p>
+                        +
                     </button>
                 )}
             </div>
 
             {open && availableOptions.length > 0 && (
-                <div className="mt-3 rounded-[1.5rem] bg-white p-3 shadow-sm">
+                <div className="mb-4 rounded-[1.5rem] bg-white p-3 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
                     <div className="grid gap-2 sm:grid-cols-2">
                         {availableOptions.map((option) => (
                             <button
@@ -152,6 +110,38 @@ export default function PackingSpaceSelector({
                     </div>
                 </div>
             )}
+
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
+                {lists.map((list) => {
+                    const items = itemsByList[list.id] ?? [];
+                    const packedCount = items.filter((item) => item.packed).length;
+
+                    const isActive = list.id === activeListId;
+
+                    return (
+                        <button
+                            key={list.id}
+                            type="button"
+                            onClick={() => onSelectList(list.id)}
+                            className={
+                                isActive
+                                    ? "min-w-[9.5rem] scale-[1.02] rounded-[1.5rem] bg-white px-4 py-4 text-left text-neutral-950 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition active:scale-[0.99]"
+                                    : "min-w-[9rem] rounded-[1.5rem] bg-white/65 px-4 py-4 text-left text-neutral-950 opacity-85 shadow-[0_2px_10px_rgba(0,0,0,0.025)] transition active:scale-95"
+                            }
+                        >
+                            <p className="text-2xl">{list.emoji ?? "🧳"}</p>
+
+                            <p className="mt-2 truncate text-base font-bold">
+                                {list.title}
+                            </p>
+
+                            <p className="mt-1 text-xs font-bold text-neutral-400">
+                                {packedCount} of {items.length}
+                            </p>
+                        </button>
+                    );
+                })}
+            </div>
         </section>
     );
 }

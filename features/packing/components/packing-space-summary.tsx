@@ -18,21 +18,15 @@ export default function PackingSpaceSummary({
     const remainingCount = items.filter((item) => !item.packed).length;
 
     return (
-        <section className="mb-5 rounded-[2rem] bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-                <span className="text-2xl">
-                    {list.emoji ?? "🧳"}
-                </span>
+        <section className="mb-5">
+            <div>
+                <h2 className="text-3xl font-bold tracking-[-0.04em] text-neutral-950">
+                    {list.title}
+                </h2>
 
-                <div>
-                    <h2 className="text-2xl font-bold tracking-[-0.04em] text-neutral-950">
-                        {list.title}
-                    </h2>
-
-                    <p className="text-sm font-semibold text-neutral-400">
-                        {packedCount} packed · {remainingCount} remaining
-                    </p>
-                </div>
+                <p className="mt-1 text-sm font-semibold text-neutral-400">
+                    {packedCount} packed · {remainingCount} remaining
+                </p>
             </div>
         </section>
     );

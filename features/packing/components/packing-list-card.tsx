@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import type { PackingList, PackingListItem } from "../types/packing.types";
-import AddPackingItemForm from "./add-packing-item-form";
 import SmartSuggestionsPrompt from "./smart-suggestions-prompt";
 import PackingCategorySection from "./packing-category-section";
 
@@ -47,65 +46,60 @@ export default function PackingListCard({
     );
 
     return (
-        <section className="rounded-[2rem] bg-white px-5 py-5 shadow-sm">
-            <div className="flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400">
-                    Categories
-                </h2>
+        <section className="pb-24">
+            <div className="mt-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400">
+                        Categories
+                    </h2>
 
-                <button
-                    type="button"
-                    onClick={() => setOpen((current) => !current)}
-                    className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500 transition active:scale-95"
-                >
-                    {open ? "Hide" : "Show"}
-                </button>
-            </div>
-
-            {open && (
-                <div className="mt-5">
-                    {items.length === 0 ? (
-                        <SmartSuggestionsPrompt
-                            list={list}
-                            tripDays={tripDays}
-                            defaultClimates={defaultClimates}
-                            onCreated={(createdItems) => {
-                                createdItems.forEach((item) => onCreateItem(list.id, item));
-                            }}
-                        />
-                    ) : (
-                        <div className="space-y-7">
-                            {Object.entries(groupedItems).map(([category, categoryItems]) => (
-                                <PackingCategorySection
-                                    key={category}
-                                    category={category}
-                                    items={categoryItems}
-                                    onToggleItem={onToggleItem}
-                                    onDecreaseQuantity={onDecreaseQuantity}
-                                    onIncreaseQuantity={onIncreaseQuantity}
-                                />
-                            ))}
-                        </div>
-                    )}
-
-                    <div className="mt-7 border-t border-neutral-100 pt-5">
-                        <AddPackingItemForm
-                            packingListId={list.id}
-                            onCreated={(item) => onCreateItem(list.id, item)}
-                        />
-                    </div>
-
-                    <div className="mt-5 flex justify-end">
-                        <button
-                            type="button"
-                            onClick={() => onArchiveList(list.id)}
-                            className="text-sm font-bold text-neutral-300 transition hover:text-rose-500 active:scale-95"
-                        >
-                            Remove list
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setOpen((current) => !current)}
+                        className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500 transition active:scale-95"
+                    >
+                        {open ? "Hide" : "Show"}
+                    </button>
                 </div>
-            )}
+
+                {open && (
+                    <div className="mt-5">
+                        {items.length === 0 ? (
+                            <SmartSuggestionsPrompt
+                                list={list}
+                                tripDays={tripDays}
+                                defaultClimates={defaultClimates}
+                                onCreated={(createdItems) => {
+                                    createdItems.forEach((item) => onCreateItem(list.id, item));
+                                }}
+                            />
+                        ) : (
+                            <div className="space-y-4">
+                                {Object.entries(groupedItems).map(([category, categoryItems]) => (
+                                    <PackingCategorySection
+                                        key={category}
+                                        category={category}
+                                        items={categoryItems}
+                                        onToggleItem={onToggleItem}
+                                        onDecreaseQuantity={onDecreaseQuantity}
+                                        onIncreaseQuantity={onIncreaseQuantity}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-5 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => onArchiveList(list.id)}
+                                className="text-sm font-bold text-neutral-300 transition hover:text-rose-500 active:scale-95"
+                            >
+                                Remove list
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
         </section>
     );
 }

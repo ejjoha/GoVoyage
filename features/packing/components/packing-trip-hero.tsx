@@ -14,32 +14,6 @@ type Props = {
     totalCount: number;
 };
 
-function getWeatherInsight(weatherLabel?: string | null, rainChance?: number | null) {
-    const label = weatherLabel?.toLowerCase() ?? "";
-
-    if ((typeof rainChance === "number" && rainChance >= 50) || label.includes("rain") || label.includes("thunder")) {
-        return {
-            title: "Rain is likely",
-            body: "Consider adding rainy-weather essentials before you go.",
-            items: ["Rain jacket", "Waterproof pouch", "Extra socks"],
-        };
-    }
-
-    if (label.includes("hot") || label.includes("sun") || label.includes("clear")) {
-        return {
-            title: "Warm weather expected",
-            body: "Light clothing and sun protection will matter most.",
-            items: ["Sunscreen", "Sunglasses", "Light clothing"],
-        };
-    }
-
-    return {
-        title: "Pack for the conditions",
-        body: "Use the weather as a final check before closing your bags.",
-        items: ["Comfortable layers", "Backup outfit", "Travel essentials"],
-    };
-}
-
 export default function PackingTripHero({
     tripId,
     title,
@@ -57,108 +31,125 @@ export default function PackingTripHero({
         totalCount === 0 ? 0 : Math.round((packedCount / totalCount) * 100);
 
     const remainingCount = Math.max(totalCount - packedCount, 0);
-    const insight = getWeatherInsight(weatherLabel, rainChance);
 
     return (
-        <section className="mb-7">
-            <div className="mb-7">
-                <Link
-                    href={`/trips/${tripId}`}
-                    aria-label="Back to trip"
-                    className="flex h-13 w-13 items-center justify-center rounded-full bg-white text-2xl shadow-sm transition active:scale-95"
-                >
-                    ←
-                </Link>
-            </div>
-
-            <div>
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-neutral-400">
-                    {destination}
-                </p>
-
-                <h1 className="mt-2 text-5xl font-bold tracking-[-0.06em] text-neutral-950">
-                    {title}
-                </h1>
-
-                <p className="mt-3 text-base font-semibold text-neutral-500">
-                    {days} {days === 1 ? "day" : "days"} · {nights}{" "}
-                    {nights === 1 ? "night" : "nights"}
-                </p>
-            </div>
-
-            <div className="mt-7 rounded-[2rem] bg-white p-5 shadow-sm">
-                <div className="flex items-end justify-between gap-4">
-                    <div>
-                        <p className="text-sm font-bold text-neutral-400">Packing progress</p>
-                        <p className="mt-1 text-3xl font-bold tracking-[-0.05em] text-neutral-950">
-                            {progress}% packed
-                        </p>
-                    </div>
-
-                    <div className="text-right">
-                        <p className="text-sm font-bold text-neutral-950">
-                            {packedCount} packed
-                        </p>
-                        <p className="mt-1 text-sm font-semibold text-neutral-400">
-                            {remainingCount} remaining
-                        </p>
-                    </div>
-                </div>
-
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-neutral-100">
-                    <div
-                        className="h-full rounded-full bg-rose-500 transition-all duration-500"
-                        style={{ width: `${progress}%` }}
-                    />
-                </div>
-            </div>
-
-            <div className="mt-4 rounded-[2rem] bg-neutral-950 p-5 text-white shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <p className="text-sm font-bold text-white/50">Weather insight</p>
-                        <h2 className="mt-1 text-xl font-bold tracking-[-0.04em]">
-                            {insight.title}
-                        </h2>
-                        <p className="mt-2 text-sm leading-6 text-white/70">
-                            {insight.body}
-                        </p>
-                    </div>
-
-                    {typeof temperature === "number" && (
-                        <div className="shrink-0 text-right">
-                            <p className="text-3xl font-bold">{Math.round(temperature)}°</p>
-                            {typeof rainChance === "number" && (
-                                <p className="mt-1 text-xs font-bold text-white/50">
-                                    {rainChance}% rain
-                                </p>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                    {insight.items.map((item) => (
-                        <span
-                            key={item}
-                            className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-white/80"
-                        >
-                            {item}
-                        </span>
-                    ))}
-                </div>
-            </div>
-
-            <div className="mt-5 overflow-hidden rounded-[2rem] bg-neutral-200 shadow-sm">
+        <section className="relative mb-16">
+            <div className="relative -mx-4 -mt-6 overflow-hidden rounded-b-[2.75rem] bg-neutral-200">
                 {imageUrl ? (
                     <img
                         src={imageUrl}
                         alt={title}
-                        className="h-36 w-full object-cover"
+                        className="h-[22rem] w-full object-cover"
                     />
                 ) : (
-                    <div className="h-36 w-full bg-gradient-to-br from-neutral-200 to-neutral-300" />
+                    <div className="h-[22rem] w-full bg-gradient-to-br from-neutral-200 to-neutral-300" />
                 )}
+
+                <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/35" />
+
+                <div className="absolute left-4 top-6">
+                    <Link
+                        href={`/trips/${tripId}`}
+                        aria-label="Back to trip"
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-xl font-semibold text-neutral-900 shadow-sm backdrop-blur transition active:scale-95"
+                    >
+                        ←
+                    </Link>
+                </div>
+
+                <div className="absolute inset-x-0 top-16 px-8 text-center text-white">
+                    <p className="text-xs font-bold uppercase tracking-[0.35em] text-white/80">
+                        Destination
+                    </p>
+
+                    <h1 className="mt-4 font-serif text-6xl font-semibold tracking-[-0.06em]">
+                        {destination}
+                    </h1>
+
+                    <p className="mt-3 text-sm font-semibold text-white/85">
+                        {days} {days === 1 ? "day" : "days"} · {nights}{" "}
+                        {nights === 1 ? "night" : "nights"}
+                    </p>
+
+                    <div className="mx-auto mt-8 flex max-w-[14rem] items-center justify-between">
+                        {typeof temperature === "number" && (
+                            <div>
+                                <p className="text-xl font-bold">
+                                    {Math.round(temperature)}°
+                                </p>
+                                <p className="mt-1 text-xs font-semibold text-white/75">
+                                    Temp
+                                </p>
+                            </div>
+                        )}
+
+                        {typeof rainChance === "number" && (
+                            <div>
+                                <p className="text-2xl font-bold">
+                                    {rainChance}%
+                                </p>
+                                <p className="mt-1 text-xs font-semibold text-white/75">
+                                    Rain
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="absolute inset-x-0 -bottom-12 px-2">
+                <div className="rounded-[2rem] bg-white p-6 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
+                    <div className="flex items-center gap-6">
+    <div className="relative flex h-22 w-22 shrink-0 items-center justify-center">
+        <svg
+            className="absolute inset-0 h-full w-full -rotate-90"
+            viewBox="0 0 100 100"
+        >
+            <circle
+                cx="50"
+                cy="50"
+                r="42"
+                stroke="#ececec"
+                strokeWidth="8"
+                fill="none"
+            />
+
+            <circle
+                cx="50"
+                cy="50"
+                r="42"
+                stroke="#ff2f68"
+                strokeWidth="8"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={`${progress * 2.64} 264`}
+            />
+        </svg>
+
+        <div className="text-center">
+            <p className="text-xl font-bold text-neutral-950">
+                {progress}%
+            </p>
+
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">
+                Packed
+            </p>
+        </div>
+    </div>
+
+    <div className="min-w-0 flex-1">
+        <p className="text-xl font-bold tracking-[-0.03em] text-neutral-950">
+            You’re on your way!
+        </p>
+
+        <p className="mt-2 text-sm leading-6 text-neutral-500">
+            Keep going and you’ll be all set for your trip.
+        </p>
+    </div>
+</div>
+
+                
+                </div>
             </div>
         </section>
     );

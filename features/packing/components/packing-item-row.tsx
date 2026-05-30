@@ -4,7 +4,6 @@ import type { PackingListItem } from "../types/packing.types";
 
 type Props = {
     item: PackingListItem;
-    isLast?: boolean;
     onToggle: (item: PackingListItem) => void;
     onDecreaseQuantity: (item: PackingListItem) => void;
     onIncreaseQuantity: (item: PackingListItem) => void;
@@ -12,7 +11,6 @@ type Props = {
 
 export default function PackingItemRow({
     item,
-    isLast = false,
     onToggle,
     onDecreaseQuantity,
     onIncreaseQuantity,
@@ -21,19 +19,15 @@ export default function PackingItemRow({
 
     return (
         <div
-            className={
-                isLast
-                    ? "flex w-full items-center gap-4 px-4 py-3.5"
-                    : "flex w-full items-center gap-4 border-b border-white px-4 py-3.5"
-            }
+            className="flex w-full items-center gap-3 px-4 py-2.5"
         >
             <button
                 type="button"
                 onClick={() => onToggle(item)}
                 className={
                     item.packed
-                        ? "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white shadow-sm transition active:scale-95"
-                        : "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white transition active:scale-95"
+                        ? "flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white shadow-sm transition active:scale-95"
+                        : "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white transition active:scale-95"
                 }
                 aria-label={item.packed ? "Mark as unpacked" : "Mark as packed"}
             >
@@ -48,8 +42,8 @@ export default function PackingItemRow({
                 <p
                     className={
                         item.packed
-                            ? "truncate text-base font-medium text-neutral-400 line-through"
-                            : "truncate text-base font-medium text-neutral-900"
+                            ? "truncate text-sm font-medium text-neutral-400 line-through"
+                            : "truncate text-sm font-medium text-neutral-900"
                     }
                 >
                     {item.name}

@@ -1,12 +1,12 @@
 "use client";
 
-import PackingFocusCard from "./packing-focus-card";
 import PackingTripHero from "./packing-trip-hero";
 import { useEffect, useMemo, useState } from "react";
 import CreatePackingListButton from "./create-packing-list-button";
 import PackingSpaceSummary from "./packing-space-summary";
 import PackingSpaceSelector from "./packing-space-selector";
 import PackingListCard from "./packing-list-card";
+import FloatingAddPackingItemButton from "./floating-add-packing-item-button";
 
 import {
     getTripWeatherSummary,
@@ -149,10 +149,6 @@ export default function PackingBoard({ tripId }: Props) {
                 />
             )}
 
-            {!loading && totalCount > 0 && (
-                <PackingFocusCard items={allItems} />
-            )}
-
             {loading && (
                 <div className="rounded-[2rem] bg-white p-6 shadow-sm">
                     <p className="text-sm font-medium text-neutral-400">
@@ -186,21 +182,6 @@ export default function PackingBoard({ tripId }: Props) {
 
             {!loading && lists.length > 0 && activeList && (
                 <div className="pb-24">
-                    <PackingSpaceSelector
-                        tripId={tripId}
-                        lists={lists}
-                        itemsByList={itemsByList}
-                        activeListId={activeList.id}
-                        onSelectList={setActiveListId}
-                        onCreated={(list) => {
-                            setLists((current) => [...current, list]);
-                            setItemsByList((current) => ({
-                                ...current,
-                                [list.id]: [],
-                            }));
-                            setActiveListId(list.id);
-                        }}
-                    />
                     <PackingSpaceSummary
                         list={activeList}
                         items={itemsByList[activeList.id] ?? []}
@@ -292,6 +273,31 @@ export default function PackingBoard({ tripId }: Props) {
                                 console.error(error);
                                 await loadPacking();
                             }
+                        }}
+                    />
+                    <PackingSpaceSelector
+                        tripId={tripId}
+                        lists={lists}
+                        itemsByList={itemsByList}
+                        activeListId={activeList.id}
+                        onSelectList={setActiveListId}
+                        onCreated={(list) => {
+                            setLists((current) => [...current, list]);
+                            setItemsByList((current) => ({
+                                ...current,
+                                [list.id]: [],
+                            }));
+                            setActiveListId(list.id);
+                        }}
+                    />
+                    <FloatingAddPackingItemButton
+                        packingListId={activeList.id}
+                        existingItems={itemsByList[activeList.id] ?? []}
+                        onCreated={(item) => {
+                            setItemsByList((current) => ({
+                                ...current,
+                                [activeList.id]: [...(current[activeList.id] ?? []), item],
+                            }));
                         }}
                     />
                 </div>
