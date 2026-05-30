@@ -28,11 +28,11 @@ export default function PackingCategorySection({
     const complete = totalCount > 0 && packedCount === totalCount;
 
     return (
-        <section className="rounded-[1.75rem] bg-white px-5 py-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+        <section className="rounded-[1.25rem] bg-white px-5 py-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
             <button
                 type="button"
                 onClick={() => setOpen((current) => !current)}
-                className="flex w-full items-start justify-between gap-4 text-left"
+                className="flex w-full items-start justify-between gap-2 text-left"
             >
                 <div className="min-w-0 flex-1">
                     <div>

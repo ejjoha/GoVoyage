@@ -47,23 +47,9 @@ export default function PackingListCard({
 
     return (
         <section className="pb-24">
-            <div className="mt-6">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-400">
-                        Categories
-                    </h2>
-
-                    <button
-                        type="button"
-                        onClick={() => setOpen((current) => !current)}
-                        className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-500 transition active:scale-95"
-                    >
-                        {open ? "Hide" : "Show"}
-                    </button>
-                </div>
-
+            <div>
                 {open && (
-                    <div className="mt-5">
+                    <div className="mt-1">
                         {items.length === 0 ? (
                             <SmartSuggestionsPrompt
                                 list={list}

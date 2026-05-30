@@ -20,13 +20,9 @@ export default function PackingSpaceSummary({
     return (
         <section className="mb-5">
             <div>
-                <h2 className="text-3xl font-bold tracking-[-0.04em] text-neutral-950">
+                <h2 className="text-lg font-bold tracking-[-0.04em] text-neutral-950">
                     {list.title}
                 </h2>
-
-                <p className="mt-1 text-sm font-semibold text-neutral-400">
-                    {packedCount} packed · {remainingCount} remaining
-                </p>
             </div>
         </section>
     );

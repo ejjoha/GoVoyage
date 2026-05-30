@@ -71,10 +71,10 @@ export default function PackingTripHero({
                         {nights === 1 ? "night" : "nights"}
                     </p>
 
-                    <div className="mx-auto mt-3 flex max-w-[10rem] items-center justify-between">
+                    <div className="mx-auto mt-2 grid max-w-sm grid-cols-3 items-center gap-6">
                         {typeof temperature === "number" && (
-                            <div>
-                                <p className="text-xl font-bold">
+                            <div className="text-center">
+                                <p className="text-lg font-bold">
                                     {Math.round(temperature)}°
                                 </p>
                                 <p className="mt-1 text-xs font-semibold text-white/75">
@@ -83,9 +83,17 @@ export default function PackingTripHero({
                             </div>
                         )}
 
+                        {weatherLabel && (
+                            <div className="text-center">
+                                <p className="text-lg font-bold tracking-[-0.03em]">
+                                    {weatherLabel}
+                                </p>
+                            </div>
+                        )}
+
                         {typeof rainChance === "number" && (
-                            <div>
-                                <p className="text-2xl font-bold">
+                            <div className="text-center">
+                                <p className="text-xl font-bold">
                                     {rainChance}%
                                 </p>
                                 <p className="mt-1 text-xs font-semibold text-white/75">
@@ -98,7 +106,7 @@ export default function PackingTripHero({
             </div>
 
             <div className="absolute inset-x-0 -bottom-10 px-1">
-                <div className="rounded-[2rem] bg-white p-3 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
+                <div className="rounded-[1.25rem] bg-white p-3 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
                     <div className="flex items-center gap-6">
                         <div className="relative flex h-18 w-18 shrink-0 items-center justify-center">
                             <svg

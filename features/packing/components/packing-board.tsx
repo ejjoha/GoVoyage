@@ -132,7 +132,7 @@ export default function PackingBoard({ tripId }: Props) {
     }
 
     return (
-        <div className="mx-auto max-w-2xl px-4 py-6">
+        <div className="mx-auto max-w-xl px-4 py-6">
             {trip && (
                 <PackingTripHero
                     tripId={tripId}
