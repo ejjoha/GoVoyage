@@ -35,88 +35,119 @@ export default function TripHero({
 
   return (
     <>
-      <div className="relative -mx-4 -mt-6 mb-8 overflow-hidden rounded-b-[2.75rem] bg-neutral-200 shadow-sm sm:-mx-6 sm:-mt-8">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={title}
-            className="h-[18rem] w-full object-cover sm:h-[20rem]"
+      <section className="relative mb-15">
+        <div className="relative -mx-4 -mt-6 overflow-hidden rounded-b-[2.75rem] bg-neutral-200">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={title}
+              className="h-[20rem] w-full object-cover"
+            />
+          ) : (
+            <div className="h-[22rem] w-full bg-gradient-to-br from-neutral-200 to-neutral-300" />
+          )}
+
+          <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/35" />
+
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent 20%, rgba(0,0,0,0.18) 40%, rgba(0,0,0,0.18) 60%, transparent 80%)",
+            }}
           />
-        ) : (
-          <div className="h-[22rem] w-full bg-gradient-to-br from-rose-100 via-rose-200 to-pink-300 sm:h-[25rem]" />
-        )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
 
-        <div className="absolute left-3 top-3 right-3 z-30 flex justify-between">
-          {backHref ? (
-            <Link
-              href={backHref}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
-              aria-label="Back"
-            >
-              <img
-                src="/icons/arrow-left.svg"
-                alt=""
-                className="h-5 w-5 opacity-80"
-              />
-            </Link>
-          ) : (
-            <div />
-          )}
+          <div className="absolute left-3 top-3 right-3 z-30 flex justify-between">
+            {backHref ? (
+              <Link
+                href={backHref}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
+                aria-label="Back"
+              >
+                <img
+                  src="/icons/arrow-left.svg"
+                  alt=""
+                  className="h-5 w-5 opacity-80"
+                />
+              </Link>
+            ) : (
+              <div />
+            )}
 
-          {onEdit ? (
-            <button
-              type="button"
-              onClick={onEdit}
-              aria-label="Edit trip"
-              className="flex h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-bold text-neutral-900 shadow-md transition active:scale-95"
-            >
-              Edit Trip
-            </button>
-          ) : (
-            <div />
-          )}
+            {onEdit ? (
+              <button
+                type="button"
+                onClick={onEdit}
+                aria-label="Edit trip"
+                className="flex h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-bold text-neutral-900 shadow-md transition active:scale-95"
+              >
+                Edit Trip
+              </button>
+            ) : (
+              <div />
+            )}
+          </div>
+          <div className="absolute inset-x-0 top-16 px-8 text-center text-white">
+            <p className="text-xs font-bold uppercase tracking-[0.35em] text-white/80">
+              Destination
+            </p>
+
+            <h1 className="mt-4 font-serif text-5xl font-semibold tracking-[-0.06em]">
+              {eyebrow || title}
+            </h1>
+
+            {eyebrow && (
+              <p className="mt-3 text-sm font-semibold text-white/90">
+                {title}
+              </p>
+            )}
+
+            {subtitle && (
+              <p className="mt-1 text-sm text-white/85">
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="absolute bottom-5 left-5 right-5 z-20 rounded-2xl border border-white/20 bg-white/15 p-3 backdrop-blur-md shadow-[0_10px_34px_rgba(0,0,0,0.22)]">
+        {stats.length > 0 && (
+          <div className="absolute inset-x-0 -bottom-12 px-1">
+            <div className="rounded-[1.25rem] bg-white p-3 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
+              <div className="grid grid-cols-3 gap-2">
+                {stats.map((stat, index) => {
+                  const content = (
+                    <div className="flex flex-col items-center justify-center text-center transition active:scale-95">
+                      <StatIcon index={index} value={stat.value} />
 
-          {eyebrow && <p className="text-sm text-white/80">{eyebrow}</p>}
+                      <p className="mt-0 text-lg font-bold text-neutral-950">
+                        {stat.value}
+                      </p>
 
-          <h1 className="pr-10 text-2xl font-bold text-white sm:text-3xl">
-            {title}
-          </h1>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+                        {stat.label}
+                      </p>
+                    </div>
+                  );
 
-          {subtitle && <p className="mt-1 text-sm text-white/90">{subtitle}</p>}
-
-          {stats.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {stats.map((stat) =>
-                stat.onClick ? (
-                  <button
-                    key={stat.label || stat.value}
-                    type="button"
-                    onClick={stat.onClick}
-                    aria-label={stat.ariaLabel || `${stat.label}: ${stat.value}`}
-                    className="cursor-pointer rounded-full bg-white/20 px-3 py-1.5 text-xs text-white backdrop-blur-sm transition hover:bg-white/25 active:scale-95"
-                  >
-                    <span className="font-semibold">{stat.value}</span>
-                    {stat.label && <> {stat.label}</>}
-                  </button>
-                ) : (
-                  <div
-                    key={stat.label || stat.value}
-                    className="rounded-full bg-white/20 px-3 py-1.5 text-xs text-white backdrop-blur-sm"
-                  >
-                    <span className="font-semibold">{stat.value}</span>
-                    {stat.label && <> {stat.label}</>}
-                  </div>
-                )
-              )}
+                  return stat.onClick ? (
+                    <button
+                      key={stat.label || stat.value}
+                      type="button"
+                      onClick={stat.onClick}
+                      aria-label={stat.ariaLabel || `${stat.label}: ${stat.value}`}
+                    >
+                      {content}
+                    </button>
+                  ) : (
+                    <div key={stat.label || stat.value}>{content}</div>
+                  );
+                })}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </section>
 
       {toolsOpen && (
         <div className="fixed inset-0 z-50 flex items-end bg-black/40">
@@ -216,5 +247,76 @@ export default function TripHero({
         </div>
       )}
     </>
+  );
+}
+
+function StatIcon({
+  index,
+  value,
+}: {
+  index: number;
+  value: string;
+}) {
+  return (
+    <div className="flex h-10 w-14 items-center justify-center">
+      {index === 0 && <TravellerIcon count={Number(value)} />}
+
+      {index === 1 && (
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 32 32"
+          fill="none"
+          className="text-emerald-600"
+        >
+          <rect x="6" y="8" width="20" height="18" rx="5" stroke="currentColor" strokeWidth="2.5" />
+          <path d="M10 5v6M22 5v6M7 14h18M12.5 20l2.5 2.5 5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+
+      {index === 2 && (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 32 32"
+          fill="none"
+          className="-ml-0.5 text-amber-400"
+        >
+          <path d="M23.5 20.5A11 11 0 0 1 11.5 8.5 10 10 0 1 0 23.5 20.5Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M22 8l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2Z" fill="currentColor" />
+        </svg>
+      )}
+    </div>
+  );
+}
+
+function TravellerIcon({ count }: { count: number }) {
+  const people = Math.min(Math.max(count || 1, 1), 4);
+  const spacing = 7;
+  const personWidth = 18;
+  const totalWidth = personWidth + (people - 1) * spacing;
+  const startX = (48 - totalWidth) / 2;
+
+  return (
+    <div className="relative h-8 w-12 text-emerald-600">
+      {Array.from({ length: people }).map((_, index) => {
+        const isFront = index === 0;
+
+        return (
+          <div
+            key={index}
+            className="absolute top-1"
+            style={{
+              left: `${startX + index * spacing}px`,
+              zIndex: people - index,
+              opacity: isFront ? 1 : 0.7,
+            }}
+          >
+            <div className="mx-auto h-2 w-2 rounded-full border-2 border-current bg-white" />
+            <div className="mt-0.5 h-2.5 w-[16px] rounded-t-full border-2 border-b-0 border-current bg-white" />
+          </div>
+        );
+      })}
+    </div>
   );
 }
