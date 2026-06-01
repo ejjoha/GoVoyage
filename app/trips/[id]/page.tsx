@@ -868,17 +868,15 @@ export default function TripPage() {
           </div>
         )}
 
-        <section className="mb-5 -mx-4 overflow-x-auto px-4 scrollbar-hide">
-          <div className="flex gap-3 pb-1">
+        <section className="mb-3 -mx-4 overflow-x-auto px-4 scrollbar-hide">
+          <div className="flex gap-2 pb-1">
             <button
               type="button"
               onClick={openNewBookingForm}
-              className="flex min-w-[145px] flex-col items-center justify-center rounded-xl bg-rose-500 px-5 py-3 text-center text-white shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px- py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
-              <span className="flex items-center gap-0">
-                <span className="text-l">＋</span>
-
-                <span className="text-[15px] font-bold">
+              <span className="flex items-center gap-">
+                <span className="text-[15px] font-semibold text-stone-950">
                   Add booking
                 </span>
               </span>
@@ -886,10 +884,10 @@ export default function TripPage() {
 
             <Link
               href={`/trips/${trip.id}/cost-sharing`}
-              className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">
-                <span className="text-[15px] font-bold text-stone-950">
+                <span className="text-[15px] font-semibold text-stone-950">
                   Expenses
                 </span>
               </span>
@@ -897,10 +895,10 @@ export default function TripPage() {
 
             <Link
               href={`/trips/${trip.id}/packing`}
-              className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">
-                <span className="text-[15px] font-bold text-stone-950">
+                <span className="text-[15px] font-semibold text-stone-950">
                   Pack List
                 </span>
               </span>
@@ -908,10 +906,10 @@ export default function TripPage() {
 
             <Link
               href={`/trips/${trip.id}/journal`}
-              className="flex min-w-[145px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">
-                <span className="text-[15px] font-bold text-stone-950">
+                <span className="text-[15px] font-semibold text-stone-950">
                   Memories
                 </span>
               </span>
@@ -920,7 +918,7 @@ export default function TripPage() {
         </section>
 
         {bookings.length > 0 && (
-          <div className="mb-5 w-full min-w-0 overflow-hidden">
+          <div className="mb-3 w-full min-w-0 overflow-hidden">
             <div className="grid w-full min-w-0 grid-cols-4 gap-2 overflow-hidden rounded-[1.75rem] bg-stone-100 p-2">
               {filterOptions.map((filter) => {
                 const isActive = activeFilter === filter;

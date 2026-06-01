@@ -50,7 +50,7 @@ export default function PackingTripHero({
                 <div className="absolute left-2 top-4">
                     <Link
                         href={`/trips/${tripId}`}
-                        className="absolute left-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
+                        className="absolute left-4 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
                         aria-label="Back"
                     >
                         <img

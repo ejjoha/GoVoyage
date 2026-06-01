@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     "192.168.86.179",
     "192.168.132.12",
     "192.168.86.178",
+    "10.61.242.105"
   ],
   reactStrictMode: true,
 };

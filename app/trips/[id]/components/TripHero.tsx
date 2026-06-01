@@ -35,7 +35,7 @@ export default function TripHero({
 
   return (
     <>
-      <section className="relative mb-15">
+      <section className="relative mb-13">
         <div className="relative -mx-4 -mt-6 overflow-hidden rounded-b-[2.75rem] bg-neutral-200">
           {imageUrl ? (
             <img
@@ -112,15 +112,18 @@ export default function TripHero({
         </div>
 
         {stats.length > 0 && (
-          <div className="absolute inset-x-0 -bottom-12 px-1">
-            <div className="rounded-[1.25rem] bg-white p-3 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
-              <div className="grid grid-cols-3 gap-2">
+          <div className="absolute inset-x-0 -bottom-10 px-1">
+            <div className="rounded-[1.25rem] bg-white py-2 px-5 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
+              <div className="grid grid-cols-3 gap-0">
                 {stats.map((stat, index) => {
                   const content = (
-                    <div className="flex flex-col items-center justify-center text-center transition active:scale-95">
+                    <div
+                      className={`flex flex-col items-center justify-center text-center transition active:scale-95 ${index !== 2 ? "border-r border-neutral-100" : ""
+                        }`}
+                    >
                       <StatIcon index={index} value={stat.value} />
 
-                      <p className="mt-0 text-lg font-bold text-neutral-950">
+                      <p className="mt-2 text-lg font-bold text-neutral-950">
                         {stat.value}
                       </p>
 
@@ -258,7 +261,7 @@ function StatIcon({
   value: string;
 }) {
   return (
-    <div className="flex h-10 w-14 items-center justify-center">
+    <div className="flex h-9 w-14 items-center justify-center">
       {index === 0 && <TravellerIcon count={Number(value)} />}
 
       {index === 1 && (
