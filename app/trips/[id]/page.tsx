@@ -849,7 +849,7 @@ export default function TripPage() {
         />
 
         {(tripSuccessMessage || bookingSuccessMessage || deleteSuccessMessage) && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">
+          <div className="fixed inset-1 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">
             <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl shadow-sm">
                 ✓
@@ -868,7 +868,7 @@ export default function TripPage() {
           </div>
         )}
 
-        <section className="mb-3 -mx-4 overflow-x-auto px-4 scrollbar-hide">
+        <section className="mb-2 -mx-2 overflow-x-auto px-4 scrollbar-hide">
           <div className="flex gap-2 pb-1">
             <button
               type="button"
@@ -919,7 +919,7 @@ export default function TripPage() {
 
         {bookings.length > 0 && (
           <div className="mb-3 w-full min-w-0 overflow-hidden">
-            <div className="grid w-full min-w-0 grid-cols-4 gap-2 overflow-hidden rounded-[1.75rem] bg-stone-100 p-2">
+            <div className="grid w-full min-w-0 grid-cols-4 gap-2 overflow-hidden rounded-[1rem] border border-stone-200 bg-white/10 p-2 backdrop-blur-sm">
               {filterOptions.map((filter) => {
                 const isActive = activeFilter === filter;
 
@@ -929,7 +929,7 @@ export default function TripPage() {
                     type="button"
                     onClick={() => setActiveFilter(filter)}
                     aria-label={getFilterLabel(filter)}
-                    className={`flex h-12 items-center justify-center rounded-2xl px-3 text-sm font-medium transition-all duration-200 ${isActive
+                    className={`flex h-10 items-center justify-center rounded-xl px-3 text-sm font-medium transition-all duration-200 ${isActive
                       ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
                       : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
                       }`}
