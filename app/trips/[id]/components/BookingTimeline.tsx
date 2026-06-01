@@ -61,7 +61,7 @@ function TimelineBucket({
 }) {
   return (
     <div className="w-full min-w-0">
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-2 flex items-center gap-2">
         <div className="h-px flex-1 bg-stone-200" />
         <h3 className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
           {title}
@@ -128,21 +128,20 @@ export default function BookingTimeline({
   }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-2">
       {Object.entries(groupedBookings).map(([date, items]) => {
         const bookingCount = getDayBookingCount(items);
 
         return (
           <section
             key={date}
-            className="rounded-[2rem] border border-stone-200/70 bg-white p-4 shadow-sm sm:p-5"
-          >
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center rounded-full bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-700">
+            className="rounded-[1.5rem] border border-stone-200/70 bg-white px-4 pt-3 pb-2 shadow-sm sm:px-5 sm:pt-5 sm:pb-2">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center rounded-full bg-stone-100 px-3 py-1.5 text-[12px] font-regular text-stone-700">
                 {formatDayLabel(date)}
               </div>
 
-              <div className="inline-flex items-center rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-sm">
+              <div className="inline-flex items-center rounded-full border border-stone-200 bg-white px-2 py-1 text-xs font-semibold text-stone-600">
                 {bookingCount} {bookingCount === 1 ? "plan" : "plans"}
               </div>
 
@@ -168,9 +167,9 @@ export default function BookingTimeline({
                           ref={(element) => {
                             rowRefs.current[booking.id] = element;
                           }}
-                          className="grid w-full min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-3"
+                          className="-ml-3 grid w-full min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-2"
                         >
-                          <div className="relative flex h-full justify-center">
+                          <div className="relative flex h-full justify-center -mr-1">
                             <div className="absolute bottom-0 top-0 w-px bg-gradient-to-b from-stone-300 to-stone-400/60" />
                             <div className="relative z-10 mt-5 flex h-9 w-9 items-center justify-center rounded-full border-2 border-stone-300 bg-white shadow-sm">
                               {getBookingIcon(booking.type)}
@@ -201,7 +200,7 @@ export default function BookingTimeline({
                                 </span>
 
                                 <span
-                                  className={`flex h-8 w-8 items-center justify-center rounded-full bg-white text-stone-700 shadow-sm transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"
+                                  className={`flex items-center justify-center text-stone-400 transition-transform duration-300 ${isExpanded ? "rotate-0" : "-rotate-90"
                                     }`}
                                 >
                                   <img
@@ -238,7 +237,7 @@ export default function BookingTimeline({
 
                             <div
                               className={`grid transition-all duration-300 ease-in-out ${isExpanded
-                                ? "mt-3 grid-rows-[1fr] opacity-100"
+                                ? "mt-0 grid-rows-[1fr] opacity-100"
                                 : "grid-rows-[0fr] opacity-0"
                                 }`}
                             >
@@ -248,7 +247,7 @@ export default function BookingTimeline({
                                     booking.type
                                   )}`}
                                 >
-                                  <div className="mb-4">
+                                  <div className="mb-2">
                                     <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                                       {getDetailsHeading(booking.type)}
                                     </h3>
@@ -256,8 +255,8 @@ export default function BookingTimeline({
 
                                   <div className="space-y-1">
                                     {booking.type === "flight" && (
-                                      <div className="space-y-4">
-                                        <div className="relative overflow-hidden rounded-2xl border border-blue-200/70 bg-white/70 p-4 shadow-sm">
+                                      <div className="space-y-2">
+                                        <div className="relative overflow-hidden rounded-2xl border border-blue-200/70 bg-white/70 p-2 shadow-sm">
                                           <div className="flex flex-col items-center gap-2 text-center">
                                             <div className="w-full">
                                               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
@@ -292,8 +291,8 @@ export default function BookingTimeline({
                                           <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-gradient-to-b from-blue-100 via-transparent to-blue-100 opacity-50" />
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-3">
-                                          <div className="rounded-2xl bg-white/60 p-3">
+                                        <div className="grid grid-cols-2 gap-2">
+                                          <div className="rounded-2xl bg-white/60 p-2">
                                             <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
                                               Airline
                                             </p>
@@ -302,16 +301,16 @@ export default function BookingTimeline({
                                             </p>
                                           </div>
 
-                                          <div className="rounded-2xl bg-white/60 p-3">
+                                          <div className="rounded-2xl bg-white/60 p-2">
                                             <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
-                                              Flight number
+                                              Flight nbr
                                             </p>
                                             <p className="mt-1 text-sm font-semibold text-stone-800">
                                               {booking.flight_number || "—"}
                                             </p>
                                           </div>
 
-                                          <div className="col-span-2 rounded-2xl bg-white/60 p-3">
+                                          <div className="col-span-2 rounded-2xl bg-white/60 p-2">
                                             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
                                               Booking reference
                                             </p>
@@ -322,7 +321,7 @@ export default function BookingTimeline({
                                         </div>
 
                                         {booking.notes && (
-                                          <div className="rounded-2xl bg-white/60 p-3">
+                                          <div className="rounded-2xl bg-white/60 p-2">
                                             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
                                               Notes
                                             </p>
@@ -521,7 +520,7 @@ export default function BookingTimeline({
                                         </div>
 
                                         {booking.confirmation_code && (
-                                          <div className="rounded-2xl bg-white/60 p-3">
+                                          <div className="rounded-2xl bg-white/60 p-2">
                                             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
                                               Reservation code
                                             </p>
@@ -532,7 +531,7 @@ export default function BookingTimeline({
                                         )}
 
                                         {booking.notes && (
-                                          <div className="rounded-2xl bg-white/60 p-3">
+                                          <div className="rounded-2xl bg-white/60 p-2">
                                             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
                                               Notes
                                             </p>
@@ -574,7 +573,7 @@ export default function BookingTimeline({
                                     )}
                                   </div>
 
-                                  <div className="mt-3 flex items-center justify-between border-t border-white/40 pt-3">
+                                  <div className="mt-1 flex items-center justify-between border-t border-white/40 pt-1">
                                     <button
                                       type="button"
                                       onClick={() => onDeleteBooking(booking.id)}
