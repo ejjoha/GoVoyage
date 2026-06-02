@@ -64,6 +64,8 @@ export default function PackingBoard({ tripId }: Props) {
     const [itemPendingRemove, setItemPendingRemove] =
         useState<PackingListItem | null>(null);
 
+    const [resetSwipeKey, setResetSwipeKey] = useState(0);
+
     async function loadPacking() {
         setLoading(true);
         const tripData = await getTripForPacking(tripId);
@@ -200,6 +202,7 @@ export default function PackingBoard({ tripId }: Props) {
                         items={itemsByList[activeList.id] ?? []}
                         defaultClimates={weatherSummary?.suggestedProfiles ?? []}
                         tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
+                        resetSwipeKey={resetSwipeKey}
                         onToggleItem={handleToggleItem}
                         onCreateItem={(listId, item) => {
                             setItemsByList((current) => ({
@@ -258,6 +261,7 @@ export default function PackingBoard({ tripId }: Props) {
                                 await loadPacking();
                             }
                         }}
+                        onRemoveItem={(item) => setItemPendingRemove(item)}
                         onArchiveList={async (listId) => {
                             setLists((current) => current.filter((list) => list.id !== listId));
 
@@ -313,7 +317,10 @@ export default function PackingBoard({ tripId }: Props) {
                         <div className="mt-6 grid grid-cols-2 gap-3">
                             <button
                                 type="button"
-                                onClick={() => setItemPendingRemove(null)}
+                                onClick={() => {
+                                    setItemPendingRemove(null);
+                                    setResetSwipeKey((current) => current + 1);
+                                }}
                                 className="rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
                             >
                                 Keep it

@@ -10,6 +10,8 @@ type Props = {
     onToggleItem: (item: PackingListItem) => void;
     onDecreaseQuantity: (item: PackingListItem) => void;
     onIncreaseQuantity: (item: PackingListItem) => void;
+    onRemoveItem: (item: PackingListItem) => void;
+    resetSwipeKey: number;
 };
 
 export default function PackingCategorySection({
@@ -18,6 +20,9 @@ export default function PackingCategorySection({
     onToggleItem,
     onDecreaseQuantity,
     onIncreaseQuantity,
+    onRemoveItem,
+    resetSwipeKey,
+
 }: Props) {
     const [open, setOpen] = useState(true);
 
@@ -79,6 +84,8 @@ export default function PackingCategorySection({
                             onToggle={onToggleItem}
                             onDecreaseQuantity={onDecreaseQuantity}
                             onIncreaseQuantity={onIncreaseQuantity}
+                            onRemove={onRemoveItem}
+                            resetSwipeKey={resetSwipeKey}
                         />
                     ))}
                 </div>

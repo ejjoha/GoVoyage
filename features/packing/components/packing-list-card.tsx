@@ -15,6 +15,8 @@ type Props = {
     onArchiveList: (listId: string) => void;
     onDecreaseQuantity: (item: PackingListItem) => void;
     onIncreaseQuantity: (item: PackingListItem) => void;
+    onRemoveItem: (item: PackingListItem) => void;
+    resetSwipeKey: number;
 };
 
 export default function PackingListCard({
@@ -27,6 +29,8 @@ export default function PackingListCard({
     onArchiveList,
     onDecreaseQuantity,
     onIncreaseQuantity,
+    onRemoveItem,
+    resetSwipeKey,
 }: Props) {
     const [open, setOpen] = useState(true);
 
@@ -69,6 +73,9 @@ export default function PackingListCard({
                                         onToggleItem={onToggleItem}
                                         onDecreaseQuantity={onDecreaseQuantity}
                                         onIncreaseQuantity={onIncreaseQuantity}
+                                        onRemoveItem={onRemoveItem}
+                                        resetSwipeKey={resetSwipeKey}
+
                                     />
                                 ))}
                             </div>
