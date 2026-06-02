@@ -12,7 +12,7 @@ import {
   updateExpense,
   deleteExpenseById,
 } from "./api";
-import TripHero from "../components/TripHero";
+
 import type { Trip } from "../types";
 import type { Currency, Expense, TripMember } from "./types";
 import {
@@ -24,6 +24,7 @@ import {
   formatExpenseDate,
   getTodayDateString,
 } from "./formatters";
+import ExpenseHero from "./components/ExpenseHero";
 import ConfirmModal from "../components/ConfirmModal";
 import ExpenseItem from "./components/ExpenseItem";
 import ExpenseList from "./components/ExpenseList";
@@ -737,6 +738,14 @@ export default function TripCostSharingPage() {
       .filter((item) => item.total > 0);
   }, [expenses]);
 
+  const totalLabel = useMemo(() => {
+    if (totalCostByCurrency.length === 0) return "€0";
+
+    const first = totalCostByCurrency[0];
+
+    return `${formatAmount(first.total)} ${first.currency}`;
+  }, [totalCostByCurrency]);
+
   const selectedCurrencyExpenses = selectedCurrency
     ? [...expenses]
       .filter(
@@ -773,20 +782,6 @@ export default function TripCostSharingPage() {
       .join(", ")}`;
   }, [tripMembers]);
 
-  const heroStats = useMemo(() => {
-    return [
-      {
-        label: "",
-        value: "Total cost",
-        onClick:
-          totalCostByCurrency.length > 0
-            ? () => setShowTotalCostSheet(true)
-            : undefined,
-        ariaLabel: "Show total cost",
-      },
-    ];
-  }, [totalCostByCurrency.length]);
-
   if (isLoadingTrip) {
     return <div className="p-8">Loading trip...</div>;
   }
@@ -798,31 +793,15 @@ export default function TripCostSharingPage() {
   return (
     <>
       <main className="mx-auto w-full min-h-screen max-w-2xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
-        <TripHero
+        <ExpenseHero
           title="Travel expenses"
           eyebrow={trip.destination}
           imageUrl={trip.image_url}
           backHref={`/trips/${id}`}
-          stats={heroStats}
+          travellerCount={tripMembers.length}
+          expenseCount={expenses.length}
+          totalLabel={totalLabel}
         />
-
-        <div className="mt-6 rounded-2xl bg-stone-50 px-4 py-3 text-sm text-stone-700 shadow-sm">
-          {isLoadingMembers ? "Loading travellers..." : travellerSummary}
-        </div>
-
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={openNewExpenseForm}
-            disabled={tripMembers.length === 0}
-            className="w-full rounded-2xl bg-rose-500 px-5 py-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(244,63,94,0.28)] transition-all duration-200 hover:bg-rose-600 hover:shadow-lg active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg leading-none">＋</span>
-              Add expense
-            </span>
-          </button>
-        </div>
 
         {(successMessage || deleteSuccessMessage) && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">
@@ -844,58 +823,52 @@ export default function TripCostSharingPage() {
           </div>
         )}
 
-        <div className="mt-8 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/85 shadow-sm">
+        <div className="relative z-20 mt-14 overflow-hidden rounded-[1.25rem] bg-white">
           <button
             type="button"
             onClick={() => setShowExpenses((current) => !current)}
-            className="group flex w-full items-center justify-between px-4 py-4 text-left transition hover:bg-stone-50 active:scale-[0.99]"
+            className="group flex w-full items-center justify-between bg-white px-4 py-3 text-left"
           >
             <div>
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-lg">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">
                   💸
                 </span>
 
                 <div>
-                  <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
+                  <h2 className="text-lg font-semibold tracking-[-0.02em] text-stone-900">
                     Expenses
                   </h2>
 
-                  <p className="mt-0.5 text-sm text-stone-500">
-                    {showExpenses
-                      ? "Hide the expense list"
-                      : "Show all saved expenses"}
+                  <p className="mt-0.5 text-xs font-bold text-neutral-400">
+                    {expenses.length} {expenses.length === 1 ? "expense" : "expenses"} tracked
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="hidden text-xs font-semibold text-stone-400 sm:inline">
-                {showExpenses ? "Collapse" : "Expand"}
-              </span>
-
               <span
-                className={`flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white shadow-[0_10px_24px_rgba(244,63,94,0.32)] transition-transform duration-300 ${showExpenses ? "rotate-180" : "rotate-0"
+                className={`flex items-center justify-center transition-transform duration-300 ${showExpenses ? "rotate-0" : "-rotate-90"
                   }`}
               >
                 <img
                   src="/icons/chevron-down.svg"
                   alt=""
-                  className="h-5 w-5 brightness-0 invert"
+                  className="h-5 w-5 opacity-100"
                 />
               </span>
             </div>
           </button>
 
           {showExpenses && (
-            <div className="border-t border-stone-200 px-4 pb-4">
+            <div className="px-5 pb-5 pt-1">
               {isLoadingExpenses ? (
                 <div className="rounded-2xl border border-stone-200 bg-white p-6 text-sm text-stone-500 shadow-sm">
                   Loading expenses...
                 </div>
               ) : sortedExpenses.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
+                <div className="rounded-2xl border border-dashed border-stone-200 bg-white p-6 text-center">
                   <p className="text-sm text-stone-500">No expenses added yet.</p>
                 </div>
               ) : (
@@ -914,20 +887,16 @@ export default function TripCostSharingPage() {
           )}
         </div>
 
-        <div className="mt-8 space-y-4">
+        <div className="mt-6 space-y-4">
           <div>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
                   Who owes who
                 </h2>
-                <p className="mt-1 text-sm text-stone-500">
+                <p className="mt-1 text-[12px] text-stone-500">
                   Balances are grouped by currency.
                 </p>
-              </div>
-
-              <div className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-stone-500 shadow-sm">
-                Summary
               </div>
             </div>
           </div>
@@ -1053,6 +1022,14 @@ export default function TripCostSharingPage() {
           onClose={() => setSelectedCurrency(null)}
         />
       )}
+      <button
+        type="button"
+        onClick={openNewExpenseForm}
+        disabled={tripMembers.length === 0}
+        className="fixed bottom-6 right-6 z-40 flex h-12 w-12 touch-manipulation items-center justify-center rounded-full bg-rose-500 text-3xl text-white shadow-xl transition active:scale-95 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none" aria-label="Add expense"
+      >
+        +
+      </button>
       <ScrollToTopButton />
     </>
   );

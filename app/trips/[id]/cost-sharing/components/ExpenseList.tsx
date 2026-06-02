@@ -24,8 +24,8 @@ export default function ExpenseList({
     return (
         <div className="space-y-3">
             {Object.entries(groupedExpensesByDate).map(([dateKey, dayExpenses]) => (
-                <div key={dateKey} className="space-y-1">
-                    <h3 className="px-1 pt-3 pb-1 text-sm font-semibold text-stone-900">
+                <div key={dateKey} className="space-y-0.5">
+                    <h3 className="px-1 pt-1 pb-0.5 text-xs font-semibold text-stone-500">
                         {formatExpenseDate(dateKey)}
                     </h3>
 

@@ -25,11 +25,11 @@ export default function ExpenseItem({
   getExpenseIcon,
 }: ExpenseItemProps) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white/90 shadow-sm">
+    <div className="rounded-[1.25rem] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
       <button type="button" onClick={onToggle} className="w-full px-4 py-4 text-left">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-lg">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center text-2xl">
               {getExpenseIcon(expense.title)}
             </div>
 
@@ -50,24 +50,26 @@ export default function ExpenseItem({
             </span>
 
             <span
-              className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 text-xs text-stone-500 transition-transform ${
-                isExpanded ? "rotate-180" : ""
-              }`}
+              className={`mt-1 flex items-center justify-center transition-transform duration-300 ${isExpanded ? "rotate-0" : "-rotate-90"
+                }`}
             >
-              ⌄
+              <img
+                src="/icons/chevron-down.svg"
+                alt=""
+                className="h-4.5 w-4.5 opacity-50"
+              />
             </span>
           </div>
         </div>
       </button>
 
       <div
-        className={`grid transition-all duration-300 ease-in-out ${
-          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-        }`}
+        className={`grid transition-all duration-300 ease-in-out ${isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="border-t border-stone-200 bg-stone-50/70 px-4 py-4">
-            <div className="space-y-2">
+          <div className="mx-3 mb-2 rounded-[1rem] bg-stone-50 px-4 py-1">
+            <div className="space-y-0.5">
               <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
                 <span className="text-stone-500">Paid by</span>
                 <span className="break-words text-right font-medium text-stone-800">
