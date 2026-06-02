@@ -8,6 +8,7 @@ import PackingSpaceSummary from "./packing-space-summary";
 import PackingSpaceSelector from "./packing-space-selector";
 import PackingListCard from "./packing-list-card";
 import FloatingAddPackingItemButton from "./floating-add-packing-item-button";
+import { AnimatePresence, motion } from "framer-motion";
 
 import {
     getTripWeatherSummary,
@@ -299,62 +300,76 @@ export default function PackingBoard({ tripId }: Props) {
                     />
                 </div>
             )}
-            {itemPendingRemove && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-                    <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 text-center shadow-2xl">
-                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl">
-                            🧳
-                        </div>
+            <AnimatePresence>
+                {itemPendingRemove && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                            transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                            className="w-full max-w-sm rounded-[2rem] bg-white p-6 text-center shadow-2xl"
+                        >
+                            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl">
+                                🧳
+                            </div>
 
-                        <h2 className="text-xl font-bold text-neutral-950">
-                            Remove item?
-                        </h2>
+                            <h2 className="text-xl font-bold text-neutral-950">
+                                Remove item?
+                            </h2>
 
-                        <p className="mt-2 text-sm text-neutral-500">
-                            Remove “{itemPendingRemove.name}” from this packing list?
-                        </p>
+                            <p className="mt-2 text-sm text-neutral-500">
+                                Remove “{itemPendingRemove.name}” from this packing list?
+                            </p>
 
-                        <div className="mt-6 grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setItemPendingRemove(null);
-                                    setResetSwipeKey((current) => current + 1);
-                                }}
-                                className="rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
-                            >
-                                Keep it
-                            </button>
+                            <div className="mt-6 grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setItemPendingRemove(null);
+                                        setResetSwipeKey((current) => current + 1);
+                                    }}
+                                    className="rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
+                                >
+                                    Keep it
+                                </button>
 
-                            <button
-                                type="button"
-                                onClick={async () => {
-                                    const item = itemPendingRemove;
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        const item = itemPendingRemove;
 
-                                    setItemPendingRemove(null);
+                                        setItemPendingRemove(null);
 
-                                    setItemsByList((current) => ({
-                                        ...current,
-                                        [item.packing_list_id]: (
-                                            current[item.packing_list_id] ?? []
-                                        ).filter((currentItem) => currentItem.id !== item.id),
-                                    }));
+                                        setItemsByList((current) => ({
+                                            ...current,
+                                            [item.packing_list_id]: (
+                                                current[item.packing_list_id] ?? []
+                                            ).filter((currentItem) => currentItem.id !== item.id),
+                                        }));
 
-                                    try {
-                                        await hidePackingItem(item.id);
-                                    } catch (error) {
-                                        console.error(error);
-                                        await loadPacking();
-                                    }
-                                }}
-                                className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
-                            >
-                                Remove
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                                        try {
+                                            await hidePackingItem(item.id);
+                                        } catch (error) {
+                                            console.error(error);
+                                            await loadPacking();
+                                        }
+                                    }}
+                                    className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
