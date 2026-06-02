@@ -903,17 +903,6 @@ export default function TripPage() {
                 </span>
               </span>
             </Link>
-
-            <Link
-              href={`/trips/${trip.id}/journal`}
-              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
-            >
-              <span className="flex items-center gap-2">
-                <span className="text-[15px] font-semibold text-stone-950">
-                  Memories
-                </span>
-              </span>
-            </Link>
           </div>
         </section>
 
