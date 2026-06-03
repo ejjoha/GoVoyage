@@ -25,6 +25,7 @@ import {
   getTodayDateString,
 } from "./formatters";
 import ExpenseHero from "./components/ExpenseHero";
+import { useTripMembers } from "../hooks/useTripMembers";
 import ConfirmModal from "../components/ConfirmModal";
 import ExpenseItem from "./components/ExpenseItem";
 import ExpenseList from "./components/ExpenseList";
@@ -88,7 +89,15 @@ export default function TripCostSharingPage() {
   const [showTotalCostSheet, setShowTotalCostSheet] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
-  const [tripMembers, setTripMembers] = useState<TripMember[]>([]);
+  const {
+    tripMembers,
+    newTravellerName,
+    setNewTravellerName,
+    travellerFormError,
+    fetchTripMembers,
+    addTraveller,
+    deleteTraveller,
+  } = useTripMembers(id);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [trip, setTrip] = useState<Trip | null>(null);
   const tripCurrencyOptions = useMemo(() => {
@@ -134,6 +143,8 @@ export default function TripCostSharingPage() {
   });
 
   const expenseFormBottomRef = useRef<HTMLDivElement | null>(null);
+  const balancesSectionRef = useRef<HTMLDivElement | null>(null);
+
 
   const [showExpenses, setShowExpenses] = useState(false);
 
@@ -417,31 +428,6 @@ export default function TripCostSharingPage() {
     const data = await fetchTripById(id);
     setTrip(data);
     setIsLoadingTrip(false);
-  }
-
-  async function fetchTripMembers() {
-    setIsLoadingMembers(true);
-
-    const members = await fetchTripMembersByTripId(id);
-    setTripMembers(members);
-
-    setPaidByMemberId((current) => {
-      if (current && members.some((member) => member.id === current)) {
-        return current;
-      }
-      return null;
-    });
-
-    setSelectedParticipantIds((current) => {
-      const validIds = current.filter((memberId) =>
-        members.some((member) => member.id === memberId)
-      );
-
-      if (validIds.length > 0) return validIds;
-      return members.map((member) => member.id);
-    });
-
-    setIsLoadingMembers(false);
   }
 
   async function fetchExpenses() {
@@ -804,6 +790,12 @@ export default function TripCostSharingPage() {
           totalLabel={totalLabel}
           onTravellersClick={() => setShowTravellers(true)}
           onTotalClick={() => setShowTotalCostSheet(true)}
+          onBalancesClick={() => {
+            balancesSectionRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
         />
 
         {(successMessage || deleteSuccessMessage) && (
@@ -890,7 +882,7 @@ export default function TripCostSharingPage() {
           )}
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div ref={balancesSectionRef} className="mt-6 scroll-mt-6 space-y-4">
           <div>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -1026,52 +1018,114 @@ export default function TripCostSharingPage() {
         />
       )}
       {showTravellers && (
-        <div className="fixed inset-0 z-50 flex items-end bg-black/40">
-          <button
-            type="button"
-            aria-label="Close travellers"
-            className="absolute inset-0"
-            onClick={() => setShowTravellers(false)}
-          />
-
-          <div className="relative mx-auto w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl">
-            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300" />
-
-            <div className="mb-5 flex items-start justify-between">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
+          onClick={() => setShowTravellers(false)}
+        >
+          <div
+            className="sheet-up flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.25em] text-neutral-400">
+                <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
                   Travellers
-                </p>
-                <h2 className="mt-1 text-2xl font-bold text-neutral-950">
-                  People on this trip
                 </h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Everyone joining this trip.
+                </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowTravellers(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-xl"
-                aria-label="Close"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition hover:bg-stone-200"
+                aria-label="Close travellers"
               >
-                ×
+                ✕
               </button>
             </div>
 
-            <div className="space-y-3">
-              {tripMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-3"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-sm font-bold text-emerald-600">
-                    {member.name.charAt(0).toUpperCase()}
-                  </div>
+            <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-5">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add traveller"
+                  value={newTravellerName}
+                  onChange={(e) => setNewTravellerName(e.target.value)}
+                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400"
+                />
 
-                  <p className="font-semibold text-neutral-900">
-                    {member.name}
+                <button
+                  type="button"
+                  onClick={addTraveller}
+                  className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                  Add
+                </button>
+              </div>
+
+              {travellerFormError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {travellerFormError}
+                </div>
+              )}
+
+              {tripMembers.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
+                  <p className="text-sm text-stone-500">
+                    No travellers added yet.
                   </p>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-3">
+                  {tripMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
+                    >
+                      <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
+                          {member.name
+                            .split(" ")
+                            .map((part) => part[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </div>
+
+                        <span className="min-w-0 truncate text-sm font-medium text-stone-800">
+                          {member.name}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openConfirm({
+                            title: "Remove this traveller?",
+                            description:
+                              "This will remove them from the trip. Shared cost entries connected to them may be affected.",
+                            confirmLabel: "Remove traveller",
+                            cancelLabel: "Keep traveller",
+                            tone: "danger",
+                            onConfirm: async () => {
+                              const success = await deleteTraveller(member.id);
+
+                              if (success) {
+                                closeConfirm();
+                              }
+                            },
+                          })
+                        }
+                        className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

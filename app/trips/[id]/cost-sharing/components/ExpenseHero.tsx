@@ -12,6 +12,7 @@ type ExpenseHeroProps = {
     totalLabel: string;
     onTravellersClick?: () => void;
     onTotalClick?: () => void;
+    onBalancesClick?: () => void;
 };
 
 export default function ExpenseHero({
@@ -24,6 +25,7 @@ export default function ExpenseHero({
     totalLabel,
     onTravellersClick,
     onTotalClick,
+    onBalancesClick,
 }: ExpenseHeroProps) {
     return (
         <section className="relative mb-24">
@@ -107,9 +109,17 @@ export default function ExpenseHero({
                             />
 
                             <ExpenseStat
-                                icon="🧾"
+                                icon={
+                                    <img
+                                        src="/images/who-ows-who.png"
+                                        alt=""
+                                        className="h-12 w12 object-contain"
+                                    />
+                                }
                                 value={String(expenseCount)}
-                                label={expenseCount === 1 ? "Expense" : "Expenses"}
+                                label="Who owes who?"
+                                hideValue
+                                onClick={onBalancesClick}
                             />
 
                             <ExpenseStat
