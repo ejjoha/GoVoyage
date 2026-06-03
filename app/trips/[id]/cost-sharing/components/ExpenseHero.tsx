@@ -10,6 +10,8 @@ type ExpenseHeroProps = {
     travellerCount: number;
     expenseCount: number;
     totalLabel: string;
+    onTravellersClick?: () => void;
+    onTotalClick?: () => void;
 };
 
 export default function ExpenseHero({
@@ -20,6 +22,8 @@ export default function ExpenseHero({
     travellerCount,
     expenseCount,
     totalLabel,
+    onTravellersClick,
+    onTotalClick,
 }: ExpenseHeroProps) {
     return (
         <section className="relative mb-24">
@@ -88,7 +92,7 @@ export default function ExpenseHero({
                             </h2>
 
                             <p className="mt-2 text-[12px] leading-5 text-neutral-500">
-                                Track spending together and settle balances in seconds.
+                                Track spending and settle balances when you are ready.
                             </p>
                         </div>
                     </div>
@@ -96,9 +100,10 @@ export default function ExpenseHero({
                     <div className="mt-1 border-t border-neutral-100 pt-2">
                         <div className="grid grid-cols-3 gap-0 text-center">
                             <ExpenseStat
-                                icon="👥"
+                                icon={<TravellerIcon count={travellerCount} />}
                                 value={String(travellerCount)}
                                 label={travellerCount === 1 ? "Traveller" : "Travellers"}
+                                onClick={onTravellersClick}
                             />
 
                             <ExpenseStat
@@ -108,10 +113,18 @@ export default function ExpenseHero({
                             />
 
                             <ExpenseStat
-                                icon="💳"
+                                icon={
+                                    <img
+                                        src="/images/money-pile.png"
+                                        alt=""
+                                        className="h-12 w-12 object-contain"
+                                    />
+                                }
                                 value={totalLabel}
                                 label="Total spent"
                                 isLast
+                                hideValue
+                                onClick={onTotalClick}
                             />
                         </div>
                     </div>
@@ -126,31 +139,43 @@ function ExpenseStat({
     value,
     label,
     isLast = false,
+    onClick,
+    hideValue = false,
 }: {
-    icon: string;
+    icon: React.ReactNode;
     value: string;
     label: string;
     isLast?: boolean;
+    onClick?: () => void;
+    hideValue?: boolean;
 }) {
-    return (
+    const content = (
         <div
             className={`flex flex-col items-center justify-center ${isLast ? "" : "border-r border-neutral-100"
                 }`}
         >
             <div className="flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-lg">
+                <span className="flex h-9 w-9 items-center justify-center">
                     {icon}
                 </span>
-
-                <span className="text-lg font-bold text-neutral-950">
-                    {value}
-                </span>
+                {!hideValue && (
+                    <span className="text-lg font-bold text-neutral-950">
+                        {value}
+                    </span>
+                )}
             </div>
-
             <p className="mt-2 text-[11px] font-semibold text-neutral-400">
                 {label}
             </p>
         </div>
+    );
+
+    return onClick ? (
+        <button type="button" onClick={onClick} className="w-full">
+            {content}
+        </button>
+    ) : (
+        content
     );
 }
 
@@ -162,6 +187,37 @@ function MoneyBagIcon() {
                 alt=""
                 className="h-28 w-28 object-contain"
             />
+        </div>
+    );
+}
+
+function TravellerIcon({ count }: { count: number }) {
+    const people = Math.min(Math.max(count || 1, 1), 4);
+    const spacing = 7;
+    const personWidth = 18;
+    const totalWidth = personWidth + (people - 1) * spacing;
+    const startX = (48 - totalWidth) / 2;
+
+    return (
+        <div className="relative h-8 w-12 text-emerald-600">
+            {Array.from({ length: people }).map((_, index) => {
+                const isFront = index === 0;
+
+                return (
+                    <div
+                        key={index}
+                        className="absolute top-1"
+                        style={{
+                            left: `${startX + index * spacing}px`,
+                            zIndex: people - index,
+                            opacity: isFront ? 1 : 0.7,
+                        }}
+                    >
+                        <div className="mx-auto h-2 w-2 rounded-full border-2 border-current bg-white" />
+                        <div className="mt-0.5 h-2.5 w-[16px] rounded-t-full border-2 border-b-0 border-current bg-white" />
+                    </div>
+                );
+            })}
         </div>
     );
 }

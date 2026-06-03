@@ -100,6 +100,7 @@ export default function TripCostSharingPage() {
   }, [trip]);
 
   const [isLoadingTrip, setIsLoadingTrip] = useState(true);
+  const [showTravellers, setShowTravellers] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(true);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState(true);
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
@@ -801,6 +802,8 @@ export default function TripCostSharingPage() {
           travellerCount={tripMembers.length}
           expenseCount={expenses.length}
           totalLabel={totalLabel}
+          onTravellersClick={() => setShowTravellers(true)}
+          onTotalClick={() => setShowTotalCostSheet(true)}
         />
 
         {(successMessage || deleteSuccessMessage) && (
@@ -1021,6 +1024,57 @@ export default function TripCostSharingPage() {
           getMemberName={getMemberName}
           onClose={() => setSelectedCurrency(null)}
         />
+      )}
+      {showTravellers && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/40">
+          <button
+            type="button"
+            aria-label="Close travellers"
+            className="absolute inset-0"
+            onClick={() => setShowTravellers(false)}
+          />
+
+          <div className="relative mx-auto w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl">
+            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-neutral-300" />
+
+            <div className="mb-5 flex items-start justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-neutral-400">
+                  Travellers
+                </p>
+                <h2 className="mt-1 text-2xl font-bold text-neutral-950">
+                  People on this trip
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowTravellers(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-xl"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {tripMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-3"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-sm font-bold text-emerald-600">
+                    {member.name.charAt(0).toUpperCase()}
+                  </div>
+
+                  <p className="font-semibold text-neutral-900">
+                    {member.name}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
       <button
         type="button"
