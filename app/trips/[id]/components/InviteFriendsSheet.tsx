@@ -130,16 +130,16 @@ export default function InviteFriendsSheet({
                     <p className="text-center text-xs leading-5 text-stone-400">
                         You can invite more people later from the trip settings.
                     </p>
+                    <div className="border-t border-stone-200 p-4">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+                        >
+                            Done
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div className="border-t border-stone-200 p-4">
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
-                >
-                    Done
-                </button>
             </div>
         </div>
     );

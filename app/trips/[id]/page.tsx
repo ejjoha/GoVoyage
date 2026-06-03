@@ -100,6 +100,7 @@ export default function TripPage() {
   const [showTripSetupSheet, setShowTripSetupSheet] = useState(false);
   const [showInviteFriendsSheet, setShowInviteFriendsSheet] = useState(false);
   const [showTripCurrenciesSheet, setShowTripCurrenciesSheet] = useState(false);
+  const [hasReviewedCurrencies, setHasReviewedCurrencies] = useState(false);
   const [returnToSetupAfterEdit, setReturnToSetupAfterEdit] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState("");
@@ -1224,6 +1225,7 @@ export default function TripPage() {
           onClose={() => {
             resetTripFormFromTrip();
             setShowTripCurrenciesSheet(false);
+            setHasReviewedCurrencies(true);
             setShowTripSetupSheet(true);
           }}
           onSave={async () => {
@@ -1242,6 +1244,7 @@ export default function TripPage() {
             }
 
             await fetchTrip();
+            setHasReviewedCurrencies(true);
             setShowTripCurrenciesSheet(false);
             setShowTripSetupSheet(true);
           }}
@@ -1334,7 +1337,7 @@ export default function TripPage() {
       {showTripSetupSheet && (
         <TripSetupSheet
           inviteComplete={tripInvites.length > 0}
-          currenciesComplete={(trip?.currencies?.length ?? 0) > 0}
+          currenciesComplete={hasReviewedCurrencies}
           onClose={() => {
             setShowTripSetupSheet(false);
             router.replace(`/trips/${id}`);
