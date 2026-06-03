@@ -74,8 +74,8 @@ export default function TripSetupSheet({
                         {inviteComplete && currenciesComplete
                             ? "Start exploring"
                             : inviteComplete || currenciesComplete
-                                ? "Done for now"
-                                : "Not now"}
+                                ? "Done for now - go explore!"
+                                : "Later"}
                     </button>
                 </div>
             </div>

@@ -132,6 +132,15 @@ export default function InviteFriendsSheet({
                     </p>
                 </div>
             </div>
+            <div className="border-t border-stone-200 p-4">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                    Done
+                </button>
+            </div>
         </div>
     );
 }
