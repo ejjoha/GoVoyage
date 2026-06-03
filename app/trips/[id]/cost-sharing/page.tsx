@@ -1,5 +1,6 @@
 "use client";
 
+import ExpensePageSkeleton from "./components/ExpensePageSkeleton";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -770,7 +771,7 @@ export default function TripCostSharingPage() {
   }, [tripMembers]);
 
   if (isLoadingTrip) {
-    return <div className="p-8">Loading trip...</div>;
+    return <ExpensePageSkeleton />;
   }
 
   if (!trip) {
