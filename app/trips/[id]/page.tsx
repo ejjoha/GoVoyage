@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useTripMembers } from "./hooks/useTripMembers";
 import { useTripBookings } from "./hooks/useTripBookings";
 import Link from "next/link";
 import ScrollToTopButton from "./components/ScrollToTopButton";
+import TripSetupSheet from "./components/TripSetupSheet";
 
 import {
   createBooking,
@@ -59,6 +60,7 @@ type ConfirmState =
 export default function TripPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = Number(params.id);
 
   const [trip, setTrip] = useState<Trip | null>(null);
@@ -93,6 +95,7 @@ export default function TripPage() {
 
   const [tripFormError, setTripFormError] = useState("");
   const [showTravellersSheet, setShowTravellersSheet] = useState(false);
+  const [showTripSetupSheet, setShowTripSetupSheet] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
@@ -268,6 +271,12 @@ export default function TripPage() {
 
     checkAuthAndLoad();
   }, [id]);
+
+  useEffect(() => {
+    if (searchParams.get("setup") === "1") {
+      setShowTripSetupSheet(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
@@ -1263,6 +1272,27 @@ export default function TripPage() {
             </div>
           </div>
         </div>
+      )}
+      {showTripSetupSheet && (
+        <TripSetupSheet
+          onClose={() => {
+            setShowTripSetupSheet(false);
+            router.replace(`/trips/${id}`);
+          }}
+          onInviteTravellers={() => {
+            setShowTripSetupSheet(false);
+            setShowTravellersSheet(true);
+            router.replace(`/trips/${id}`);
+          }}
+          onChooseCurrencies={() => {
+            setShowTripSetupSheet(false);
+            setShowTripForm(true);
+            router.replace(`/trips/${id}`);
+          }}
+          onStartPacking={() => {
+            router.push(`/trips/${id}/pack-list`);
+          }}
+        />
       )}
       <ScrollToTopButton />
     </>

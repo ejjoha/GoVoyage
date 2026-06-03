@@ -13,9 +13,6 @@ type CreateTripModalProps = {
     newDestination: string;
     setNewDestination: (value: string) => void;
 
-    newImageUrl: string;
-    setNewImageUrl: (value: string) => void;
-
     newStartDate: string;
     setNewStartDate: (value: string) => void;
 
@@ -50,8 +47,6 @@ export default function CreateTripModal({
     setNewTitle,
     newDestination,
     setNewDestination,
-    newImageUrl,
-    setNewImageUrl,
     newStartDate,
     setNewStartDate,
     newEndDate,
@@ -118,18 +113,6 @@ export default function CreateTripModal({
                                     type="text"
                                     value={newDestination}
                                     onChange={(e) => setNewDestination(e.target.value)}
-                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-stone-700">
-                                    Image URL
-                                </label>
-                                <input
-                                    type="text"
-                                    value={newImageUrl}
-                                    onChange={(e) => setNewImageUrl(e.target.value)}
                                     className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
                                 />
                             </div>

@@ -4,6 +4,7 @@ import CreateTripModal from "@/components/CreateTripModal";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getDestinationImage } from "@/lib/pexels";
 import { TripCard } from "@/components/TripCard";
 import { PastTripCard } from "@/components/PastTripCard";
 import { TripCardSkeleton } from "@/components/TripCardSkeleton";
@@ -57,7 +58,6 @@ export default function HomePage() {
   const [newDestination, setNewDestination] = useState("");
   const [newStartDate, setNewStartDate] = useState("");
   const [newEndDate, setNewEndDate] = useState("");
-  const [newImageUrl, setNewImageUrl] = useState("");
   const [travellerName, setTravellerName] = useState("");
   const [newTravellers, setNewTravellers] = useState<NewTraveller[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -206,10 +206,12 @@ export default function HomePage() {
     }
 
     try {
+      const destinationImageUrl = await getDestinationImage(newDestination.trim());
+
       const data = await createTrip({
         title: newTitle.trim(),
         destination: newDestination.trim(),
-        image_url: newImageUrl.trim() || undefined,
+        image_url: destinationImageUrl || undefined,
         start_date: newStartDate,
         end_date: newEndDate,
         currencies: selectedCurrencies,
@@ -232,12 +234,29 @@ export default function HomePage() {
 
         if (inviteError) {
           console.error("Error saving trip invite:", inviteError);
+        } else {
+          const emailResponse = await fetch("/api/send-trip-invite", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: invite,
+              tripTitle: newTitle.trim() || "a trip",
+              inviterName: "Someone",
+            }),
+          });
+
+          if (!emailResponse.ok) {
+            console.error(
+              "Invite saved, but the email could not be sent."
+            );
+          }
         }
       }
 
       setNewTitle("");
       setNewDestination("");
-      setNewImageUrl("");
       setNewStartDate("");
       setNewEndDate("");
       setTravellerName("");
@@ -247,7 +266,7 @@ export default function HomePage() {
 
       setIsCreatingTrip(false);
 
-      router.push(`/trips/${data.id}`);
+      router.push(`/trips/${data.id}?setup=1`);
     } catch (err) {
       console.error("Unexpected error creating trip:", err);
       setCreateTripError("Failed to create trip.");
@@ -385,8 +404,6 @@ export default function HomePage() {
             setNewTitle={setNewTitle}
             newDestination={newDestination}
             setNewDestination={setNewDestination}
-            newImageUrl={newImageUrl}
-            setNewImageUrl={setNewImageUrl}
             newStartDate={newStartDate}
             setNewStartDate={setNewStartDate}
             newEndDate={newEndDate}
