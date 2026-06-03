@@ -199,11 +199,6 @@ export default function HomePage() {
       setIsCreatingTrip(false);
       return;
     }
-    if (newTravellers.length === 0) {
-      setCreateTripError("Please add at least one traveller.");
-      setIsCreatingTrip(false);
-      return;
-    }
 
     try {
       const destinationImageUrl = await getDestinationImage(newDestination.trim());
@@ -217,11 +212,13 @@ export default function HomePage() {
         currencies: selectedCurrencies,
       });
 
+      const travellersToSave =
+        newTravellers.length > 0
+          ? newTravellers.map((t) => ({ name: t.name }))
+          : [{ name: userEmail || "Me" }];
+
       try {
-        await addTripMembers(
-          data.id,
-          newTravellers.map((t) => ({ name: t.name }))
-        );
+        await addTripMembers(data.id, travellersToSave);
       } catch (err) {
         console.error("Error saving travellers:", err);
         alert("Trip created, but travellers could not be saved");
@@ -408,23 +405,9 @@ export default function HomePage() {
             setNewStartDate={setNewStartDate}
             newEndDate={newEndDate}
             setNewEndDate={setNewEndDate}
-            travellerName={travellerName}
-            setTravellerName={setTravellerName}
-            newTravellers={newTravellers}
-            onAddTraveller={handleAddTraveller}
-            onRemoveTraveller={handleRemoveTraveller}
-            inviteEmail={inviteEmail}
-            setInviteEmail={setInviteEmail}
-            selectedCurrencies={selectedCurrencies}
-            setSelectedCurrencies={setSelectedCurrencies}
-            customCurrency={customCurrency}
-            setCustomCurrency={setCustomCurrency}
             createTripError={createTripError}
             isCreatingTrip={isCreatingTrip}
-            onClose={() => {
-              setShowForm(false);
-              setCreateTripError("");
-            }}
+            onClose={() => setShowForm(false)}
             onCreateTrip={handleCreateTrip}
           />
         )}

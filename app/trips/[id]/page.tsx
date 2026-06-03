@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import InviteFriendsSheet from "./components/InviteFriendsSheet";
+import TripCurrenciesSheet from "./components/TripCurrenciesSheet";
 import { useTripMembers } from "./hooks/useTripMembers";
 import { useTripBookings } from "./hooks/useTripBookings";
 import Link from "next/link";
@@ -96,6 +98,9 @@ export default function TripPage() {
   const [tripFormError, setTripFormError] = useState("");
   const [showTravellersSheet, setShowTravellersSheet] = useState(false);
   const [showTripSetupSheet, setShowTripSetupSheet] = useState(false);
+  const [showInviteFriendsSheet, setShowInviteFriendsSheet] = useState(false);
+  const [showTripCurrenciesSheet, setShowTripCurrenciesSheet] = useState(false);
+  const [returnToSetupAfterEdit, setReturnToSetupAfterEdit] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
@@ -370,6 +375,13 @@ export default function TripPage() {
     setTripSuccessMessage("Trip updated");
     setTripFormError("");
     setShowTripForm(false);
+
+    if (returnToSetupAfterEdit) {
+      setReturnToSetupAfterEdit(false);
+      window.setTimeout(() => {
+        setShowTripSetupSheet(true);
+      }, 250);
+    }
 
     setTimeout(() => {
       setTripSuccessMessage("");
@@ -1205,6 +1217,52 @@ export default function TripPage() {
         </div>
       )}
 
+      {showTripCurrenciesSheet && (
+        <TripCurrenciesSheet
+          editCurrencies={editCurrencies}
+          setEditCurrencies={setEditCurrencies}
+          onClose={() => {
+            resetTripFormFromTrip();
+            setShowTripCurrenciesSheet(false);
+            setShowTripSetupSheet(true);
+          }}
+          onSave={async () => {
+            const { error } = await updateTrip(id, {
+              title: editTripTitle.trim(),
+              destination: editTripDestination.trim(),
+              image_url: editTripImageUrl.trim() || null,
+              start_date: editTripStartDate,
+              end_date: editTripEndDate,
+              currencies: editCurrencies,
+            });
+
+            if (error) {
+              console.error("Error updating currencies:", error);
+              return;
+            }
+
+            await fetchTrip();
+            setShowTripCurrenciesSheet(false);
+            setShowTripSetupSheet(true);
+          }}
+        />
+      )}
+
+      {showInviteFriendsSheet && (
+        <InviteFriendsSheet
+          inviteEmail={inviteEmail}
+          setInviteEmail={setInviteEmail}
+          inviteMessage={inviteMessage}
+          tripInvites={tripInvites}
+          onClose={() => {
+            setShowInviteFriendsSheet(false);
+            setShowTripSetupSheet(true);
+          }}
+          onSendInvite={inviteTravellerByEmail}
+          onDeleteInvite={handleDeleteInvite}
+        />
+      )}
+
       {showStaysSheet && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
@@ -1275,22 +1333,21 @@ export default function TripPage() {
       )}
       {showTripSetupSheet && (
         <TripSetupSheet
+          inviteComplete={tripInvites.length > 0}
+          currenciesComplete={(trip?.currencies?.length ?? 0) > 0}
           onClose={() => {
             setShowTripSetupSheet(false);
             router.replace(`/trips/${id}`);
           }}
           onInviteTravellers={() => {
             setShowTripSetupSheet(false);
-            setShowTravellersSheet(true);
+            setShowInviteFriendsSheet(true);
             router.replace(`/trips/${id}`);
           }}
           onChooseCurrencies={() => {
             setShowTripSetupSheet(false);
-            setShowTripForm(true);
+            setShowTripCurrenciesSheet(true);
             router.replace(`/trips/${id}`);
-          }}
-          onStartPacking={() => {
-            router.push(`/trips/${id}/pack-list`);
           }}
         />
       )}
