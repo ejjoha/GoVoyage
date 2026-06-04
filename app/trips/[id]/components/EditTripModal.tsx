@@ -36,6 +36,8 @@ type EditTripModalProps = {
     newTravellerName: string;
     setNewTravellerName: (value: string) => void;
 
+    inviteName: string;
+    setInviteName: (value: string) => void;
     inviteEmail: string;
     setInviteEmail: (value: string) => void;
     inviteMessage: string;
@@ -70,6 +72,8 @@ export default function EditTripModal({
     tripMembers,
     newTravellerName,
     setNewTravellerName,
+    inviteName,
+    setInviteName,
     inviteEmail,
     setInviteEmail,
     inviteMessage,
@@ -249,6 +253,8 @@ export default function EditTripModal({
                             )}
                         </div>
 
+
+
                         <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
                             <h3 className="text-sm font-semibold text-stone-900">
                                 Invite by email
@@ -258,19 +264,27 @@ export default function EditTripModal({
                                 Invite someone to access and edit this trip.
                             </p>
 
-                            <div className="mt-4 flex gap-2">
+                            <div className="mt-4 space-y-3">
+                                <input
+                                    type="text"
+                                    placeholder="Traveller name, e.g. Dad"
+                                    value={inviteName}
+                                    onChange={(e) => setInviteName(e.target.value)}
+                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                                />
+
                                 <input
                                     type="email"
                                     placeholder="friend@example.com"
                                     value={inviteEmail}
                                     onChange={(e) => setInviteEmail(e.target.value)}
-                                    className="min-w-0 flex-1 rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
                                 />
 
                                 <button
                                     type="button"
                                     onClick={onInviteTraveller}
-                                    className="shrink-0 self-start rounded-xl bg-stone-900 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-black hover:shadow-md active:scale-[0.98] sm:self-auto"
+                                    className="w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-black hover:shadow-md active:scale-[0.98]"
                                 >
                                     Invite
                                 </button>

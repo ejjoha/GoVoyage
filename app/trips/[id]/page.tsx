@@ -104,6 +104,7 @@ export default function TripPage() {
   const [returnToSetupAfterEdit, setReturnToSetupAfterEdit] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
 
   const [tripInvites, setTripInvites] = useState<TripInvite[]>([]);
@@ -158,14 +159,20 @@ export default function TripPage() {
   }
 
   async function inviteTravellerByEmail() {
+    const name = inviteName.trim();
     const email = inviteEmail.trim().toLowerCase();
+
+    if (!name) {
+      setInviteMessage("Enter a traveller name.");
+      return;
+    }
 
     if (!email) {
       setInviteMessage("Enter an email address.");
       return;
     }
 
-    const { error } = await createTripInvite(id, email);
+    const { error } = await createTripInvite(id, name, email);
 
     if (error) {
       setInviteMessage(error.message);
@@ -186,6 +193,7 @@ export default function TripPage() {
 
     if (!emailResponse.ok) {
       setInviteEmail("");
+      setInviteName("");
       setInviteMessage(
         "Invite saved, but the email could not be sent. You may need to tell them manually."
       );
@@ -195,6 +203,7 @@ export default function TripPage() {
     }
 
     setInviteEmail("");
+    setInviteName("");
     setInviteMessage(
       "Invite sent. They’ll receive an email with instructions."
     );
@@ -1033,6 +1042,8 @@ export default function TripPage() {
           tripMembers={tripMembers}
           newTravellerName={newTravellerName}
           setNewTravellerName={setNewTravellerName}
+          inviteName={inviteName}
+          setInviteName={setInviteName}
           inviteEmail={inviteEmail}
           setInviteEmail={setInviteEmail}
           inviteMessage={inviteMessage}
@@ -1131,11 +1142,11 @@ export default function TripPage() {
       />
       {showTravellersSheet && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
+          className="fixed inset-0 z-50 flex min-h-[100dvh] items-end justify-center bg-black/45 px-3 pt-12 pb-6 backdrop-blur-[2px] sm:items-center sm:p-6"
           onClick={() => setShowTravellersSheet(false)}
         >
           <div
-            className="sheet-up flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            className="sheet-up flex max-h-[calc(100dvh-3rem)] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
@@ -1183,7 +1194,7 @@ export default function TripPage() {
                 </div>
               )}
 
-              {tripMembers.length === 0 ? (
+              {tripMembers.length === 0 && tripInvites.filter((invite) => !invite.accepted_at).length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
                   <p className="text-sm text-stone-500">No travellers added yet.</p>
                 </div>
@@ -1191,7 +1202,7 @@ export default function TripPage() {
                 <div className="space-y-3">
                   {tripMembers.map((member) => (
                     <div
-                      key={member.id}
+                      key={`member-${member.id}`}
                       className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
                     >
                       <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
@@ -1218,6 +1229,37 @@ export default function TripPage() {
                       </button>
                     </div>
                   ))}
+
+                  {tripInvites
+                    .filter((invite) => !invite.accepted_at)
+                    .map((invite) => (
+                      <div
+                        key={`invite-${invite.id}`}
+                        className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4"
+                      >
+                        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-amber-700 shadow-sm">
+                            @
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-stone-800">
+                              {invite.name || invite.email}
+                            </p>
+
+                            {invite.name && (
+                              <p className="truncate text-xs text-stone-500">
+                                {invite.email}
+                              </p>
+                            )}
+
+                            <p className="text-xs font-medium text-amber-700">
+                              Invited / pending
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>
@@ -1260,6 +1302,8 @@ export default function TripPage() {
 
       {showInviteFriendsSheet && (
         <InviteFriendsSheet
+          inviteName={inviteName}
+          setInviteName={setInviteName}
           inviteEmail={inviteEmail}
           setInviteEmail={setInviteEmail}
           inviteMessage={inviteMessage}

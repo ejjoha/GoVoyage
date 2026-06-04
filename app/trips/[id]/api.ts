@@ -3,6 +3,7 @@ import type { Booking, Trip, TripMember } from "./types";
 
 export type TripInvite = {
     id: number;
+    name: string | null;
     email: string;
     role: string;
     accepted_at: string | null;
@@ -50,7 +51,7 @@ export async function getBookings(tripId: number) {
 export async function getTripInvites(tripId: number) {
     const response = await supabase
         .from("trip_invites")
-        .select("id, email, role, accepted_at")
+        .select("id, name, email, role, accepted_at")
         .eq("trip_id", tripId)
         .order("created_at", { ascending: true });
 
@@ -61,10 +62,12 @@ export async function getTripInvites(tripId: number) {
 }
 export async function createTripInvite(
     tripId: number,
+    name: string,
     email: string
 ) {
     return supabase.from("trip_invites").insert({
         trip_id: tripId,
+        name,
         email,
         role: "editor",
     });

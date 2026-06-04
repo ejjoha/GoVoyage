@@ -1,9 +1,12 @@
 type TripInvite = {
     id: number;
+    name: string | null;
     email: string;
 };
 
 type InviteFriendsSheetProps = {
+    inviteName: string;
+    setInviteName: (value: string) => void;
     inviteEmail: string;
     setInviteEmail: (value: string) => void;
     inviteMessage: string;
@@ -14,6 +17,8 @@ type InviteFriendsSheetProps = {
 };
 
 export default function InviteFriendsSheet({
+    inviteName,
+    setInviteName,
     inviteEmail,
     setInviteEmail,
     inviteMessage,
@@ -57,28 +62,42 @@ export default function InviteFriendsSheet({
                 </div>
 
                 <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-5">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-stone-700">
-                            Email address
-                        </label>
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-sm font-medium text-stone-700">
+                                Traveller name
+                            </label>
 
-                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={inviteName}
+                                onChange={(e) => setInviteName(e.target.value)}
+                                placeholder="Dad, Anna, friend..."
+                                className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium text-stone-700">
+                                Email address
+                            </label>
+
                             <input
                                 type="email"
                                 value={inviteEmail}
                                 onChange={(e) => setInviteEmail(e.target.value)}
                                 placeholder="friend@example.com"
-                                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                                className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
                             />
-
-                            <button
-                                type="button"
-                                onClick={onSendInvite}
-                                className="rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
-                            >
-                                Send
-                            </button>
                         </div>
+
+                        <button
+                            type="button"
+                            onClick={onSendInvite}
+                            className="w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+                        >
+                            Send
+                        </button>
                     </div>
 
                     {inviteMessage && (
@@ -107,8 +126,15 @@ export default function InviteFriendsSheet({
                                     >
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-medium text-stone-800">
-                                                {invite.email}
+                                                {invite.name || invite.email}
                                             </p>
+
+                                            {invite.name && (
+                                                <p className="truncate text-xs text-stone-500">
+                                                    {invite.email}
+                                                </p>
+                                            )}
+
                                             <p className="mt-0.5 text-xs text-stone-500">
                                                 Invitation sent
                                             </p>

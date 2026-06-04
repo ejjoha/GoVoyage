@@ -8,6 +8,8 @@ export default function AccountPage() {
     const router = useRouter();
 
     const [userEmail, setUserEmail] = useState("");
+    const [displayName, setDisplayName] = useState("");
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState("");
     const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -29,6 +31,13 @@ export default function AccountPage() {
             }
 
             setUserEmail(user.email || "Unknown user");
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("display_name")
+                .eq("user_id", user.id)
+                .single();
+
+            setDisplayName(profile?.display_name || "");
             setIsLoading(false);
         }
 
@@ -53,6 +62,45 @@ export default function AccountPage() {
         }
 
         setMessage("Password reset email sent.");
+    }
+
+    async function handleSaveProfile() {
+        const trimmedName = displayName.trim();
+
+        if (!trimmedName) {
+            setMessage("Please enter your name.");
+            return;
+        }
+
+        setIsSavingProfile(true);
+        setMessage("");
+
+        const {
+            data: { user },
+            error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            setIsSavingProfile(false);
+            router.replace("/login");
+            return;
+        }
+
+        const { error } = await supabase
+            .from("profiles")
+            .upsert({
+                user_id: user.id,
+                display_name: trimmedName,
+            });
+
+        setIsSavingProfile(false);
+
+        if (error) {
+            setMessage(error.message);
+            return;
+        }
+
+        setMessage("Profile saved.");
     }
 
     async function handleSignOut() {
@@ -169,13 +217,38 @@ export default function AccountPage() {
                     <section className="rounded-[2rem] border border-stone-200/60 bg-white p-6 shadow-sm">
                         <h2 className="text-lg font-semibold text-stone-900">Profile</h2>
 
-                        <div className="mt-4 rounded-2xl bg-stone-50 px-4 py-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">
-                                Signed in as
-                            </p>
-                            <p className="mt-1 truncate text-sm font-medium text-stone-800">
-                                {userEmail}
-                            </p>
+                        <div className="mt-4 space-y-4">
+                            <div>
+                                <label className="text-sm font-semibold text-stone-700">
+                                    Display name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={displayName}
+                                    onChange={(e) => setDisplayName(e.target.value)}
+                                    placeholder="Your name"
+                                    className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400"
+                                />
+                            </div>
+
+                            <div className="rounded-2xl bg-stone-50 px-4 py-3">
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">
+                                    Signed in as
+                                </p>
+                                <p className="mt-1 truncate text-sm font-medium text-stone-800">
+                                    {userEmail}
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleSaveProfile}
+                                disabled={isSavingProfile}
+                                className="w-full rounded-2xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:bg-rose-200"
+                            >
+                                {isSavingProfile ? "Saving..." : "Save profile"}
+                            </button>
                         </div>
                     </section>
                 )}

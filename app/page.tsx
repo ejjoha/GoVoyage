@@ -235,7 +235,7 @@ export default function HomePage() {
       const invite = inviteEmail.trim().toLowerCase();
 
       if (invite) {
-        const { error: inviteError } = await createTripInvite(data.id, invite);
+        const { error: inviteError } = await createTripInvite(data.id, invite, invite);
 
         if (inviteError) {
           console.error("Error saving trip invite:", inviteError);
