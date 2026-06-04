@@ -106,17 +106,16 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                {mode === "signUp" && (
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400"
-                    />
-                )}
-                
                 <form className="space-y-4">
+                    {mode === "signUp" && (
+                        <input
+                            type="text"
+                            placeholder="Name"
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                            className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400"
+                        />
+                    )}
                     <input
                         type="email"
                         placeholder="Email"
