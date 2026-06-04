@@ -102,11 +102,23 @@ export async function leaveTripByEmail(
 }
 
 export async function leaveTripAsCollaborator(
+
     tripId: number,
     userId: string
 ) {
     return supabase
         .from("trip_collaborators")
+        .delete()
+        .eq("trip_id", tripId)
+        .eq("user_id", userId);
+}
+
+export async function leaveTripAsMember(
+    tripId: number,
+    userId: string
+) {
+    return supabase
+        .from("trip_members")
         .delete()
         .eq("trip_id", tripId)
         .eq("user_id", userId);
