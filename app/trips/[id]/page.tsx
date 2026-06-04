@@ -1181,30 +1181,6 @@ export default function TripPage() {
             </div>
 
             <div className="min-h-0 overflow-y-auto space-y-4 px-5 py-5">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Add traveller"
-                  value={newTravellerName}
-                  onChange={(e) => setNewTravellerName(e.target.value)}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400"
-                />
-
-                <button
-                  type="button"
-                  onClick={addTraveller}
-                  className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
-                >
-                  Add
-                </button>
-              </div>
-
-              {travellerFormError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {travellerFormError}
-                </div>
-              )}
-
               {tripMembers.length === 0 && tripInvites.filter((invite) => !invite.accepted_at).length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
                   <p className="text-sm text-stone-500">No travellers added yet.</p>
@@ -1273,6 +1249,76 @@ export default function TripPage() {
                     ))}
                 </div>
               )}
+
+              <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
+                <h3 className="text-sm font-semibold text-stone-900">
+                  Invite traveller
+                </h3>
+
+                <p className="mt-1 text-sm text-stone-500">
+                  Send an email invite to someone who should join this trip.
+                </p>
+
+                <div className="mt-4 space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Traveller name, e.g. Dad"
+                    value={inviteName}
+                    onChange={(e) => setInviteName(e.target.value)}
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                  />
+
+                  <input
+                    type="email"
+                    placeholder="friend@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={inviteTravellerByEmail}
+                    className="w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+                  >
+                    Invite
+                  </button>
+
+                  <p className="mt-1 text-sm text-stone-500">
+                    Or add a traveller under your supervision.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add traveller"
+                      value={newTravellerName}
+                      onChange={(e) => setNewTravellerName(e.target.value)}
+                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={addTraveller}
+                      className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {inviteMessage && (
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  {inviteMessage}
+                </div>
+              )}
+
+              {travellerFormError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {travellerFormError}
+                </div>
+              )}
+
+
             </div>
           </div>
         </div>
