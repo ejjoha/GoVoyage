@@ -783,10 +783,17 @@ export default function TripPage() {
   }, [bookings]);
 
   const heroStats = useMemo(() => {
+    const pendingInviteCount = tripInvites.filter(
+      (invite) => !invite.accepted_at
+    ).length;
+
+    const visibleTravellerCount =
+      tripMembers.length + pendingInviteCount;
+
     return [
       {
-        label: tripMembers.length === 1 ? "traveller" : "travellers",
-        value: String(tripMembers.length),
+        label: visibleTravellerCount === 1 ? "traveller" : "travellers",
+        value: String(visibleTravellerCount),
         onClick: () => setShowTravellersSheet(true),
         ariaLabel: "Show travellers",
       },
@@ -808,7 +815,7 @@ export default function TripPage() {
         ariaLabel: hotelStays.length > 0 ? "Show hotel stays" : undefined,
       },
     ];
-  }, [tripMembers.length, bookings.length, tripNights, hotelStays.length]);
+  }, [tripMembers.length, tripInvites, bookings.length, tripNights, hotelStays.length]);
 
   if (isTripLoading) {
     return (
