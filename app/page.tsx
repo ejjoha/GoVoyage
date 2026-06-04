@@ -43,6 +43,7 @@ function HomeHeroSkeleton() {
 export default function HomePage() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
+  const [userDisplayName, setUserDisplayName] = useState("");
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
 
@@ -118,6 +119,13 @@ export default function HomePage() {
       }
 
       setUserEmail(user.email || "Unknown user");
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      setUserDisplayName(profile?.display_name || "");
 
       await fetchTrips();
     }
@@ -215,7 +223,7 @@ export default function HomePage() {
       const travellersToSave =
         newTravellers.length > 0
           ? newTravellers.map((t) => ({ name: t.name }))
-          : [{ name: userEmail || "Me" }];
+          : [{ name: userDisplayName || userEmail || "Me" }];
 
       try {
         await addTripMembers(data.id, travellersToSave);
@@ -341,6 +349,7 @@ export default function HomePage() {
                       onClick={async () => {
                         await supabase.auth.signOut();
                         setUserEmail("");
+                        setUserDisplayName("");
                         window.location.href = "/login";
                       }}
                       className="flex w-full items-center justify-center rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 active:scale-[0.98]"

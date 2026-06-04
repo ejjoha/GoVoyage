@@ -8,6 +8,7 @@ export default function LoginPage() {
     const router = useRouter();
 
     const [email, setEmail] = useState("");
+    const [displayName, setDisplayName] = useState("");
     const [password, setPassword] = useState("");
     const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
 
@@ -49,14 +50,14 @@ export default function LoginPage() {
 
     async function handleSignUp(e: React.FormEvent) {
         e.preventDefault();
-        if (!email.trim() || !password) {
-            setMessage("Please enter both email and password.");
+        if (!displayName.trim() || !email.trim() || !password) {
+            setMessage("Please enter your name, email, and password.");
             return;
         }
         setIsLoading(true);
         setMessage("");
 
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
         });
@@ -66,6 +67,19 @@ export default function LoginPage() {
         if (error) {
             setMessage(error.message);
             return;
+        }
+
+        if (data.user) {
+            const { error: profileError } = await supabase
+                .from("profiles")
+                .insert({
+                    user_id: data.user.id,
+                    display_name: displayName.trim(),
+                });
+
+            if (profileError) {
+                console.error("Error creating profile:", profileError);
+            }
         }
 
         const { error: inviteError } = await supabase.rpc("accept_trip_invites");
@@ -92,6 +106,16 @@ export default function LoginPage() {
                     </p>
                 </div>
 
+                {mode === "signUp" && (
+                    <input
+                        type="text"
+                        placeholder="Name"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400"
+                    />
+                )}
+                
                 <form className="space-y-4">
                     <input
                         type="email"
