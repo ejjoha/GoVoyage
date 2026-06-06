@@ -45,11 +45,11 @@ type EditTripModalProps = {
 
     onClose: () => void;
     onSaveTrip: (event: React.FormEvent) => void;
-    onAddTraveller: () => void;
-    onDeleteTraveller: (memberId: number) => void;
-    onDeleteInvite: (inviteId: number) => void;
-    onInviteTraveller: () => void;
-    onDeleteTrip: () => void;
+    onAddTraveller?: () => void;
+    onDeleteTraveller?: (memberId: number) => void;
+    onDeleteInvite?: (inviteId: number) => void;
+    onInviteTraveller?: () => void;
+    onDeleteTrip?: () => void;
     onLeaveTrip: () => void;
 };
 
@@ -202,6 +202,7 @@ export default function EditTripModal({
                                 <button
                                     type="button"
                                     onClick={onAddTraveller}
+                                    disabled={!onAddTraveller}
                                     className="shrink-0 self-start rounded-xl bg-stone-900 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-black hover:shadow-md active:scale-[0.98] sm:self-auto"
                                 >
                                     Add
@@ -240,13 +241,15 @@ export default function EditTripModal({
                                                 </span>
                                             </div>
 
-                                            <button
-                                                type="button"
-                                                onClick={() => onDeleteTraveller(member.id)}
-                                                className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
-                                            >
-                                                Remove
-                                            </button>
+                                            {onDeleteTraveller && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onDeleteTraveller(member.id)}
+                                                    className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                                                >
+                                                    Remove
+                                                </button>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -284,6 +287,7 @@ export default function EditTripModal({
                                 <button
                                     type="button"
                                     onClick={onInviteTraveller}
+                                    disabled={!onInviteTraveller}
                                     className="w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-black hover:shadow-md active:scale-[0.98]"
                                 >
                                     Invite
@@ -326,7 +330,7 @@ export default function EditTripModal({
                                                 {isTripOwner && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => onDeleteInvite(invite.id)}
+                                                        onClick={() => onDeleteInvite?.(invite.id)}
                                                         className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500 transition hover:bg-red-100"
                                                     >
                                                         Remove
@@ -441,6 +445,7 @@ export default function EditTripModal({
                                 <button
                                     type="button"
                                     onClick={onDeleteTrip}
+                                    disabled={!onDeleteTrip}
                                     className="mt-4 rounded-xl bg-white px-4 py-3 text-sm font-medium text-red-600 shadow-sm transition hover:bg-red-100"
                                 >
                                     Delete trip

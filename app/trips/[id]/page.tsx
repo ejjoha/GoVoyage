@@ -70,6 +70,7 @@ export default function TripPage() {
   const [isTripLoading, setIsTripLoading] = useState(true);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
   const [showTripForm, setShowTripForm] = useState(false);
   const [tripSuccessMessage, setTripSuccessMessage] = useState("");
@@ -315,6 +316,15 @@ export default function TripPage() {
       }
 
       setCurrentUserId(user.id);
+
+      const { data: collaboratorRow } = await supabase
+        .from("trip_collaborators")
+        .select("role")
+        .eq("trip_id", id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      setCurrentUserRole(collaboratorRow?.role || null);
 
       fetchTrip();
       fetchBookings();
@@ -792,6 +802,10 @@ export default function TripPage() {
   const isTripOwner = Boolean(
     trip && currentUserId && trip.user_id === currentUserId
   );
+  const canManageTrip = isTripOwner || currentUserRole === "editor";
+  const canInvitePeople = canManageTrip;
+  const canManageTravellers = canManageTrip;
+  const canDeleteTrip = isTripOwner;
 
   const filterOptions: BookingFilter[] = ["all", "flight", "hotel", "plans"];
 
@@ -1072,7 +1086,7 @@ export default function TripPage() {
 
       {showTripForm && (
         <EditTripModal
-          isTripOwner={isTripOwner}
+          isTripOwner={canDeleteTrip}
           editTripTitle={editTripTitle}
           setEditTripTitle={setEditTripTitle}
           editTripDestination={editTripDestination}
@@ -1098,11 +1112,11 @@ export default function TripPage() {
           tripInvites={tripInvites}
           onClose={resetTripFormFromTrip}
           onSaveTrip={handleSaveTrip}
-          onAddTraveller={addTraveller}
-          onDeleteTraveller={handleDeleteTraveller}
-          onDeleteInvite={handleDeleteInvite}
-          onInviteTraveller={inviteTravellerByEmail}
-          onDeleteTrip={handleDeleteTrip}
+          onAddTraveller={canManageTravellers ? addTraveller : undefined}
+          onDeleteTraveller={canManageTravellers ? handleDeleteTraveller : undefined}
+          onDeleteInvite={canInvitePeople ? handleDeleteInvite : undefined}
+          onInviteTraveller={canInvitePeople ? inviteTravellerByEmail : undefined}
+          onDeleteTrip={canDeleteTrip ? handleDeleteTrip : undefined}
           onLeaveTrip={handleLeaveTrip}
         />
       )}
@@ -1260,13 +1274,15 @@ export default function TripPage() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteTraveller(member.id)}
-                        className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
-                      >
-                        Remove
-                      </button>
+                      {canManageTravellers && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTraveller(member.id)}
+                          className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
                   ))}
 
@@ -1410,7 +1426,7 @@ export default function TripPage() {
         />
       )}
 
-      {showInviteFriendsSheet && (
+      {showInviteFriendsSheet && canInvitePeople && (
         <InviteFriendsSheet
           inviteName={inviteName}
           setInviteName={setInviteName}
@@ -1504,6 +1520,12 @@ export default function TripPage() {
             router.replace(`/trips/${id}`);
           }}
           onInviteTravellers={() => {
+            if (!canInvitePeople) {
+              setShowTripSetupSheet(false);
+              router.replace(`/trips/${id}`);
+              return;
+            }
+
             setShowTripSetupSheet(false);
             setInviteName("");
             setInviteEmail("");
