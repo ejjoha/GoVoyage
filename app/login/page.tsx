@@ -43,6 +43,7 @@ export default function LoginPage() {
             console.error("Error accepting trip invites:", inviteError);
         }
 
+        localStorage.removeItem("cached-trips");
         setMessage("Signed in. Redirecting...");
 
         window.location.href = "/";
@@ -88,7 +89,10 @@ export default function LoginPage() {
             console.error("Error accepting trip invites:", inviteError);
         }
 
-        setMessage("Account created. You can now sign in.");
+        localStorage.removeItem("cached-trips");
+        setMessage("Account created. Redirecting...");
+
+        window.location.href = "/";
     }
 
     return (

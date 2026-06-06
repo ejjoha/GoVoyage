@@ -44,6 +44,71 @@ export async function getTrips() {
     return data || [];
 }
 
+export type PendingTripInvite = {
+    id: number;
+    trip_id: number;
+    name: string | null;
+    email: string;
+    role: string;
+    accepted_at: string | null;
+    trips:
+    | {
+        id: number;
+        title: string;
+        destination: string;
+        start_date: string;
+        end_date: string;
+        image_url: string | null;
+    }
+    | {
+        id: number;
+        title: string;
+        destination: string;
+        start_date: string;
+        end_date: string;
+        image_url: string | null;
+    }[]
+    | null;
+};
+
+export async function getPendingTripInvites() {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.email) {
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from("trip_invites")
+        .select(`
+            id,
+            trip_id,
+            name,
+            email,
+            role,
+            accepted_at,
+            trips (
+                id,
+                title,
+                destination,
+                start_date,
+                end_date,
+                image_url
+            )
+        `)
+        .eq("email", user.email.toLowerCase())
+        .is("accepted_at", null)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data || [];
+}
+
 export async function createTrip({
     title,
     destination,

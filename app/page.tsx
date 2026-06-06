@@ -8,7 +8,13 @@ import { getDestinationImage } from "@/lib/pexels";
 import { TripCard } from "@/components/TripCard";
 import { PastTripCard } from "@/components/PastTripCard";
 import { TripCardSkeleton } from "@/components/TripCardSkeleton";
-import { addTripMembers, createTrip, getTrips } from "@/services/trips";
+import {
+  addTripMembers,
+  createTrip,
+  getPendingTripInvites,
+  getTrips,
+  type PendingTripInvite,
+} from "@/services/trips";
 import { createTripInvite } from "@/app/trips/[id]/api";
 import type { Trip } from "@/types/trip";
 import { PastTripsCarousel } from "@/components/PastTripsCarousel";
@@ -50,6 +56,7 @@ export default function HomePage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [pendingInvites, setPendingInvites] = useState<PendingTripInvite[]>([]);
 
   const [showForm, setShowForm] = useState(false);
   const [createTripError, setCreateTripError] = useState("");
@@ -104,6 +111,38 @@ export default function HomePage() {
     }
   }
 
+  async function fetchPendingInvites() {
+    try {
+      const data = await getPendingTripInvites();
+      setPendingInvites(data as unknown as PendingTripInvite[]);
+    } catch (err) {
+      console.error("Unexpected error loading pending invites:", err);
+      setPendingInvites([]);
+    }
+  }
+
+  async function handleAcceptPendingInvite() {
+    try {
+      const { error } = await supabase.rpc("accept_trip_invites");
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      localStorage.removeItem("cached-trips");
+
+      await fetchTrips();
+      await fetchPendingInvites();
+    } catch (err) {
+      console.error("Error accepting pending invite:", err);
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Could not accept invitation."
+      );
+    }
+  }
+
   useEffect(() => {
     async function loadUserAndTrips() {
       const {
@@ -128,6 +167,7 @@ export default function HomePage() {
       setUserDisplayName(profile?.display_name || "");
 
       await fetchTrips();
+      await fetchPendingInvites();
     }
 
     loadUserAndTrips();
@@ -291,7 +331,7 @@ export default function HomePage() {
     };
   }, [trips]);
 
-  const hasAnyTrips = trips.length > 0;
+  const hasAnyTrips = trips.length > 0 || pendingInvites.length > 0;
 
   return (
     <main className="min-h-screen overflow-x-clip px-4 py-6 sm:px-6 sm:py-8">
@@ -449,6 +489,70 @@ export default function HomePage() {
 
         {!isLoading && !errorMessage && hasAnyTrips && (
           <div className="space-y-8">
+            {pendingInvites.length > 0 && (
+              <section className="space-y-5">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">
+                      Invitations
+                    </p>
+
+                    <h2 className="text-2xl font-semibold tracking-[-0.02em] text-stone-900">
+                      Pending invitations
+                    </h2>
+
+                    <p className="mt-1 text-sm leading-6 text-stone-500">
+                      Trips you’ve been invited to join.
+                    </p>
+                  </div>
+
+                  <div className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-stone-700 shadow-sm">
+                    {pendingInvites.length}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {pendingInvites.map((invite) => {
+                    const trip = Array.isArray(invite.trips)
+                      ? invite.trips[0]
+                      : invite.trips;
+
+                    if (!trip) return null;
+
+                    return (
+                      <div
+                        key={invite.id}
+                        className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-5 shadow-sm"
+                      >
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
+                          Trip invitation
+                        </p>
+
+                        <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-stone-900">
+                          {trip.title}
+                        </h3>
+
+                        <p className="mt-1 text-sm text-stone-600">
+                          {trip.destination}
+                        </p>
+
+                        <p className="mt-3 text-sm text-amber-800">
+                          You were invited as {invite.name || invite.email}.
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={handleAcceptPendingInvite}
+                          className="mt-4 w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
+                        >
+                          Accept invitation
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
             {upcomingTrips.length > 0 && (
               <section className="space-y-5">
                 <div className="flex items-end justify-between gap-4">
