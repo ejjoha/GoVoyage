@@ -184,6 +184,32 @@ export default function TripPage() {
       return;
     }
 
+    const { data: inviteCheck, error: inviteCheckError } = await supabase.rpc(
+      "can_invite_to_trip",
+      {
+        target_trip_id: id,
+        target_email: email,
+      }
+    );
+
+    if (inviteCheckError) {
+      setInviteMessage(inviteCheckError.message);
+      return;
+    }
+
+    if (inviteCheck === "already_invited") {
+      setInviteMessage("This person already has a pending invitation.");
+      return;
+    }
+
+    if (
+      inviteCheck === "already_joined" ||
+      inviteCheck === "already_collaborator"
+    ) {
+      setInviteMessage("This person is already on this trip.");
+      return;
+    }
+
     const { error } = await createTripInvite(id, name, email);
 
     if (error) {

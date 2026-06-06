@@ -70,6 +70,7 @@ export default function LoginPage() {
                 .insert({
                     user_id: data.user.id,
                     display_name: displayName.trim(),
+                    email: email.trim().toLowerCase(),
                 });
 
             if (profileError) {

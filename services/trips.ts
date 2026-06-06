@@ -51,6 +51,7 @@ export type PendingTripInvite = {
     email: string;
     role: string;
     accepted_at: string | null;
+    status: string;
     trips:
     | {
         id: number;
@@ -89,6 +90,7 @@ export async function getPendingTripInvites() {
             email,
             role,
             accepted_at,
+            status,
             trips (
                 id,
                 title,
@@ -99,7 +101,7 @@ export async function getPendingTripInvites() {
             )
         `)
         .eq("email", user.email.toLowerCase())
-        .is("accepted_at", null)
+        .eq("status", "pending")
         .order("created_at", { ascending: false });
 
     if (error) {

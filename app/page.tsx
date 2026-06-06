@@ -121,9 +121,11 @@ export default function HomePage() {
     }
   }
 
-  async function handleAcceptPendingInvite() {
+  async function handleAcceptPendingInvite(inviteId: number) {
     try {
-      const { error } = await supabase.rpc("accept_trip_invites");
+      const { error } = await supabase.rpc("accept_trip_invite", {
+        invite_id: inviteId,
+      });
 
       if (error) {
         throw new Error(error.message);
@@ -139,6 +141,27 @@ export default function HomePage() {
         err instanceof Error
           ? err.message
           : "Could not accept invitation."
+      );
+    }
+  }
+
+  async function handleDeclinePendingInvite(inviteId: number) {
+    try {
+      const { error } = await supabase.rpc("decline_trip_invite", {
+        invite_id: inviteId,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      await fetchPendingInvites();
+    } catch (err) {
+      console.error("Error declining pending invite:", err);
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Could not decline invitation."
       );
     }
   }
@@ -540,13 +563,23 @@ export default function HomePage() {
                           You were invited as {invite.name || invite.email}.
                         </p>
 
-                        <button
-                          type="button"
-                          onClick={handleAcceptPendingInvite}
-                          className="mt-4 w-full rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
-                        >
-                          Accept invitation
-                        </button>
+                        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                          <button
+                            type="button"
+                            onClick={() => handleAcceptPendingInvite(invite.id)}
+                            className="rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
+                          >
+                            Accept invitation
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeclinePendingInvite(invite.id)}
+                            className="rounded-2xl border border-amber-300 bg-white px-5 py-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100"
+                          >
+                            Decline
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
