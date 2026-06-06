@@ -1239,9 +1239,25 @@ export default function TripPage() {
                             .toUpperCase()}
                         </div>
 
-                        <span className="min-w-0 truncate text-sm font-medium text-stone-800">
-                          {member.name}
-                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-stone-800">
+                            {member.name}
+                          </p>
+
+                          {trip && member.user_id === trip.user_id ? (
+                            <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                              Owner
+                            </p>
+                          ) : member.user_id ? (
+                            <p className="mt-1 inline-flex rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-semibold text-stone-700">
+                              Collaborator
+                            </p>
+                          ) : (
+                            <p className="mt-1 inline-flex rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-500">
+                              Traveller
+                            </p>
+                          )}
+                        </div>
                       </div>
 
                       <button
@@ -1277,8 +1293,8 @@ export default function TripPage() {
                               </p>
                             )}
 
-                            <p className="text-xs font-medium text-amber-700">
-                              Invited / pending
+                            <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                              Pending invite
                             </p>
                           </div>
                         </div>

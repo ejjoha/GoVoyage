@@ -13,6 +13,7 @@ export type TripMember = {
   id: number;
   trip_id: number;
   name: string;
+  user_id: string | null;
 };
 
 export type BookingType =
