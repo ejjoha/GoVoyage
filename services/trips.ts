@@ -52,6 +52,7 @@ export type PendingTripInvite = {
     role: string;
     accepted_at: string | null;
     status: string;
+    inviter_name: string | null;
     trips:
     | {
         id: number;
@@ -91,6 +92,7 @@ export async function getPendingTripInvites() {
             role,
             accepted_at,
             status,
+            inviter_name,
             trips (
                 id,
                 title,

@@ -561,6 +561,11 @@ export default function HomePage() {
 
                         <p className="mt-3 text-sm text-amber-800">
                           You were invited as {invite.name || invite.email}.
+                          {invite.inviter_name && (
+                            <span className="block text-xs text-stone-500 mt-1">
+                              Invited by {invite.inviter_name}
+                            </span>
+                          )}
                         </p>
 
                         <div className="mt-4 grid gap-2 sm:grid-cols-2">
