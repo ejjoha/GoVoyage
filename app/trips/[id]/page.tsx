@@ -163,6 +163,17 @@ export default function TripPage() {
     const name = inviteName.trim();
     const email = inviteEmail.trim().toLowerCase();
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user?.email && email === user.email.toLowerCase()) {
+      setInviteMessage("You’re already on this trip.");
+      setInviteName("");
+      setInviteEmail("");
+      return;
+    }
+
     if (!name) {
       setInviteMessage("Enter a traveller name.");
       return;
@@ -1452,6 +1463,9 @@ export default function TripPage() {
           }}
           onInviteTravellers={() => {
             setShowTripSetupSheet(false);
+            setInviteName("");
+            setInviteEmail("");
+            setInviteMessage("");
             setShowInviteFriendsSheet(true);
             router.replace(`/trips/${id}`);
           }}

@@ -37,12 +37,6 @@ export default function LoginPage() {
             return;
         }
 
-        const { error: inviteError } = await supabase.rpc("accept_trip_invites");
-
-        if (inviteError) {
-            console.error("Error accepting trip invites:", inviteError);
-        }
-
         localStorage.removeItem("cached-trips");
         setMessage("Signed in. Redirecting...");
 
@@ -81,12 +75,6 @@ export default function LoginPage() {
             if (profileError) {
                 console.error("Error creating profile:", profileError);
             }
-        }
-
-        const { error: inviteError } = await supabase.rpc("accept_trip_invites");
-
-        if (inviteError) {
-            console.error("Error accepting trip invites:", inviteError);
         }
 
         localStorage.removeItem("cached-trips");
