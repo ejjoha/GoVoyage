@@ -2,6 +2,8 @@ type TripInvite = {
     id: number;
     name: string | null;
     email: string;
+    role: string;
+    accepted_at: string | null;
 };
 
 type InviteFriendsSheetProps = {
@@ -14,6 +16,7 @@ type InviteFriendsSheetProps = {
     onClose: () => void;
     onSendInvite: () => void;
     onDeleteInvite: (inviteId: number) => void;
+    onResendInvite: (invite: TripInvite) => void;
 };
 
 export default function InviteFriendsSheet({
@@ -26,6 +29,7 @@ export default function InviteFriendsSheet({
     onClose,
     onSendInvite,
     onDeleteInvite,
+    onResendInvite,
 }: InviteFriendsSheetProps) {
     return (
         <div
@@ -140,13 +144,23 @@ export default function InviteFriendsSheet({
                                             </p>
                                         </div>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => onDeleteInvite(invite.id)}
-                                            className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
-                                        >
-                                            Remove
-                                        </button>
+                                        <div className="flex shrink-0 flex-col gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => onResendInvite(invite)}
+                                                className="rounded-full bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-100"
+                                            >
+                                                Resend
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => onDeleteInvite(invite.id)}
+                                                className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

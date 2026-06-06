@@ -537,6 +537,32 @@ export default function TripPage() {
     await fetchTripInvites();
   }
 
+  async function handleResendInvite(invite: TripInvite) {
+    try {
+      const emailResponse = await fetch("/api/send-trip-invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: invite.email,
+          tripTitle: trip?.title || "a trip",
+          inviterName: "Someone",
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        setInviteMessage("Could not resend email. Please try again.");
+        return;
+      }
+
+      setInviteMessage("Invitation email resent.");
+    } catch (err) {
+      console.error("Error resending invite:", err);
+      setInviteMessage("Something went wrong while resending.");
+    }
+  }
+
   function handleDeleteInvite(inviteId: number) {
     openConfirm({
       title: "Remove this invite?",
@@ -1312,6 +1338,15 @@ export default function TripPage() {
                             <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
                               Pending invite
                             </p>
+                            {canInvitePeople && (
+                              <button
+                                type="button"
+                                onClick={() => handleResendInvite(invite)}
+                                className="mt-2 text-xs font-semibold text-amber-700 hover:underline"
+                              >
+                                Resend email
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1440,6 +1475,7 @@ export default function TripPage() {
           }}
           onSendInvite={inviteTravellerByEmail}
           onDeleteInvite={handleDeleteInvite}
+          onResendInvite={handleResendInvite}
         />
       )}
 
