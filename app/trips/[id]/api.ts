@@ -28,6 +28,7 @@ export async function getTripMembers(tripId: number) {
         .from("trip_members")
         .select("*")
         .eq("trip_id", tripId)
+        .eq("active", true)
         .order("created_at", { ascending: true });
 
     return response as {
@@ -91,7 +92,10 @@ export async function createTripMember(
 export async function deleteTripMember(memberId: number) {
     return supabase
         .from("trip_members")
-        .delete()
+        .update({
+            active: false,
+            archived_at: new Date().toISOString(),
+        })
         .eq("id", memberId);
 }
 

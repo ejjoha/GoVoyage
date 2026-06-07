@@ -14,6 +14,8 @@ export type TripMember = {
   trip_id: number;
   name: string;
   user_id: string | null;
+  active: boolean;
+  archived_at: string | null;
 };
 
 export type BookingType =
