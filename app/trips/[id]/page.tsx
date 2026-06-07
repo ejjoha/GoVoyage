@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { logTripActivity } from "@/services/activityLog";
 import TripPeopleList from "./components/TripPeopleList";
 import InviteFriendsSheet from "./components/InviteFriendsSheet";
 import TripCurrenciesSheet from "./components/TripCurrenciesSheet";
@@ -558,6 +559,18 @@ export default function TripPage() {
       return;
     }
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    await logTripActivity({
+      tripId: id,
+      actorUserId: user?.id,
+      eventType: "invite_revoked",
+      targetType: "trip_invite",
+      targetId: inviteId,
+    });
+
     closeConfirm();
     await fetchTripInvites();
   }
@@ -610,7 +623,20 @@ export default function TripPage() {
       tone: "danger",
       onConfirm: async () => {
         const success = await deleteTraveller(memberId);
+
         if (success) {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          await logTripActivity({
+            tripId: id,
+            actorUserId: user?.id,
+            eventType: "traveller_archived",
+            targetType: "trip_member",
+            targetId: memberId,
+          });
+
           closeConfirm();
         }
       },
