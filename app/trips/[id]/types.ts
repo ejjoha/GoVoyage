@@ -18,6 +18,15 @@ export type TripMember = {
   archived_at: string | null;
 };
 
+export type TripCollaborator = {
+  id: number;
+  trip_id: number;
+  user_id: string;
+  role: string;
+  active: boolean;
+  removed_at: string | null;
+};
+
 export type BookingType =
   | "flight"
   | "hotel"

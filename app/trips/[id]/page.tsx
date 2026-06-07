@@ -24,6 +24,8 @@ import {
   leaveTripAsCollaborator,
   updateBooking,
   updateTrip,
+  getTripCollaborators,
+  removeTripCollaborator,
   type TripInvite,
 } from "./api";
 
@@ -34,6 +36,8 @@ import EditTripModal from "./components/EditTripModal";
 import ConfirmModal from "./components/ConfirmModal";
 import type {
   Trip,
+  TripMember,
+  TripCollaborator,
   Booking,
   BookingType,
   BookingFilter,
@@ -111,6 +115,7 @@ export default function TripPage() {
   const [inviteMessage, setInviteMessage] = useState("");
 
   const [tripInvites, setTripInvites] = useState<TripInvite[]>([]);
+  const [tripCollaborators, setTripCollaborators] = useState<TripCollaborator[]>([]);
 
   const {
     bookings,
@@ -249,6 +254,8 @@ export default function TripPage() {
       );
 
       fetchTripInvites();
+      fetchTripCollaborators();
+      fetchTripMembers();
       return;
     }
 
@@ -259,6 +266,8 @@ export default function TripPage() {
     );
 
     fetchTripInvites();
+    fetchTripCollaborators();
+    fetchTripMembers();
   }
 
   async function fetchTripInvites() {
@@ -348,6 +357,7 @@ export default function TripPage() {
       fetchTrip();
       fetchBookings();
       fetchTripMembers();
+      fetchTripCollaborators();
       fetchTripInvites();
     }
 
@@ -547,6 +557,8 @@ export default function TripPage() {
 
     closeConfirm();
     await fetchTripInvites();
+    await fetchTripCollaborators();
+    await fetchTripMembers();
   }
 
   async function handleResendInvite(invite: TripInvite) {
@@ -603,6 +615,45 @@ export default function TripPage() {
         }
       },
     });
+  }
+
+  function handleRemoveCollaborator(member: TripMember) {
+    if (!member.user_id) return;
+
+    openConfirm({
+      title: "Remove editor access?",
+      description:
+        "This person will lose access to the trip, but they will remain as a traveller for cost sharing history.",
+      confirmLabel: "Remove access",
+      cancelLabel: "Keep access",
+      tone: "danger",
+      onConfirm: async () => {
+        const { error } = await removeTripCollaborator(id, member.user_id!);
+
+        if (error) {
+          console.error("Error removing collaborator:", error);
+          setTripFormError("We couldn’t remove this collaborator. Please try again.");
+          return;
+        }
+
+        closeConfirm();
+        await fetchTripMembers();
+        await fetchTripInvites();
+        await fetchTripCollaborators();
+      },
+    });
+  }
+
+  async function fetchTripCollaborators() {
+    const { data, error } = await getTripCollaborators(id);
+
+    if (error) {
+      console.error("Error loading trip collaborators:", error);
+      setTripCollaborators([]);
+      return;
+    }
+
+    setTripCollaborators(data || []);
   }
 
   function deleteBooking(bookingId: number) {
@@ -1129,6 +1180,7 @@ export default function TripPage() {
           trip={trip}
           canManageTravellers={canManageTravellers}
           canInvitePeople={canInvitePeople}
+          tripCollaborators={tripCollaborators}
           editTripTitle={editTripTitle}
           setEditTripTitle={setEditTripTitle}
           editTripDestination={editTripDestination}
@@ -1156,6 +1208,7 @@ export default function TripPage() {
           onSaveTrip={handleSaveTrip}
           onAddTraveller={canManageTravellers ? addTraveller : undefined}
           onDeleteTraveller={canManageTravellers ? handleDeleteTraveller : undefined}
+          onRemoveCollaborator={canInvitePeople ? handleRemoveCollaborator : undefined}
           onDeleteInvite={canInvitePeople ? handleDeleteInvite : undefined}
           onResendInvite={canInvitePeople ? handleResendInvite : undefined}
           onInviteTraveller={canInvitePeople ? inviteTravellerByEmail : undefined}
@@ -1280,6 +1333,7 @@ export default function TripPage() {
                 tripMembers={tripMembers}
                 tripInvites={tripInvites}
                 canManageTravellers={canManageTravellers}
+                tripCollaborators={tripCollaborators}
                 canInvitePeople={canInvitePeople}
                 newTravellerName={newTravellerName}
                 setNewTravellerName={setNewTravellerName}
@@ -1292,6 +1346,7 @@ export default function TripPage() {
                 onAddTraveller={addTraveller}
                 onInviteTraveller={inviteTravellerByEmail}
                 onDeleteTraveller={handleDeleteTraveller}
+                onRemoveCollaborator={handleRemoveCollaborator}
                 onDeleteInvite={handleDeleteInvite}
                 onResendInvite={handleResendInvite}
               />

@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { Booking, Trip, TripMember } from "./types";
+import type { Booking, Trip, TripMember, TripCollaborator } from "./types";
 
 export type TripInvite = {
     id: number;
@@ -35,6 +35,29 @@ export async function getTripMembers(tripId: number) {
         data: TripMember[] | null;
         error: unknown;
     };
+}
+
+export async function getTripCollaborators(tripId: number) {
+    const response = await supabase
+        .from("trip_collaborators")
+        .select("*")
+        .eq("trip_id", tripId)
+        .eq("active", true);
+
+    return response as {
+        data: TripCollaborator[] | null;
+        error: unknown;
+    };
+}
+
+export async function removeTripCollaborator(
+    tripId: number,
+    userId: string
+) {
+    return supabase.rpc("remove_trip_collaborator", {
+        target_trip_id: tripId,
+        target_user_id: userId,
+    });
 }
 
 export async function getBookings(tripId: number) {

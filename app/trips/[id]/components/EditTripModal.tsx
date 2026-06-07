@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Trip, TripMember } from "../types";
+import type { Trip, TripMember, TripCollaborator } from "../types";
 import type { TripInvite } from "../api";
 import TripPeopleList from "./TripPeopleList";
 
@@ -8,6 +8,7 @@ type EditTripModalProps = {
     trip: Trip | null;
     canManageTravellers: boolean;
     canInvitePeople: boolean;
+    tripCollaborators: TripCollaborator[];
     editTripTitle: string;
     setEditTripTitle: (value: string) => void;
 
@@ -44,6 +45,7 @@ type EditTripModalProps = {
     onSaveTrip: (event: React.FormEvent) => void;
     onAddTraveller?: () => void;
     onDeleteTraveller?: (memberId: number) => void;
+    onRemoveCollaborator?: (member: TripMember) => void;
     onDeleteInvite?: (inviteId: number) => void;
     onResendInvite?: (invite: TripInvite) => void;
     onInviteTraveller?: () => void;
@@ -56,6 +58,7 @@ export default function EditTripModal({
     trip,
     canManageTravellers,
     canInvitePeople,
+    tripCollaborators,
     editTripTitle,
     setEditTripTitle,
     editTripDestination,
@@ -83,6 +86,7 @@ export default function EditTripModal({
     onSaveTrip,
     onAddTraveller,
     onDeleteTraveller,
+    onRemoveCollaborator,
     onDeleteInvite,
     onResendInvite,
     onInviteTraveller,
@@ -197,6 +201,7 @@ export default function EditTripModal({
                                     trip={trip}
                                     tripMembers={tripMembers}
                                     tripInvites={tripInvites}
+                                    tripCollaborators={tripCollaborators}
                                     canManageTravellers={canManageTravellers}
                                     canInvitePeople={canInvitePeople}
                                     newTravellerName={newTravellerName}
@@ -210,6 +215,7 @@ export default function EditTripModal({
                                     onAddTraveller={onAddTraveller}
                                     onInviteTraveller={onInviteTraveller}
                                     onDeleteTraveller={onDeleteTraveller}
+                                    onRemoveCollaborator={onRemoveCollaborator}
                                     onDeleteInvite={onDeleteInvite}
                                     onResendInvite={onResendInvite}
                                 />
