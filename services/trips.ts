@@ -157,12 +157,16 @@ export async function createTrip({
     return data;
 }
 
-export async function addTripMembers(tripId: number, travellers: { name: string }[]) {
+export async function addTripMembers(
+    tripId: number,
+    travellers: { name: string; user_id?: string | null }[]
+) {
     if (travellers.length === 0) return;
 
     const rows = travellers.map((traveller) => ({
         trip_id: tripId,
         name: traveller.name,
+        user_id: traveller.user_id || null,
     }));
 
     const { error } = await supabase

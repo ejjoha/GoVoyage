@@ -291,10 +291,21 @@ export default function HomePage() {
         currencies: selectedCurrencies,
       });
 
+      const ownerTraveller = {
+        name: userDisplayName || userEmail || "Me",
+        user_id: user.id,
+      };
+
       const travellersToSave =
         newTravellers.length > 0
-          ? newTravellers.map((t) => ({ name: t.name }))
-          : [{ name: userDisplayName || userEmail || "Me" }];
+          ? [
+            ownerTraveller,
+            ...newTravellers.map((t) => ({
+              name: t.name,
+              user_id: null,
+            })),
+          ]
+          : [ownerTraveller];
 
       try {
         await addTripMembers(data.id, travellersToSave);

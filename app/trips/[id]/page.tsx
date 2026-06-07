@@ -532,6 +532,11 @@ export default function TripPage() {
   }
 
   function handleLeaveTrip() {
+    if (isTripOwner) {
+      setTripFormError("Trip owners can’t leave their own trip. Delete the trip instead, or transfer ownership later.");
+      return;
+    }
+
     openConfirm({
       title: "Leave this trip?",
       description:
@@ -1320,7 +1325,7 @@ export default function TripPage() {
                         </div>
                       </div>
 
-                      {canManageTravellers && (
+                      {canManageTravellers && member.user_id !== trip?.user_id && (
                         <button
                           type="button"
                           onClick={() => handleDeleteTraveller(member.id)}
