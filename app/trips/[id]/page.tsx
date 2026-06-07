@@ -501,8 +501,6 @@ export default function TripPage() {
       return;
     }
 
-    await leaveTripByEmail(id, user.email.toLowerCase());
-
     closeConfirm();
     setShowTripForm(false);
     localStorage.removeItem("cached-trips");

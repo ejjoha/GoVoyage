@@ -110,15 +110,9 @@ export async function leaveTripAsCollaborator(
     tripId: number,
     userId: string
 ) {
-    return supabase
-        .from("trip_collaborators")
-        .update({
-            active: false,
-            removed_at: new Date().toISOString(),
-        })
-        .eq("trip_id", tripId)
-        .eq("user_id", userId)
-        .eq("active", true);
+    return supabase.rpc("leave_trip", {
+        target_trip_id: tripId,
+    });
 }
 
 export async function leaveTripAsMember(
