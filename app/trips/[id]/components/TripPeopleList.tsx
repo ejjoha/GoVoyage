@@ -1,0 +1,145 @@
+import type { Trip, TripMember } from "../types";
+import type { TripInvite } from "../api";
+
+type TripPeopleListProps = {
+    trip: Trip | null;
+    tripMembers: TripMember[];
+    tripInvites: TripInvite[];
+    canManageTravellers: boolean;
+    canInvitePeople: boolean;
+    onDeleteTraveller?: (memberId: number) => void;
+    onDeleteInvite?: (inviteId: number) => void;
+    onResendInvite?: (invite: TripInvite) => void;
+};
+
+function getInitials(name: string) {
+    return name
+        .split(" ")
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+}
+
+export default function TripPeopleList({
+    trip,
+    tripMembers,
+    tripInvites,
+    canManageTravellers,
+    canInvitePeople,
+    onDeleteTraveller,
+    onDeleteInvite,
+    onResendInvite,
+}: TripPeopleListProps) {
+    const pendingInvites = tripInvites.filter(
+        (invite) => invite.status === "pending"
+    );
+
+    if (tripMembers.length === 0 && pendingInvites.length === 0) {
+        return (
+            <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
+                <p className="text-sm text-stone-500">No travellers added yet.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-3">
+            {tripMembers.map((member) => {
+                const isOwner = Boolean(trip && member.user_id === trip.user_id);
+
+                return (
+                    <div
+                        key={`member-${member.id}`}
+                        className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
+                    >
+                        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
+                                {getInitials(member.name)}
+                            </div>
+
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-medium text-stone-800">
+                                    {member.name}
+                                </p>
+
+                                {isOwner ? (
+                                    <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                                        Owner
+                                    </p>
+                                ) : member.user_id ? (
+                                    <p className="mt-1 inline-flex rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-semibold text-stone-700">
+                                        Editor
+                                    </p>
+                                ) : (
+                                    <p className="mt-1 inline-flex rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-500">
+                                        Traveller
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {canManageTravellers && !isOwner && onDeleteTraveller && (
+                            <button
+                                type="button"
+                                onClick={() => onDeleteTraveller(member.id)}
+                                className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                            >
+                                Remove
+                            </button>
+                        )}
+                    </div>
+                );
+            })}
+
+            {pendingInvites.map((invite) => (
+                <div
+                    key={`invite-${invite.id}`}
+                    className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4"
+                >
+                    <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-amber-700 shadow-sm">
+                            @
+                        </div>
+
+                        <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-stone-800">
+                                {invite.name || invite.email}
+                            </p>
+
+                            {invite.name && (
+                                <p className="truncate text-xs text-stone-500">
+                                    {invite.email}
+                                </p>
+                            )}
+
+                            <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                                Pending invite
+                            </p>
+
+                            {canInvitePeople && onResendInvite && (
+                                <button
+                                    type="button"
+                                    onClick={() => onResendInvite(invite)}
+                                    className="mt-2 block text-xs font-semibold text-amber-700 hover:underline"
+                                >
+                                    Resend email
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {canInvitePeople && onDeleteInvite && (
+                        <button
+                            type="button"
+                            onClick={() => onDeleteInvite(invite.id)}
+                            className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                        >
+                            Remove
+                        </button>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}

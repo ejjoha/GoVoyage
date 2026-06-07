@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import TripPeopleList from "./components/TripPeopleList";
 import InviteFriendsSheet from "./components/InviteFriendsSheet";
 import TripCurrenciesSheet from "./components/TripCurrenciesSheet";
 import { useTripMembers } from "./hooks/useTripMembers";
@@ -1136,7 +1137,10 @@ export default function TripPage() {
 
       {showTripForm && (
         <EditTripModal
-          isTripOwner={canDeleteTrip}
+          isTripOwner={isTripOwner}
+          trip={trip}
+          canManageTravellers={canManageTravellers}
+          canInvitePeople={canInvitePeople}
           editTripTitle={editTripTitle}
           setEditTripTitle={setEditTripTitle}
           editTripDestination={editTripDestination}
@@ -1165,6 +1169,7 @@ export default function TripPage() {
           onAddTraveller={canManageTravellers ? addTraveller : undefined}
           onDeleteTraveller={canManageTravellers ? handleDeleteTraveller : undefined}
           onDeleteInvite={canInvitePeople ? handleDeleteInvite : undefined}
+          onResendInvite={canInvitePeople ? handleResendInvite : undefined}
           onInviteTraveller={canInvitePeople ? inviteTravellerByEmail : undefined}
           onDeleteTrip={canDeleteTrip ? handleDeleteTrip : undefined}
           onLeaveTrip={handleLeaveTrip}
@@ -1282,172 +1287,16 @@ export default function TripPage() {
             </div>
 
             <div className="min-h-0 overflow-y-auto space-y-4 px-5 py-5">
-              {tripMembers.length === 0 &&
-                tripInvites.filter((invite) => invite.status === "pending").length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
-                  <p className="text-sm text-stone-500">No travellers added yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {tripMembers.map((member) => (
-                    <div
-                      key={`member-${member.id}`}
-                      className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4"
-                    >
-                      <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-stone-700 shadow-sm">
-                          {member.name
-                            .split(" ")
-                            .map((part) => part[0])
-                            .join("")
-                            .slice(0, 2)
-                            .toUpperCase()}
-                        </div>
-
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-stone-800">
-                            {member.name}
-                          </p>
-
-                          {trip && member.user_id === trip.user_id ? (
-                            <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
-                              Owner
-                            </p>
-                          ) : member.user_id ? (
-                            <p className="mt-1 inline-flex rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-semibold text-stone-700">
-                              Collaborator
-                            </p>
-                          ) : (
-                            <p className="mt-1 inline-flex rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-500">
-                              Traveller
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {canManageTravellers && member.user_id !== trip?.user_id && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteTraveller(member.id)}
-                          className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  ))}
-
-                  {tripInvites
-                    .filter((invite) => invite.status === "pending")
-                    .map((invite) => (
-                      <div
-                        key={`invite-${invite.id}`}
-                        className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4"
-                      >
-                        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-amber-700 shadow-sm">
-                            @
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-stone-800">
-                              {invite.name || invite.email}
-                            </p>
-
-                            {invite.name && (
-                              <p className="truncate text-xs text-stone-500">
-                                {invite.email}
-                              </p>
-                            )}
-
-                            <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
-                              Pending invite
-                            </p>
-                            {canInvitePeople && (
-                              <button
-                                type="button"
-                                onClick={() => handleResendInvite(invite)}
-                                className="mt-2 text-xs font-semibold text-amber-700 hover:underline"
-                              >
-                                Resend email
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-
-              <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
-                <h3 className="text-sm font-semibold text-stone-900">
-                  Invite traveller
-                </h3>
-
-                <p className="mt-1 text-sm text-stone-500">
-                  Send an email invite to someone who should join this trip.
-                </p>
-
-                <div className="mt-4 space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Traveller name, e.g. Dad"
-                    value={inviteName}
-                    onChange={(e) => setInviteName(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-                  />
-
-                  <input
-                    type="email"
-                    placeholder="friend@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 placeholder:text-stone-400"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={inviteTravellerByEmail}
-                    className="w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
-                  >
-                    Invite
-                  </button>
-
-                  <p className="mt-1 text-sm text-stone-500">
-                    Or add a traveller under your supervision.
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Add traveller"
-                      value={newTravellerName}
-                      onChange={(e) => setNewTravellerName(e.target.value)}
-                      className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={addTraveller}
-                      className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {inviteMessage && (
-                <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {inviteMessage}
-                </div>
-              )}
-
-              {travellerFormError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {travellerFormError}
-                </div>
-              )}
-
-
+              <TripPeopleList
+                trip={trip}
+                tripMembers={tripMembers}
+                tripInvites={tripInvites}
+                canManageTravellers={canManageTravellers}
+                canInvitePeople={canInvitePeople}
+                onDeleteTraveller={handleDeleteTraveller}
+                onDeleteInvite={handleDeleteInvite}
+                onResendInvite={handleResendInvite}
+              />
             </div>
           </div>
         </div>
