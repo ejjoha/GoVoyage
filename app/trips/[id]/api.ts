@@ -90,13 +90,9 @@ export async function createTripMember(
 }
 
 export async function deleteTripMember(memberId: number) {
-    return supabase
-        .from("trip_members")
-        .update({
-            active: false,
-            archived_at: new Date().toISOString(),
-        })
-        .eq("id", memberId);
+    return supabase.rpc("archive_trip_member", {
+        member_id: memberId,
+    });
 }
 
 export async function leaveTripByEmail(
