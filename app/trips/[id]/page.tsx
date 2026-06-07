@@ -1293,6 +1293,16 @@ export default function TripPage() {
                 tripInvites={tripInvites}
                 canManageTravellers={canManageTravellers}
                 canInvitePeople={canInvitePeople}
+                newTravellerName={newTravellerName}
+                setNewTravellerName={setNewTravellerName}
+                travellerFormError={travellerFormError}
+                inviteName={inviteName}
+                setInviteName={setInviteName}
+                inviteEmail={inviteEmail}
+                setInviteEmail={setInviteEmail}
+                inviteMessage={inviteMessage}
+                onAddTraveller={addTraveller}
+                onInviteTraveller={inviteTravellerByEmail}
                 onDeleteTraveller={handleDeleteTraveller}
                 onDeleteInvite={handleDeleteInvite}
                 onResendInvite={handleResendInvite}

@@ -199,6 +199,16 @@ export default function EditTripModal({
                                     tripInvites={tripInvites}
                                     canManageTravellers={canManageTravellers}
                                     canInvitePeople={canInvitePeople}
+                                    newTravellerName={newTravellerName}
+                                    setNewTravellerName={setNewTravellerName}
+                                    travellerFormError={travellerFormError}
+                                    inviteName={inviteName}
+                                    setInviteName={setInviteName}
+                                    inviteEmail={inviteEmail}
+                                    setInviteEmail={setInviteEmail}
+                                    inviteMessage={inviteMessage}
+                                    onAddTraveller={onAddTraveller}
+                                    onInviteTraveller={onInviteTraveller}
                                     onDeleteTraveller={onDeleteTraveller}
                                     onDeleteInvite={onDeleteInvite}
                                     onResendInvite={onResendInvite}
