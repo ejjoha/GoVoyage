@@ -205,11 +205,7 @@ export async function deleteBookingById(bookingId: number) {
 }
 
 export async function deleteTripInvite(inviteId: number) {
-    return supabase
-        .from("trip_invites")
-        .update({
-            status: "revoked",
-        })
-        .eq("id", inviteId)
-        .eq("status", "pending");
+    return supabase.rpc("revoke_trip_invite", {
+        invite_id: inviteId,
+    });
 }

@@ -559,18 +559,6 @@ export default function TripPage() {
       return;
     }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    await logTripActivity({
-      tripId: id,
-      actorUserId: user?.id,
-      eventType: "invite_revoked",
-      targetType: "trip_invite",
-      targetId: inviteId,
-    });
-
     closeConfirm();
     await fetchTripInvites();
   }
