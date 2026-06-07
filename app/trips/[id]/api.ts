@@ -107,15 +107,18 @@ export async function leaveTripByEmail(
 }
 
 export async function leaveTripAsCollaborator(
-
     tripId: number,
     userId: string
 ) {
     return supabase
         .from("trip_collaborators")
-        .delete()
+        .update({
+            active: false,
+            removed_at: new Date().toISOString(),
+        })
         .eq("trip_id", tripId)
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .eq("active", true);
 }
 
 export async function leaveTripAsMember(

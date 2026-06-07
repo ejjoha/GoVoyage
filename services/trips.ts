@@ -12,7 +12,8 @@ export async function getTrips() {
     const { data: collaboratorRows, error: collaboratorError } = await supabase
         .from("trip_collaborators")
         .select("trip_id")
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("active", true);
 
     if (collaboratorError) {
         throw new Error(collaboratorError.message);

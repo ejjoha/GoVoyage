@@ -22,7 +22,6 @@ import {
   getTripInvites,
   leaveTripByEmail,
   leaveTripAsCollaborator,
-  leaveTripAsMember,
   updateBooking,
   updateTrip,
   type TripInvite,
@@ -498,16 +497,6 @@ export default function TripPage() {
       console.error("Error leaving trip:", collaboratorError);
       setTripFormError(
         "We couldn’t remove you from this trip. Please try again."
-      );
-      return;
-    }
-
-    const { error: memberError } = await leaveTripAsMember(id, user.id);
-
-    if (memberError) {
-      console.error("Error removing trip member:", memberError);
-      setTripFormError(
-        "We removed your access, but could not remove you as a traveller. Please try again."
       );
       return;
     }
