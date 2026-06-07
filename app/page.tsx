@@ -274,6 +274,14 @@ export default function HomePage() {
     try {
       const destinationImageUrl = await getDestinationImage(newDestination.trim());
 
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("You must be signed in to invite someone.");
+      }
+
       const data = await createTrip({
         title: newTitle.trim(),
         destination: newDestination.trim(),
@@ -298,7 +306,13 @@ export default function HomePage() {
       const invite = inviteEmail.trim().toLowerCase();
 
       if (invite) {
-        const { error: inviteError } = await createTripInvite(data.id, invite, invite);
+        const { error: inviteError } = await createTripInvite(
+          data.id,
+          invite,
+          invite,
+          user.id,
+          userDisplayName || user.email || "Someone"
+        );
 
         if (inviteError) {
           console.error("Error saving trip invite:", inviteError);
@@ -560,12 +574,9 @@ export default function HomePage() {
                         </p>
 
                         <p className="mt-3 text-sm text-amber-800">
-                          You were invited as {invite.name || invite.email}.
-                          {invite.inviter_name && (
-                            <span className="block text-xs text-stone-500 mt-1">
-                              Invited by {invite.inviter_name}
-                            </span>
-                          )}
+                          {invite.inviter_name
+                            ? `${invite.inviter_name} invited you to this trip.`
+                            : "You were invited to this trip."}
                         </p>
 
                         <div className="mt-4 grid gap-2 sm:grid-cols-2">

@@ -4,6 +4,7 @@ type TripInvite = {
     email: string;
     role: string;
     accepted_at: string | null;
+    status: string;
 };
 
 type InviteFriendsSheetProps = {

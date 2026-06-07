@@ -71,6 +71,7 @@ export default function TripPage() {
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [currentUserDisplayName, setCurrentUserDisplayName] = useState("");
 
   const [showTripForm, setShowTripForm] = useState(false);
   const [tripSuccessMessage, setTripSuccessMessage] = useState("");
@@ -167,6 +168,10 @@ export default function TripPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    if (!user) {
+      setInviteMessage("You must be signed in to invite someone.");
+      return;
+    }
 
     if (user?.email && email === user.email.toLowerCase()) {
       setInviteMessage("You’re already on this trip.");
@@ -211,7 +216,13 @@ export default function TripPage() {
       return;
     }
 
-    const { error } = await createTripInvite(id, name, email);
+    const { error } = await createTripInvite(
+      id,
+      name,
+      email,
+      user.id,
+      currentUserDisplayName || user.email || "Someone"
+    );
 
     if (error) {
       setInviteMessage(error.message);
@@ -316,6 +327,14 @@ export default function TripPage() {
       }
 
       setCurrentUserId(user.id);
+
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      setCurrentUserDisplayName(profileRow?.display_name || user.email || "Someone");
 
       const { data: collaboratorRow } = await supabase
         .from("trip_collaborators")
@@ -881,7 +900,7 @@ export default function TripPage() {
 
   const heroStats = useMemo(() => {
     const pendingInviteCount = tripInvites.filter(
-      (invite) => !invite.accepted_at
+      (invite) => invite.status === "pending"
     ).length;
 
     const visibleTravellerCount =
@@ -1258,7 +1277,8 @@ export default function TripPage() {
             </div>
 
             <div className="min-h-0 overflow-y-auto space-y-4 px-5 py-5">
-              {tripMembers.length === 0 && tripInvites.filter((invite) => !invite.accepted_at).length === 0 ? (
+              {tripMembers.length === 0 &&
+                tripInvites.filter((invite) => invite.status === "pending").length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
                   <p className="text-sm text-stone-500">No travellers added yet.</p>
                 </div>
@@ -1313,7 +1333,7 @@ export default function TripPage() {
                   ))}
 
                   {tripInvites
-                    .filter((invite) => !invite.accepted_at)
+                    .filter((invite) => invite.status === "pending")
                     .map((invite) => (
                       <div
                         key={`invite-${invite.id}`}
