@@ -5,6 +5,7 @@ import TripPeopleList from "./TripPeopleList";
 
 type EditTripModalProps = {
     isTripOwner: boolean;
+    currentUserId?: string | null;
     trip: Trip | null;
     canManageTravellers: boolean;
     canInvitePeople: boolean;
@@ -46,6 +47,7 @@ type EditTripModalProps = {
     onAddTraveller?: () => void;
     onDeleteTraveller?: (memberId: number) => void;
     onRemoveCollaborator?: (member: TripMember) => void;
+    onTransferOwnership?: (member: TripMember) => void;
     onDeleteInvite?: (inviteId: number) => void;
     onResendInvite?: (invite: TripInvite) => void;
     onInviteTraveller?: () => void;
@@ -55,6 +57,7 @@ type EditTripModalProps = {
 
 export default function EditTripModal({
     isTripOwner,
+    currentUserId,
     trip,
     canManageTravellers,
     canInvitePeople,
@@ -87,6 +90,7 @@ export default function EditTripModal({
     onAddTraveller,
     onDeleteTraveller,
     onRemoveCollaborator,
+    onTransferOwnership,
     onDeleteInvite,
     onResendInvite,
     onInviteTraveller,
@@ -202,8 +206,10 @@ export default function EditTripModal({
                                     tripMembers={tripMembers}
                                     tripInvites={tripInvites}
                                     tripCollaborators={tripCollaborators}
+                                    currentUserId={currentUserId}
                                     canManageTravellers={canManageTravellers}
                                     canInvitePeople={canInvitePeople}
+                                    canTransferOwnership={isTripOwner}
                                     newTravellerName={newTravellerName}
                                     setNewTravellerName={setNewTravellerName}
                                     travellerFormError={travellerFormError}
@@ -216,6 +222,8 @@ export default function EditTripModal({
                                     onInviteTraveller={onInviteTraveller}
                                     onDeleteTraveller={onDeleteTraveller}
                                     onRemoveCollaborator={onRemoveCollaborator}
+                                    onLeaveTrip={onLeaveTrip}
+                                    onTransferOwnership={onTransferOwnership}
                                     onDeleteInvite={onDeleteInvite}
                                     onResendInvite={onResendInvite}
                                 />

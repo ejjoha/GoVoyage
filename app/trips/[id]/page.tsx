@@ -26,6 +26,7 @@ import {
   updateTrip,
   getTripCollaborators,
   removeTripCollaborator,
+  transferTripOwnership,
   type TripInvite,
 } from "./api";
 
@@ -516,6 +517,29 @@ export default function TripPage() {
     localStorage.removeItem("cached-trips");
     router.push("/");
   }
+  async function handleTransferOwnershipConfirmed(member: TripMember) {
+    if (!member.user_id) {
+      setTripFormError("This traveller does not have an app account.");
+      return;
+    }
+
+    const { error } = await transferTripOwnership(
+      id,
+      member.user_id,
+      `Ownership transferred to ${member.name}`
+    );
+
+    if (error) {
+      console.error("Error transferring ownership:", error);
+      setTripFormError(error.message);
+      return;
+    }
+
+    closeConfirm();
+    await fetchTrip();
+    await fetchTripMembers();
+    await fetchTripCollaborators();
+  }
 
   function handleDeleteTrip() {
     openConfirm({
@@ -526,6 +550,17 @@ export default function TripPage() {
       cancelLabel: "Keep trip",
       tone: "danger",
       onConfirm: handleDeleteTripConfirmed,
+    });
+  }
+
+  function handleTransferOwnership(member: TripMember) {
+    openConfirm({
+      title: "Transfer ownership?",
+      description: `${member.name} will become the owner of this trip. You will become an editor and keep access.`,
+      confirmLabel: "Transfer ownership",
+      cancelLabel: "Cancel",
+      tone: "danger",
+      onConfirm: () => handleTransferOwnershipConfirmed(member),
     });
   }
 
@@ -1177,6 +1212,7 @@ export default function TripPage() {
       {showTripForm && (
         <EditTripModal
           isTripOwner={isTripOwner}
+          currentUserId={currentUserId}
           trip={trip}
           canManageTravellers={canManageTravellers}
           canInvitePeople={canInvitePeople}
@@ -1209,6 +1245,7 @@ export default function TripPage() {
           onAddTraveller={canManageTravellers ? addTraveller : undefined}
           onDeleteTraveller={canManageTravellers ? handleDeleteTraveller : undefined}
           onRemoveCollaborator={canInvitePeople ? handleRemoveCollaborator : undefined}
+          onTransferOwnership={isTripOwner ? handleTransferOwnership : undefined}
           onDeleteInvite={canInvitePeople ? handleDeleteInvite : undefined}
           onResendInvite={canInvitePeople ? handleResendInvite : undefined}
           onInviteTraveller={canInvitePeople ? inviteTravellerByEmail : undefined}
@@ -1334,7 +1371,9 @@ export default function TripPage() {
                 tripInvites={tripInvites}
                 canManageTravellers={canManageTravellers}
                 tripCollaborators={tripCollaborators}
+                currentUserId={currentUserId}
                 canInvitePeople={canInvitePeople}
+                canTransferOwnership={isTripOwner}
                 newTravellerName={newTravellerName}
                 setNewTravellerName={setNewTravellerName}
                 travellerFormError={travellerFormError}
@@ -1347,6 +1386,8 @@ export default function TripPage() {
                 onInviteTraveller={inviteTravellerByEmail}
                 onDeleteTraveller={handleDeleteTraveller}
                 onRemoveCollaborator={handleRemoveCollaborator}
+                onLeaveTrip={handleLeaveTrip}
+                onTransferOwnership={handleTransferOwnership}
                 onDeleteInvite={handleDeleteInvite}
                 onResendInvite={handleResendInvite}
               />

@@ -6,6 +6,8 @@ type TripPeopleListProps = {
     tripMembers: TripMember[];
     tripInvites: TripInvite[];
     tripCollaborators: TripCollaborator[];
+    currentUserId?: string | null;
+    canTransferOwnership?: boolean;
     canManageTravellers: boolean;
     canInvitePeople: boolean;
     newTravellerName?: string;
@@ -22,6 +24,8 @@ type TripPeopleListProps = {
     onInviteTraveller?: () => void;
     onDeleteTraveller?: (memberId: number) => void;
     onRemoveCollaborator?: (member: TripMember) => void;
+    onLeaveTrip?: () => void;
+    onTransferOwnership?: (member: TripMember) => void;
     onDeleteInvite?: (inviteId: number) => void;
     onResendInvite?: (invite: TripInvite) => void;
 };
@@ -40,8 +44,10 @@ export default function TripPeopleList({
     tripMembers,
     tripInvites,
     tripCollaborators,
+    currentUserId,
     canManageTravellers,
     canInvitePeople,
+    canTransferOwnership = false,
     newTravellerName,
     setNewTravellerName,
     travellerFormError,
@@ -54,6 +60,8 @@ export default function TripPeopleList({
     onInviteTraveller,
     onDeleteTraveller,
     onRemoveCollaborator,
+    onLeaveTrip,
+    onTransferOwnership,
     onDeleteInvite,
     onResendInvite,
 }: TripPeopleListProps) {
@@ -71,6 +79,9 @@ export default function TripPeopleList({
                 <div className="space-y-3">
                     {tripMembers.map((member) => {
                         const isOwner = Boolean(trip && member.user_id === trip.user_id);
+                        const isCurrentUser = Boolean(
+                            currentUserId && member.user_id === currentUserId
+                        );
                         const activeCollaborator = Boolean(
                             member.user_id &&
                             tripCollaborators.some(
@@ -109,24 +120,45 @@ export default function TripPeopleList({
                                     </div>
                                 </div>
 
-                                {canManageTravellers &&
-                                    !isOwner &&
-                                    (onDeleteTraveller || onRemoveCollaborator) && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (activeCollaborator && member.user_id && onRemoveCollaborator) {
-                                                    onRemoveCollaborator(member);
-                                                    return;
-                                                }
+                                {canManageTravellers && !isOwner && (
+                                    <div className="flex shrink-0 flex-col gap-2">
+                                        {canTransferOwnership && activeCollaborator && onTransferOwnership && (
+                                            <button
+                                                type="button"
+                                                onClick={() => onTransferOwnership(member)}
+                                                className="rounded-full bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-100"
+                                            >
+                                                Transfer ownership
+                                            </button>
+                                        )}
 
-                                                onDeleteTraveller?.(member.id);
-                                            }}
-                                            className="shrink-0 rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
-                                        >
-                                            {activeCollaborator ? "Remove access" : "Remove"}
-                                        </button>
-                                    )}
+                                        {(onDeleteTraveller || onRemoveCollaborator) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (isCurrentUser && activeCollaborator && onLeaveTrip) {
+                                                        onLeaveTrip();
+                                                        return;
+                                                    }
+
+                                                    if (activeCollaborator && member.user_id && onRemoveCollaborator) {
+                                                        onRemoveCollaborator(member);
+                                                        return;
+                                                    }
+
+                                                    onDeleteTraveller?.(member.id);
+                                                }}
+                                                className="rounded-full bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                                            >
+                                                {isCurrentUser && activeCollaborator
+                                                    ? "Leave trip"
+                                                    : activeCollaborator
+                                                        ? "Remove access"
+                                                        : "Remove"}
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
