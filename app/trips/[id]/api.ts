@@ -225,3 +225,15 @@ export async function deleteTripInvite(inviteId: number) {
         invite_id: inviteId,
     });
 }
+
+export async function transferTripOwnership(
+    tripId: number,
+    newOwnerUserId: string,
+    reason?: string
+) {
+    return supabase.rpc("transfer_trip_ownership", {
+        p_trip_id: tripId,
+        p_new_owner_user_id: newOwnerUserId,
+        p_transfer_reason: reason ?? null,
+    });
+}
