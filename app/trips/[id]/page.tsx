@@ -1142,9 +1142,9 @@ export default function TripPage() {
             <button
               type="button"
               onClick={openNewBookingForm}
-              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px- py-3 text-center shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[115px] flex-col items-center justify-center rounded-2xl border border-stone-200/70 bg-white px-5 py-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97]"
             >
-              <span className="flex items-center gap-">
+              <span className="flex items-center gap-2">
                 <span className="text-[15px] font-semibold text-stone-950">
                   Add booking
                 </span>
@@ -1153,7 +1153,7 @@ export default function TripPage() {
 
             <Link
               href={`/trips/${trip.id}/packing`}
-              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[115px] flex-col items-center justify-center rounded-2xl border border-stone-200/70 bg-white px-5 py-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">
                 <span className="text-[15px] font-semibold text-stone-950">
@@ -1164,7 +1164,7 @@ export default function TripPage() {
 
             <Link
               href={`/trips/${trip.id}/cost-sharing`}
-              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px-5 py-3 text-center shadow-sm transition active:scale-[0.97]"
+              className="flex min-w-[115px] flex-col items-center justify-center rounded-2xl border border-stone-200/70 bg-white px-5 py-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97]"
             >
               <span className="flex items-center gap-2">
                 <span className="text-[15px] font-semibold text-stone-950">
