@@ -155,6 +155,50 @@ export default function TripPage() {
   const bookingFormRef = useRef<HTMLFormElement | null>(null);
   const timelineRef = useRef<HTMLDivElement | null>(null);
 
+  const tripCacheKey = `cached-trip-${id}`;
+
+  function applyTripToState(tripData: Trip) {
+    setTrip(tripData);
+
+    setEditTripTitle(tripData.title || "");
+    setEditTripDestination(tripData.destination || "");
+    setEditTripImageUrl(tripData.image_url || "");
+    setEditTripStartDate(formatForDateInput(tripData.start_date));
+    setEditTripEndDate(formatForDateInput(tripData.end_date));
+
+    setEditCurrencies(
+      tripData.currencies?.length
+        ? tripData.currencies
+        : ["NOK", "EUR", "USD"]
+    );
+  }
+
+  function loadCachedTrip() {
+    try {
+      const cached = localStorage.getItem(tripCacheKey);
+
+      if (!cached) {
+        return false;
+      }
+
+      const parsed = JSON.parse(cached) as Trip;
+      applyTripToState(parsed);
+      return true;
+    } catch (error) {
+      console.error("Error loading cached trip:", error);
+      localStorage.removeItem(tripCacheKey);
+      return false;
+    }
+  }
+
+  function saveCachedTrip(tripData: Trip) {
+    try {
+      localStorage.setItem(tripCacheKey, JSON.stringify(tripData));
+    } catch (error) {
+      console.error("Error saving cached trip:", error);
+    }
+  }
+
 
   function openConfirm(config: Omit<Extract<ConfirmState, { open: true }>, "open">) {
     setConfirmState({
@@ -290,32 +334,32 @@ export default function TripPage() {
 
     if (error) {
       console.error("Error loading trip:", error);
-      setTrip(null);
+
+      if (!navigator.onLine && loadCachedTrip()) {
+        setTripFormError("You’re offline, so this trip is shown from your saved cache.");
+      } else {
+        setTrip(null);
+      }
+
       setIsTripLoading(false);
       return;
     }
 
     if (!data) {
-      setTrip(null);
+      if (!navigator.onLine && loadCachedTrip()) {
+        setTripFormError("You’re offline, so this trip is shown from your saved cache.");
+      } else {
+        setTrip(null);
+      }
+
       setIsTripLoading(false);
       return;
     }
 
     const tripData = data;
 
-    setTrip(tripData);
-
-    setEditTripTitle(tripData.title || "");
-    setEditTripDestination(tripData.destination || "");
-    setEditTripImageUrl(tripData.image_url || "");
-    setEditTripStartDate(formatForDateInput(tripData.start_date));
-    setEditTripEndDate(formatForDateInput(tripData.end_date));
-
-    setEditCurrencies(
-      tripData.currencies?.length
-        ? tripData.currencies
-        : ["NOK", "EUR", "USD"]
-    );
+    applyTripToState(tripData);
+    saveCachedTrip(tripData);
 
     setIsTripLoading(false);
   }
