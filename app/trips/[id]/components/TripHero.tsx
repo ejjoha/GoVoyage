@@ -36,12 +36,12 @@ export default function TripHero({
   return (
     <>
       <section className="relative mb-13">
-        <div className="relative -mx-4 -mt-6 overflow-hidden rounded-b-[2.75rem] bg-neutral-200">
+        <div className="relative -mx-4 -mt-6 overflow-hidden rounded-b-[2.75rem] bg-neutral-200 shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
           {imageUrl ? (
             <img
               src={imageUrl}
               alt={title}
-              className="h-[20rem] w-full object-cover"
+              className="h-[20rem] w-full object-cover scale-[1.01]"
             />
           ) : (
             <div className="h-[22rem] w-full bg-gradient-to-br from-neutral-200 to-neutral-300" />
@@ -62,7 +62,7 @@ export default function TripHero({
             {backHref ? (
               <Link
                 href={backHref}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition active:scale-95"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 shadow-[0_10px_25px_rgba(0,0,0,0.14)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white active:scale-95"
                 aria-label="Back"
               >
                 <img
@@ -80,7 +80,7 @@ export default function TripHero({
                 type="button"
                 onClick={onEdit}
                 aria-label="Edit trip"
-                className="flex h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-bold text-neutral-900 shadow-md transition active:scale-95"
+                className="flex h-11 items-center justify-center rounded-full bg-white/95 px-4 text-sm font-bold text-neutral-900 shadow-[0_10px_25px_rgba(0,0,0,0.14)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-white active:scale-95"
               >
                 Edit Trip
               </button>
@@ -113,7 +113,7 @@ export default function TripHero({
 
         {stats.length > 0 && (
           <div className="absolute inset-x-0 -bottom-10 px-1">
-            <div className="rounded-[1.25rem] bg-white py-2 px-5 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
+            <div className="rounded-[1.5rem] border border-white/70 bg-white/95 px-5 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.13)] backdrop-blur-xl">
               <div className="grid grid-cols-3 gap-0">
                 {stats.map((stat, index) => {
                   const content = (
