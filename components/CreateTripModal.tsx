@@ -65,7 +65,7 @@ export default function CreateTripModal({
                                     type="text"
                                     value={newTitle}
                                     onChange={(e) => setNewTitle(e.target.value)}
-                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
                                 />
                             </div>
 
@@ -77,7 +77,7 @@ export default function CreateTripModal({
                                     type="text"
                                     value={newDestination}
                                     onChange={(e) => setNewDestination(e.target.value)}
-                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
                                 />
                             </div>
 
@@ -90,7 +90,7 @@ export default function CreateTripModal({
                                         type="date"
                                         value={newStartDate}
                                         onChange={(e) => setNewStartDate(e.target.value)}
-                                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
                                     />
                                 </div>
 
@@ -126,7 +126,7 @@ export default function CreateTripModal({
                             <button
                                 type="submit"
                                 disabled={isCreatingTrip}
-                                className="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:bg-stone-300"
+                                className="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-[1px] hover:bg-rose-600 hover:shadow-lg hover:shadow-rose-500/20 disabled:cursor-not-allowed disabled:bg-stone-300"
                             >
                                 {isCreatingTrip ? "Creating trip..." : "Create trip"}
                             </button>

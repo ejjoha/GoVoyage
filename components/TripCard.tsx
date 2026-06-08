@@ -6,7 +6,7 @@ export function TripCard({ trip }: { trip: Trip }) {
   return (
     <Link
       href={`/trips/${trip.id}`}
-      className="group block overflow-hidden rounded-[2rem] border border-stone-200/60 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] active:scale-[0.98]"
+      className="group block overflow-hidden rounded-[2rem] border border-stone-200/60 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(0,0,0,0.10)] active:scale-[0.98]"
     >
       {trip.image_url ? (
         <div className="relative h-56 w-full overflow-hidden">

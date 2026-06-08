@@ -19,6 +19,7 @@ import { createTripInvite } from "@/app/trips/[id]/api";
 import type { Trip } from "@/types/trip";
 import { PastTripsCarousel } from "@/components/PastTripsCarousel";
 import ScrollToTopButton from "./trips/[id]/components/ScrollToTopButton";
+import { motion } from "framer-motion";
 
 type NewTraveller = {
   id: number;
@@ -627,8 +628,19 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-5">
-                  {upcomingTrips.map((trip) => (
-                    <TripCard key={trip.id} trip={trip} />
+                  {upcomingTrips.map((trip, index) => (
+                    <motion.div
+                      key={trip.id}
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.35,
+                        delay: index * 0.06,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                    >
+                      <TripCard trip={trip} />
+                    </motion.div>
                   ))}
                 </div>
               </section>
