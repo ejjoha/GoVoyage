@@ -135,7 +135,7 @@ export default function BookingTimeline({
         return (
           <section
             key={date}
-            className="rounded-[1.5rem] border border-stone-200/70 bg-white px-4 pt-3 pb-2 shadow-sm sm:px-5 sm:pt-5 sm:pb-2">
+            className="rounded-[1.75rem] border border-stone-200/70 bg-white/95 px-4 pt-3 pb-2 shadow-[0_12px_35px_rgba(0,0,0,0.06)] backdrop-blur-sm sm:px-5 sm:pt-5 sm:pb-2">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <div className="inline-flex items-center rounded-full bg-stone-100 px-3 py-1.5 text-[12px] font-regular text-stone-700">
                 {formatDayLabel(date)}
@@ -171,7 +171,7 @@ export default function BookingTimeline({
                         >
                           <div className="relative flex h-full justify-center -mr-1">
                             <div className="absolute bottom-0 top-0 w-px bg-gradient-to-b from-stone-300 to-stone-400/60" />
-                            <div className="relative z-10 mt-5 flex h-9 w-9 items-center justify-center rounded-full border-2 border-stone-300 bg-white shadow-sm">
+                            <div className="relative z-10 mt-5 flex h-9 w-9 items-center justify-center rounded-full border-2 border-stone-300 bg-white shadow-[0_6px_16px_rgba(0,0,0,0.08)]">
                               {getBookingIcon(booking.type)}
                             </div>
                           </div>
@@ -182,7 +182,7 @@ export default function BookingTimeline({
                               onClick={() =>
                                 handleToggleBooking(booking.id, isExpanded)
                               }
-                              className="mb-2 w-full min-w-0 overflow-hidden rounded-[1.5rem] border border-stone-200 bg-white p-3 text-left shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] sm:p-4"
+                              className="mb-2 w-full min-w-0 overflow-hidden rounded-[1.5rem] border border-stone-200/80 bg-white p-3 text-left shadow-[0_10px_28px_rgba(0,0,0,0.05)] transition-all duration-250 hover:-translate-y-[2px] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] active:scale-[0.995] sm:p-4"
                             >
                               <div
                                 className={`mb-3 h-1 rounded-full ${getAccentBarClass(
