@@ -291,27 +291,18 @@ export default function HomePage() {
         currencies: selectedCurrencies,
       });
 
-      const ownerTraveller = {
-        name: userDisplayName || userEmail || "Me",
-        user_id: user.id,
-      };
+      const travellersToSave = newTravellers.map((t) => ({
+        name: t.name,
+        user_id: null,
+      }));
 
-      const travellersToSave =
-        newTravellers.length > 0
-          ? [
-            ownerTraveller,
-            ...newTravellers.map((t) => ({
-              name: t.name,
-              user_id: null,
-            })),
-          ]
-          : [ownerTraveller];
-
-      try {
-        await addTripMembers(data.id, travellersToSave);
-      } catch (err) {
-        console.error("Error saving travellers:", err);
-        alert("Trip created, but travellers could not be saved");
+      if (travellersToSave.length > 0) {
+        try {
+          await addTripMembers(data.id, travellersToSave);
+        } catch (err) {
+          console.error("Error saving travellers:", err);
+          alert("Trip created, but travellers could not be saved");
+        }
       }
 
       const invite = inviteEmail.trim().toLowerCase();

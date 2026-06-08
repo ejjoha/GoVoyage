@@ -137,19 +137,14 @@ export async function createTrip({
         throw new Error("You must be signed in to create a trip.");
     }
 
-    const { data, error } = await supabase
-        .from("trips")
-        .insert({
-            title,
-            destination,
-            start_date,
-            end_date,
-            image_url: image_url || null,
-            currencies: currencies || ["NOK", "EUR", "USD"],
-            user_id: user.id,
-        })
-        .select()
-        .single();
+    const { data, error } = await supabase.rpc("create_trip_with_owner", {
+        p_title: title,
+        p_destination: destination,
+        p_start_date: start_date,
+        p_end_date: end_date,
+        p_image_url: image_url || null,
+        p_currencies: currencies || ["NOK", "EUR", "USD"],
+    });
 
     if (error || !data) {
         throw new Error(error?.message || "Failed to create trip");
