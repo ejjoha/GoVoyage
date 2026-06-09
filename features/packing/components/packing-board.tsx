@@ -430,6 +430,7 @@ export default function PackingBoard({ tripId }: Props) {
                 open={categoryModalOpen}
                 packingListId={activeList?.id ?? ""}
                 existingItems={activeList ? (itemsByList[activeList.id] ?? []) : []}
+                defaultWeather={weatherSummary?.suggestedProfiles ?? []}
                 onClose={() => setCategoryModalOpen(false)}
                 onCreated={(createdItems) => {
                     if (!activeList) return;
@@ -440,6 +441,17 @@ export default function PackingBoard({ tripId }: Props) {
                             ...(current[activeList.id] ?? []),
                             ...createdItems,
                         ],
+                    }));
+
+                }}
+                onItemsHidden={(itemIds) => {
+                    if (!activeList) return;
+
+                    setItemsByList((current) => ({
+                        ...current,
+                        [activeList.id]: (current[activeList.id] ?? []).filter(
+                            (item) => !itemIds.includes(item.id)
+                        ),
                     }));
                 }}
             />

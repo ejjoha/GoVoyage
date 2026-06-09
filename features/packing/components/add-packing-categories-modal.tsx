@@ -1,18 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { createSuggestedPackingItems } from "../lib/packing-mutations";
+import { useEffect, useState } from "react";
+import {
+    createSuggestedPackingItems,
+    hidePackingItem,
+} from "../lib/packing-mutations";
 import type { PackingListItem } from "../types/packing.types";
 
 type Props = {
     open: boolean;
     packingListId: string;
     existingItems: PackingListItem[];
+    defaultWeather: string[];
     onClose: () => void;
     onCreated: (items: PackingListItem[]) => void;
+    onItemsHidden: (itemIds: string[]) => void;
 };
 
 const categoryOptions = [
+    "Essentials",
     "Clothing",
     "Toiletries",
     "Tech",
@@ -48,6 +54,7 @@ const categoryItems: Record<string, Array<{
         { name: "Deodorant", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
         { name: "Shampoo or hair care", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
         { name: "Skin care", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Sanitary products", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
         { name: "Razor or grooming kit", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
     ],
     Tech: [
@@ -65,7 +72,65 @@ const categoryItems: Record<string, Array<{
         { name: "Reusable water bottle", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
         { name: "Sunglasses", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
         { name: "Travel snacks", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Laundry bag", category: "Laundry", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Laundry bag", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+};
+const weatherItems: Record<string, Array<{
+    name: string;
+    category: string;
+    quantity: number;
+    source: "suggested";
+    packed: false;
+    hidden: false;
+    protected: boolean;
+}>> = {
+    Hot: [
+        { name: "High SPF sunscreen", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Cap or sun hat", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Linen or light shirts", category: "Clothing", quantity: 3, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "After-sun lotion", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    Cold: [
+        { name: "Warm coat", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
+        { name: "Thermal base layers", category: "Weather", quantity: 2, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Gloves", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Beanie", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Scarf or neck warmer", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Warm socks", category: "Footwear", quantity: 2, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    Rainy: [
+        { name: "Umbrella", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Waterproof jacket", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Waterproof shoes", category: "Footwear", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Dry bag", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+};
+const tripTypeItems: Record<string, Array<{
+    name: string;
+    category: string;
+    quantity: number;
+    source: "suggested";
+    packed: false;
+    hidden: false;
+    protected: boolean;
+}>> = {
+    Business: [
+        { name: "Business outfit", category: "City & Business", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Laptop", category: "Tech", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
+        { name: "Laptop charger", category: "Tech", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
+        { name: "Notebook and pen", category: "City & Business", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    "Traveling with kids": [
+        { name: "Kids’ documents", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
+        { name: "Passports/IDs", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
+        { name: "Snacks", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Refillable water bottles", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Toys/books", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Tablet + headphones", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Wipes", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Medication", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Spare clothes", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Favorite stuffed animal", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
     ],
 };
 
@@ -77,20 +142,43 @@ export default function AddPackingCategoriesModal({
     open,
     packingListId,
     existingItems,
+    defaultWeather,
     onClose,
     onCreated,
+    onItemsHidden,
 }: Props) {
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([
-        "Clothing",
-        "Toiletries",
-    ]);
-    const [selectedWeather, setSelectedWeather] = useState<string[]>(["Rainy"]);
+
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [initialCategories, setInitialCategories] = useState<string[]>([]);
+    const [selectedWeather, setSelectedWeather] = useState<string[]>(defaultWeather);
     const [selectedTripTypes, setSelectedTripTypes] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
+    useEffect(() => {
+        if (!open) return;
+
+        setSelectedWeather(defaultWeather);
+    }, [open, defaultWeather]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const existingCategories = Array.from(
+            new Set(
+                existingItems
+                    .map((item) => item.category)
+                    .filter((category) => categoryOptions.includes(category))
+            )
+        );
+
+        setSelectedCategories(existingCategories);
+        setInitialCategories(existingCategories);
+    }, [open, existingItems]);
 
     if (!open) return null;
 
     function toggleCategory(category: string) {
+        if (category === "Essentials") return;
+
         setSelectedCategories((current) =>
             current.includes(category)
                 ? current.filter((item) => item !== category)
@@ -124,21 +212,38 @@ export default function AddPackingCategoriesModal({
                 existingItems.map((item) => normalizeName(item.name))
             );
 
-            const itemsToCreate = selectedCategories
-                .flatMap((category) => categoryItems[category] ?? [])
-                .filter((item) => !existingNames.has(normalizeName(item.name)));
+            const removedCategories = initialCategories.filter(
+                (category) =>
+                    category !== "Essentials" &&
+                    !selectedCategories.includes(category)
+            );
 
-            if (itemsToCreate.length === 0) {
-                onClose();
-                return;
+            const itemIdsToHide = existingItems
+                .filter((item) => removedCategories.includes(item.category))
+                .map((item) => item.id);
+
+            const categoryGeneratedItems = selectedCategories.flatMap(
+                (category) => categoryItems[category] ?? []
+            );
+
+            const itemsToCreate = [
+                ...categoryGeneratedItems,
+            ].filter((item) => !existingNames.has(normalizeName(item.name)));
+
+            if (itemIdsToHide.length > 0) {
+                await Promise.all(itemIdsToHide.map((itemId) => hidePackingItem(itemId)));
+                onItemsHidden(itemIdsToHide);
             }
 
-            const createdItems = await createSuggestedPackingItems({
-                packingListId,
-                items: itemsToCreate,
-            });
+            if (itemsToCreate.length > 0) {
+                const createdItems = await createSuggestedPackingItems({
+                    packingListId,
+                    items: itemsToCreate,
+                });
 
-            onCreated(createdItems);
+                onCreated(createdItems);
+            }
+
             onClose();
         } finally {
             setSaving(false);
@@ -195,62 +300,6 @@ export default function AddPackingCategoriesModal({
                                 >
                                     {active ? "✓ " : ""}
                                     {category}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div className="mt-6">
-                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-neutral-400">
-                        Weather
-                    </p>
-
-                    <div className="flex flex-wrap gap-2">
-                        {weatherOptions.map((weather) => {
-                            const active = selectedWeather.includes(weather);
-
-                            return (
-                                <button
-                                    key={weather}
-                                    type="button"
-                                    onClick={() => toggleWeather(weather)}
-                                    className={
-                                        active
-                                            ? "rounded-full bg-sky-500 px-3 py-1.5 text-sm font-bold text-white"
-                                            : "rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-bold text-neutral-500"
-                                    }
-                                >
-                                    {active ? "✓ " : ""}
-                                    {weather}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div className="mt-6">
-                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-neutral-400">
-                        Trip Type
-                    </p>
-
-                    <div className="flex flex-wrap gap-2">
-                        {tripTypeOptions.map((type) => {
-                            const active = selectedTripTypes.includes(type);
-
-                            return (
-                                <button
-                                    key={type}
-                                    type="button"
-                                    onClick={() => toggleTripType(type)}
-                                    className={
-                                        active
-                                            ? "rounded-full bg-emerald-500 px-3 py-1.5 text-sm font-bold text-white"
-                                            : "rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-bold text-neutral-500"
-                                    }
-                                >
-                                    {active ? "✓ " : ""}
-                                    {type}
                                 </button>
                             );
                         })}
