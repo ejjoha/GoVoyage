@@ -3,8 +3,6 @@
 import PackingBoardSkeleton from "./packing-board-skeleton";
 import PackingTripHero from "./packing-trip-hero";
 import { useEffect, useMemo, useState } from "react";
-import CreatePackingListButton from "./create-packing-list-button";
-import PackingSpaceSummary from "./packing-space-summary";
 import PackingSpaceSelector from "./packing-space-selector";
 import PackingListCard from "./packing-list-card";
 import FloatingAddPackingItemButton from "./floating-add-packing-item-button";
@@ -16,13 +14,6 @@ import {
 } from "../lib/weather-intelligence";
 
 import {
-    archivePackingList,
-    hidePackingItem,
-    togglePackedItem,
-    updatePackingItemQuantity,
-} from "../lib/packing-mutations";
-
-import {
     getPackingItems,
     getPackingLists,
     getTripForPacking,
@@ -32,6 +23,17 @@ import type {
     PackingList,
     PackingListItem,
 } from "../types/packing.types";
+
+import {
+    archivePackingList,
+    createPackingList,
+    createSuggestedPackingItems,
+    hidePackingItem,
+    togglePackedItem,
+    updatePackingItemQuantity,
+} from "../lib/packing-mutations";
+
+import { getEssentialsStarterItems } from "../lib/packing-template-engine";
 
 type TripForPacking = Awaited<ReturnType<typeof getTripForPacking>>;
 
@@ -57,6 +59,7 @@ export default function PackingBoard({ tripId }: Props) {
         Record<string, PackingListItem[]>
     >({});
     const [loading, setLoading] = useState(true);
+    const [initializingFirstList, setInitializingFirstList] = useState(false);
 
     const [trip, setTrip] = useState<TripForPacking | null>(null);
     const [activeListId, setActiveListId] = useState<string | null>(null);
@@ -98,6 +101,52 @@ export default function PackingBoard({ tripId }: Props) {
     useEffect(() => {
         loadPacking();
     }, [tripId]);
+
+    async function initializeFirstPackingList() {
+        if (initializingFirstList) return;
+
+        setInitializingFirstList(true);
+
+        try {
+            const list = await createPackingList({
+                tripId,
+                title: "My List",
+                type: "personal",
+                emoji: "🧳",
+            });
+
+            const createdItems = await createSuggestedPackingItems({
+                packingListId: list.id,
+                items: getEssentialsStarterItems(),
+            });
+
+            setLists([list]);
+
+            setItemsByList({
+                [list.id]: createdItems,
+            });
+
+            setActiveListId(list.id);
+        } finally {
+            setInitializingFirstList(false);
+        }
+    }
+
+    useEffect(() => {
+        if (
+            !loading &&
+            lists.length === 0 &&
+            trip &&
+            !initializingFirstList
+        ) {
+            initializeFirstPackingList();
+        }
+    }, [
+        loading,
+        lists.length,
+        trip,
+        initializingFirstList,
+    ]);
 
     const allItems = useMemo(
         () => Object.values(itemsByList).flat(),
@@ -158,23 +207,12 @@ export default function PackingBoard({ tripId }: Props) {
             {!loading && lists.length === 0 && (
                 <div className="rounded-[1.25rem] bg-white p-8 text-center shadow-sm">
                     <p className="text-base font-semibold text-neutral-900">
-                        Start with your first list
+                        Preparing your packing list...
                     </p>
 
                     <p className="mt-2 text-sm leading-6 text-neutral-500">
-                        Create a list for yourself, a family member, or something shared.
+                        Adding travel essentials.
                     </p>
-
-                    <CreatePackingListButton
-                        tripId={tripId}
-                        onCreated={(list) => {
-                            setLists((current) => [...current, list]);
-                            setItemsByList((current) => ({
-                                ...current,
-                                [list.id]: [],
-                            }));
-                        }}
-                    />
                 </div>
             )}
 

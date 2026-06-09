@@ -152,6 +152,92 @@ export const climateSuggestions: Record<string, PackingTemplateItem[]> = {
     ],
 };
 
+export function getEssentialsStarterItems() {
+    return [
+        {
+            name: "Passport or ID",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+        {
+            name: "Wallet",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+        {
+            name: "Payment card",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+        {
+            name: "Travel insurance info",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+        {
+            name: "Booking confirmations",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+        {
+            name: "House keys",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+        {
+            name: "Phone",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+        {
+            name: "Phone charger",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+        {
+            name: "Prescription medicine",
+            category: "Essentials",
+            quantity: 1,
+            source: "suggested" as const,
+            packed: false,
+            hidden: false,
+            protected: true,
+        },
+    ];
+}
+
 export const environmentSuggestions: Record<string, PackingTemplateItem[]> = {
     beach: [
         item("swimsuit", "Swimsuit", "Beach & Swim", 2),
