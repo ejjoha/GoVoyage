@@ -331,7 +331,8 @@ export default function PackingBoard({ tripId }: Props) {
                             <div className="mt-6 grid grid-cols-2 gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => {
+                                    onPointerDown={(event) => {
+                                        event.preventDefault();
                                         setItemPendingRemove(null);
                                         setResetSwipeKey((current) => current + 1);
                                     }}
@@ -341,8 +342,8 @@ export default function PackingBoard({ tripId }: Props) {
                                 </button>
 
                                 <button
-                                    type="button"
-                                    onClick={async () => {
+                                    onPointerDown={async (event) => {
+                                        event.preventDefault();
                                         const item = itemPendingRemove;
 
                                         setItemPendingRemove(null);

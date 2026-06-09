@@ -57,7 +57,10 @@ export default function PackingItemRow({
                             damping: 32,
                         });
 
-                        onRemove(item);
+                        window.setTimeout(() => {
+                            onRemove(item);
+                        }, 250);
+
                         return;
                     }
 

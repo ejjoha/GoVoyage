@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useAnimationControls } from "framer-motion";
 import type { PackingItem } from "../packingSuggestions";
 
 type PackItemRowProps = {
@@ -15,27 +16,62 @@ type PackItemRowProps = {
 export default function PackItemRow({
     item,
     onToggle,
-    onDelete,
     onRequestDelete,
     onDecreaseQuantity,
     onIncreaseQuantity,
 }: PackItemRowProps) {
+    const controls = useAnimationControls();
+    const [deleteReady, setDeleteReady] = useState(false);
+    const deleteReadyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    function closeSwipe() {
+        setDeleteReady(false);
+        controls.start({ x: 0 });
+    }
+
+    function openSwipe() {
+        setDeleteReady(false);
+        controls.start({ x: -96 });
+
+        if (deleteReadyTimer.current) {
+            clearTimeout(deleteReadyTimer.current);
+        }
+
+        deleteReadyTimer.current = setTimeout(() => {
+            setDeleteReady(true);
+        }, 300);
+    }
+
     return (
-        <div className="relative overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-end rounded-2xl bg-red-500 px-5 text-sm font-bold text-white">
+        <div className="relative overflow-hidden rounded-2xl">
+            <button
+                type="button"
+                onClick={() => {
+                    if (!deleteReady) return;
+
+                    closeSwipe();
+                    onRequestDelete(item);
+                }}
+                className="absolute inset-y-0 right-0 flex w-24 items-center justify-center bg-red-500 text-sm font-bold text-white"
+            >
                 Delete
-            </div>
+            </button>
 
             <motion.div
                 drag="x"
                 dragDirectionLock
-                dragConstraints={{ left: -120, right: 0 }}
-                dragElastic={0.08}
+                dragConstraints={{ left: -96, right: 0 }}
+                dragElastic={0.04}
+                dragMomentum={false}
+                animate={controls}
                 whileTap={{ scale: 0.99 }}
                 onDragEnd={(_, info) => {
-                    if (info.offset.x < -80 || info.velocity.x < -500) {
-                        onDelete(item.key);
+                    if (info.offset.x < -48 || info.velocity.x < -350) {
+                        openSwipe();
+                        return;
                     }
+
+                    closeSwipe();
                 }}
                 className="relative flex touch-pan-y items-center gap-4 bg-white px-1 py-3"
             >
