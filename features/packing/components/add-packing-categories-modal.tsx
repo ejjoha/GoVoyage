@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
+    baseItems,
+    getSmartQuantity,
+} from "../lib/packing-template-engine";
+import {
     createSuggestedPackingItems,
     hidePackingItem,
 } from "../lib/packing-mutations";
@@ -12,6 +16,7 @@ type Props = {
     packingListId: string;
     existingItems: PackingListItem[];
     defaultWeather: string[];
+    tripDays: number;
     onClose: () => void;
     onCreated: (items: PackingListItem[]) => void;
     onItemsHidden: (itemIds: string[]) => void;
@@ -27,113 +32,6 @@ const categoryOptions = [
     "Comfort & Travel",
 ];
 
-const weatherOptions = ["Hot", "Cold", "Rainy"];
-
-const tripTypeOptions = ["Business", "Traveling with kids"];
-
-const categoryItems: Record<string, Array<{
-    name: string;
-    category: string;
-    quantity: number;
-    source: "suggested";
-    packed: false;
-    hidden: false;
-    protected: boolean;
-}>> = {
-    Clothing: [
-        { name: "Underwear", category: "Clothing", quantity: 3, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Socks", category: "Clothing", quantity: 3, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "T-shirts or tops", category: "Clothing", quantity: 3, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Pants or skirts", category: "Clothing", quantity: 2, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Sleepwear", category: "Clothing", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Light jacket or layer", category: "Clothing", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-    Toiletries: [
-        { name: "Toothbrush", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
-        { name: "Toothpaste", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Deodorant", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Shampoo or hair care", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Skin care", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Sanitary products", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
-        { name: "Razor or grooming kit", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-    Tech: [
-        { name: "Power bank", category: "Tech", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Travel adapter", category: "Tech", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-    "Health & Safety": [
-        { name: "Pain reliever", category: "Health & Safety", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Basic first aid", category: "Health & Safety", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-    Footwear: [
-        { name: "Comfortable shoes", category: "Footwear", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-    "Comfort & Travel": [
-        { name: "Reusable water bottle", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Sunglasses", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Travel snacks", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Laundry bag", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-};
-const weatherItems: Record<string, Array<{
-    name: string;
-    category: string;
-    quantity: number;
-    source: "suggested";
-    packed: false;
-    hidden: false;
-    protected: boolean;
-}>> = {
-    Hot: [
-        { name: "High SPF sunscreen", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Cap or sun hat", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Linen or light shirts", category: "Clothing", quantity: 3, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "After-sun lotion", category: "Toiletries", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-    Cold: [
-        { name: "Warm coat", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
-        { name: "Thermal base layers", category: "Weather", quantity: 2, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Gloves", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Beanie", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Scarf or neck warmer", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Warm socks", category: "Footwear", quantity: 2, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-    Rainy: [
-        { name: "Umbrella", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Waterproof jacket", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Waterproof shoes", category: "Footwear", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Dry bag", category: "Weather", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-};
-const tripTypeItems: Record<string, Array<{
-    name: string;
-    category: string;
-    quantity: number;
-    source: "suggested";
-    packed: false;
-    hidden: false;
-    protected: boolean;
-}>> = {
-    Business: [
-        { name: "Business outfit", category: "City & Business", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Laptop", category: "Tech", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
-        { name: "Laptop charger", category: "Tech", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
-        { name: "Notebook and pen", category: "City & Business", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-    "Traveling with kids": [
-        { name: "Kids’ documents", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
-        { name: "Passports/IDs", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
-        { name: "Snacks", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Refillable water bottles", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Toys/books", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Tablet + headphones", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Wipes", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Medication", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Spare clothes", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-        { name: "Favorite stuffed animal", category: "Kids & Family", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
-    ],
-};
-
 function normalizeName(name: string) {
     return name.trim().toLowerCase();
 }
@@ -143,21 +41,14 @@ export default function AddPackingCategoriesModal({
     packingListId,
     existingItems,
     defaultWeather,
+    tripDays,
     onClose,
     onCreated,
     onItemsHidden,
 }: Props) {
-
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [initialCategories, setInitialCategories] = useState<string[]>([]);
-    const [selectedWeather, setSelectedWeather] = useState<string[]>(defaultWeather);
-    const [selectedTripTypes, setSelectedTripTypes] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
-    useEffect(() => {
-        if (!open) return;
-
-        setSelectedWeather(defaultWeather);
-    }, [open, defaultWeather]);
 
     useEffect(() => {
         if (!open) return;
@@ -186,22 +77,6 @@ export default function AddPackingCategoriesModal({
         );
     }
 
-    function toggleWeather(weather: string) {
-        setSelectedWeather((current) =>
-            current.includes(weather)
-                ? current.filter((item) => item !== weather)
-                : [...current, weather]
-        );
-    }
-
-    function toggleTripType(type: string) {
-        setSelectedTripTypes((current) =>
-            current.includes(type)
-                ? current.filter((item) => item !== type)
-                : [...current, type]
-        );
-    }
-
     async function handleAddSelectedCategories() {
         if (saving || selectedCategories.length === 0) return;
 
@@ -222,16 +97,30 @@ export default function AddPackingCategoriesModal({
                 .filter((item) => removedCategories.includes(item.category))
                 .map((item) => item.id);
 
-            const categoryGeneratedItems = selectedCategories.flatMap(
-                (category) => categoryItems[category] ?? []
+            const categoryGeneratedItems = baseItems
+                .filter((item) => selectedCategories.includes(item.category))
+                .filter((item) => item.category !== "Essentials")
+                .map((item) => ({
+                    name: item.name,
+                    category:
+                        item.name === "Laundry bag"
+                            ? "Comfort & Travel"
+                            : item.category,
+                    quantity: getSmartQuantity(item, tripDays),
+                    source: "suggested" as const,
+                    packed: false,
+                    hidden: false,
+                    protected: Boolean(item.protected),
+                }));
+
+            const itemsToCreate = categoryGeneratedItems.filter(
+                (item) => !existingNames.has(normalizeName(item.name))
             );
 
-            const itemsToCreate = [
-                ...categoryGeneratedItems,
-            ].filter((item) => !existingNames.has(normalizeName(item.name)));
-
             if (itemIdsToHide.length > 0) {
-                await Promise.all(itemIdsToHide.map((itemId) => hidePackingItem(itemId)));
+                await Promise.all(
+                    itemIdsToHide.map((itemId) => hidePackingItem(itemId))
+                );
                 onItemsHidden(itemIdsToHide);
             }
 

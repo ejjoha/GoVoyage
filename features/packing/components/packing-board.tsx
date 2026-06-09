@@ -426,6 +426,7 @@ export default function PackingBoard({ tripId }: Props) {
                 open={categoryModalOpen}
                 packingListId={activeList?.id ?? ""}
                 existingItems={activeList ? (itemsByList[activeList.id] ?? []) : []}
+                tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
                 defaultWeather={weatherSummary?.suggestedProfiles ?? []}
                 onClose={() => setCategoryModalOpen(false)}
                 onCreated={(createdItems) => {
