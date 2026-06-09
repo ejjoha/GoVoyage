@@ -73,9 +73,9 @@ export const baseItems: PackingTemplateItem[] = [
         maxQuantity: 14,
     }),
     item("t-shirts-or-tops", "T-shirts or tops", "Clothing", 3, {
-        quantityRule: "everyTwoDays",
+        quantityRule: "perDay",
         minQuantity: 2,
-        maxQuantity: 8,
+        maxQuantity: 14,
     }),
     item("pants-or-skirts", "Pants or skirts", "Clothing", 2, {
         quantityRule: "weekly",

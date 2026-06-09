@@ -144,13 +144,12 @@ export default function AddPackingCategoriesModal({
             <div className="w-full rounded-[2rem] bg-white p-5 shadow-2xl">
                 <div className="mb-6 flex items-start justify-between">
                     <div>
+                        <h2 className="mt-2 text-2xl font-bold tracking-[-0.05em] text-neutral-950">
+                            Build your packing list
+                        </h2>
                         <p className="text-sm font-bold text-neutral-400">
                             Add categories
                         </p>
-
-                        <h2 className="mt-1 text-3xl font-bold tracking-[-0.05em] text-neutral-950">
-                            Build your packing list
-                        </h2>
                     </div>
 
                     <button
@@ -163,16 +162,8 @@ export default function AddPackingCategoriesModal({
                     </button>
                 </div>
 
-                <p className="text-sm leading-6 text-neutral-500">
-                    Choose the categories you want in this packing list.
-                </p>
-
-                <div className="mt-6">
-                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-neutral-400">
-                        Categories
-                    </p>
-
-                    <div className="flex flex-wrap gap-3">
+                <div className="mt-16">
+                    <div className="flex flex-wrap gap-5">
                         {categoryOptions.map((category) => {
                             const active = selectedCategories.includes(category);
                             const locked = category === "Essentials";
@@ -184,8 +175,8 @@ export default function AddPackingCategoriesModal({
                                     onClick={() => toggleCategory(category)}
                                     className={
                                         active
-                                            ? "rounded-full bg-neutral-950 px-5 py-3 text-base font-bold text-white transition active:scale-95"
-                                            : "rounded-full bg-neutral-100 px-5 py-3 text-base font-bold text-neutral-500 transition active:scale-95"
+                                            ? "rounded-full bg-neutral-950 px-5 py-2 text-sm font-bold text-white transition active:scale-95"
+                                            : "rounded-full bg-neutral-100 px-5 py-2 text-sm font-bold text-neutral-500 transition active:scale-95"
                                     }
                                 >
                                     {category}
@@ -200,7 +191,7 @@ export default function AddPackingCategoriesModal({
                     type="button"
                     onClick={handleAddSelectedCategories}
                     disabled={selectedCategories.length === 0 || saving}
-                    className="mt-8 w-full rounded-2xl bg-rose-400 px-5 py-4 text-base font-bold text-white transition active:scale-[0.98] disabled:opacity-40"
+                    className="mt-20 w-full rounded-2xl bg-rose-500 px-5 py-4 text-base font-bold text-white transition active:scale-[0.98] disabled:opacity-40"
                 >
                     {saving ? "Updating…" : "Update packing list"}
                 </button>
