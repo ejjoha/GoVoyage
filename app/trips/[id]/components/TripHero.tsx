@@ -36,12 +36,12 @@ export default function TripHero({
   return (
     <>
       <section className="relative mb-13">
-        <div className="relative -mx-4 -mt-6 overflow-hidden rounded-b-[2.75rem] bg-neutral-200 shadow-[0_24px_70px_rgba(0,0,0,0.18)]">
+        <div className="relative -mx-4 -mt-6 overflow-hidden rounded-b-[2.75rem] bg-neutral-200">
           {imageUrl ? (
             <img
               src={imageUrl}
               alt={title}
-              className="h-[20rem] w-full object-cover scale-[1.01]"
+              className="h-[20rem] w-full object-cover"
             />
           ) : (
             <div className="h-[22rem] w-full bg-gradient-to-br from-neutral-200 to-neutral-300" />
@@ -113,7 +113,7 @@ export default function TripHero({
 
         {stats.length > 0 && (
           <div className="absolute inset-x-0 -bottom-10 px-1">
-            <div className="rounded-[1.5rem] border border-white/70 bg-white/95 px-5 py-3 shadow-[0_18px_50px_rgba(0,0,0,0.13)] backdrop-blur-xl">
+            <div className="rounded-[1.25rem] bg-white py-2 px-5 shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
               <div className="grid grid-cols-3 gap-0">
                 {stats.map((stat, index) => {
                   const content = (

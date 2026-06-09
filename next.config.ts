@@ -4,6 +4,7 @@ import withPWA from "next-pwa";
 const nextConfig: NextConfig = {
   allowedDevOrigins: [
     "10.210.228.105",
+    "10.230.232.105",
     "192.168.86.179",
     "192.168.132.12",
     "192.168.86.178",

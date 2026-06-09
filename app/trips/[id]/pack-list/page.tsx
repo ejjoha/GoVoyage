@@ -459,10 +459,7 @@ export default function PackListPage() {
 
                         {itemPendingDelete && (
                             <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 px-6">
-                                <div
-                                    className="w-full max-w-sm touch-manipulation rounded-[2rem] bg-white p-6 text-center shadow-2xl"
-                                    onPointerDown={(event) => event.stopPropagation()}
-                                >
+                                <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 text-center shadow-2xl">
                                     <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl">
                                         🧳
                                     </div>
@@ -480,7 +477,7 @@ export default function PackListPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setItemPendingDelete(null)}
-                                                className="touch-manipulation rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700 transition active:scale-95"
+                                                className="rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-700"
                                             >
                                                 Keep it
                                             </button>
@@ -491,7 +488,7 @@ export default function PackListPage() {
                                                     deleteItem(itemPendingDelete.key, { showUndo: false });
                                                     setItemPendingDelete(null);
                                                 }}
-                                                className="touch-manipulation rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white transition active:scale-95"
+                                                className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
                                             >
                                                 Remove
                                             </button>
