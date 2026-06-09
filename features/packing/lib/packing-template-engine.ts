@@ -91,7 +91,11 @@ export const baseItems: PackingTemplateItem[] = [
     item("deodorant", "Deodorant", "Toiletries", 1),
     item("shampoo-or-hair-care", "Shampoo or hair care", "Toiletries", 1),
     item("skin-care", "Skin care", "Toiletries", 1),
+    item("sanitary-products", "Sanitary products", "Toiletries", 1, {
+        protected: true,
+    }),
     item("razor-or-grooming-kit", "Razor or grooming kit", "Toiletries", 1),
+
 
     item("prescription-medicine", "Prescription medicine", "Health & Safety", 1, { protected: true }),
     item("pain-reliever", "Pain reliever", "Health & Safety", 1),
