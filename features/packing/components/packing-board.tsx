@@ -3,6 +3,7 @@
 import PackingBoardSkeleton from "./packing-board-skeleton";
 import PackingTripHero from "./packing-trip-hero";
 import { useEffect, useMemo, useState } from "react";
+import AddPackingCategoriesModal from "./add-packing-categories-modal";
 import PackingSpaceSelector from "./packing-space-selector";
 import PackingListCard from "./packing-list-card";
 import FloatingAddPackingItemButton from "./floating-add-packing-item-button";
@@ -33,6 +34,8 @@ import {
     updatePackingItemQuantity,
 } from "../lib/packing-mutations";
 
+import PackingNextActions from "./packing-next-actions";
+
 import { getEssentialsStarterItems } from "../lib/packing-template-engine";
 
 type TripForPacking = Awaited<ReturnType<typeof getTripForPacking>>;
@@ -60,6 +63,7 @@ export default function PackingBoard({ tripId }: Props) {
     >({});
     const [loading, setLoading] = useState(true);
     const [initializingFirstList, setInitializingFirstList] = useState(false);
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
     const [trip, setTrip] = useState<TripForPacking | null>(null);
     const [activeListId, setActiveListId] = useState<string | null>(null);
@@ -182,6 +186,14 @@ export default function PackingBoard({ tripId }: Props) {
             console.error(error);
             await loadPacking();
         }
+    }
+
+    function handleAddTripRecommendations() {
+        console.log("Add trip recommendations");
+    }
+
+    function handleAddCategories() {
+        setCategoryModalOpen(true);
     }
 
     return (
@@ -326,6 +338,11 @@ export default function PackingBoard({ tripId }: Props) {
                         }}
                     />
 
+                    <PackingNextActions
+                        onAddTripRecommendations={handleAddTripRecommendations}
+                        onAddCategories={handleAddCategories}
+                    />
+
                     <FloatingAddPackingItemButton
                         packingListId={activeList.id}
                         existingItems={itemsByList[activeList.id] ?? []}
@@ -409,6 +426,23 @@ export default function PackingBoard({ tripId }: Props) {
                     </motion.div>
                 )}
             </AnimatePresence>
+            <AddPackingCategoriesModal
+                open={categoryModalOpen}
+                packingListId={activeList?.id ?? ""}
+                existingItems={activeList ? (itemsByList[activeList.id] ?? []) : []}
+                onClose={() => setCategoryModalOpen(false)}
+                onCreated={(createdItems) => {
+                    if (!activeList) return;
+
+                    setItemsByList((current) => ({
+                        ...current,
+                        [activeList.id]: [
+                            ...(current[activeList.id] ?? []),
+                            ...createdItems,
+                        ],
+                    }));
+                }}
+            />
         </div>
     );
 }
