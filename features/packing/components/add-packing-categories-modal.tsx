@@ -253,13 +253,13 @@ export default function AddPackingCategoriesModal({
     return (
         <div className="fixed inset-0 z-50 flex items-end bg-black/30 px-4 pb-4">
             <div className="w-full rounded-[2rem] bg-white p-5 shadow-2xl">
-                <div className="mb-5 flex items-center justify-between">
+                <div className="mb-6 flex items-start justify-between">
                     <div>
                         <p className="text-sm font-bold text-neutral-400">
                             Add categories
                         </p>
 
-                        <h2 className="mt-1 text-2xl font-bold tracking-[-0.04em] text-neutral-950">
+                        <h2 className="mt-1 text-3xl font-bold tracking-[-0.05em] text-neutral-950">
                             Build your packing list
                         </h2>
                     </div>
@@ -267,7 +267,7 @@ export default function AddPackingCategoriesModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-xl font-bold text-neutral-500"
+                        className="flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 text-3xl font-bold text-neutral-500"
                         aria-label="Close"
                     >
                         ×
@@ -275,17 +275,18 @@ export default function AddPackingCategoriesModal({
                 </div>
 
                 <p className="text-sm leading-6 text-neutral-500">
-                    Choose the areas you want to add to your packing list.
+                    Choose the categories you want in this packing list.
                 </p>
 
-                <div className="mt-5">
-                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-neutral-400">
+                <div className="mt-6">
+                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-neutral-400">
                         Categories
                     </p>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                         {categoryOptions.map((category) => {
                             const active = selectedCategories.includes(category);
+                            const locked = category === "Essentials";
 
                             return (
                                 <button
@@ -294,12 +295,12 @@ export default function AddPackingCategoriesModal({
                                     onClick={() => toggleCategory(category)}
                                     className={
                                         active
-                                            ? "rounded-full bg-rose-500 px-3 py-1.5 text-sm font-bold text-white"
-                                            : "rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-bold text-neutral-500"
+                                            ? "rounded-full bg-neutral-950 px-5 py-3 text-base font-bold text-white transition active:scale-95"
+                                            : "rounded-full bg-neutral-100 px-5 py-3 text-base font-bold text-neutral-500 transition active:scale-95"
                                     }
                                 >
-                                    {active ? "✓ " : ""}
                                     {category}
+                                    {locked ? " ✓" : ""}
                                 </button>
                             );
                         })}
@@ -310,9 +311,9 @@ export default function AddPackingCategoriesModal({
                     type="button"
                     onClick={handleAddSelectedCategories}
                     disabled={selectedCategories.length === 0 || saving}
-                    className="mt-6 w-full rounded-2xl bg-neutral-950 px-5 py-4 text-base font-bold text-white transition active:scale-[0.98] disabled:opacity-40"
+                    className="mt-8 w-full rounded-2xl bg-rose-400 px-5 py-4 text-base font-bold text-white transition active:scale-[0.98] disabled:opacity-40"
                 >
-                    {saving ? "Adding…" : "Add selected categories"}
+                    {saving ? "Updating…" : "Update packing list"}
                 </button>
             </div>
         </div>

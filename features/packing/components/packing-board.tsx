@@ -246,6 +246,7 @@ export default function PackingBoard({ tripId }: Props) {
                             }));
                             setActiveListId(list.id);
                         }}
+                        onOpenCategories={() => setCategoryModalOpen(true)}
                     />
                     <PackingListCard
                         key={activeList.id}
@@ -336,11 +337,6 @@ export default function PackingBoard({ tripId }: Props) {
                                 await loadPacking();
                             }
                         }}
-                    />
-
-                    <PackingNextActions
-                        onAddTripRecommendations={handleAddTripRecommendations}
-                        onAddCategories={handleAddCategories}
                     />
 
                     <FloatingAddPackingItemButton

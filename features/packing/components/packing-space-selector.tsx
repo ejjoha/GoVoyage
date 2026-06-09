@@ -17,6 +17,7 @@ type Props = {
     tripDays: number;
     defaultClimates: string[];
     onCreated: (list: PackingList, items?: PackingListItem[]) => void;
+    onOpenCategories: () => void;
 };
 
 const options = [
@@ -35,6 +36,7 @@ export default function PackingSpaceSelector({
     onCreated,
     tripDays,
     defaultClimates,
+    onOpenCategories,
 }: Props) {
     const [open, setOpen] = useState(false);
     const [creatingTitle, setCreatingTitle] = useState<string | null>(null);
@@ -257,15 +259,13 @@ export default function PackingSpaceSelector({
                 {availableOptions.length > 0 && (
                     <button
                         type="button"
-                        onClick={() => setOpen((current) => !current)}
+                        onClick={onOpenCategories}
                         className="flex h-13 min-w-[8.5rem] items-center justify-center rounded-[1rem] bg-white/30 px-4 text-neutral-500 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition active:scale-95"
                         aria-label="Create packing space"
                     >
                         <div className="text-center">
-                            <p className="text-base font-light leading-none">+</p>
-
                             <p className="mt-1 text-[11px] leading-none text-neutral-400">
-                                New List
+                                Categories
                             </p>
                         </div>
                     </button>
