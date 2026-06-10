@@ -135,7 +135,18 @@ export default function PackingBoard({ tripId }: Props) {
             setInitializingFirstList(false);
         }
     }
+    useEffect(() => {
+        if (!categoryModalOpen) return;
 
+        const saved = localStorage.getItem(`packing-activities-${tripId}`);
+
+        if (!saved) {
+            setActivities(["Beach", "Nightlife"]);
+            return;
+        }
+
+        setActivities(JSON.parse(saved));
+    }, [categoryModalOpen, tripId]);
     useEffect(() => {
         if (
             !loading &&
@@ -160,7 +171,22 @@ export default function PackingBoard({ tripId }: Props) {
     const packedCount = allItems.filter((item) => item.packed).length;
     const totalCount = allItems.length;
     const activeList = lists.find((list) => list.id === activeListId) ?? lists[0] ?? null;
+    const [laundry] = useState<"Available" | "Hotel service" | "Not available">(() => {
+        if (typeof window === "undefined") return "Available";
 
+        const saved = localStorage.getItem(`packing-laundry-${tripId}`);
+
+        if (
+            saved === "Available" ||
+            saved === "Hotel service" ||
+            saved === "Not available"
+        ) {
+            return saved;
+        }
+
+        return "Available";
+    });
+    const [activities, setActivities] = useState<string[]>(["Beach", "Nightlife"]);
     async function handleToggleItem(item: PackingListItem) {
         const nextPacked = !item.packed;
 
@@ -427,6 +453,8 @@ export default function PackingBoard({ tripId }: Props) {
                 packingListId={activeList?.id ?? ""}
                 existingItems={activeList ? (itemsByList[activeList.id] ?? []) : []}
                 tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
+                laundry={laundry}
+                activities={activities}
                 defaultWeather={weatherSummary?.suggestedProfiles ?? []}
                 onClose={() => setCategoryModalOpen(false)}
                 onCreated={(createdItems) => {

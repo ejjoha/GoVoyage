@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import {
     baseItems,
-    getSmartQuantity,
+    getLaundryAwareQuantity,
+    type LaundryAvailability,
 } from "../lib/packing-template-engine";
 import {
     createSuggestedPackingItems,
@@ -17,6 +18,8 @@ type Props = {
     existingItems: PackingListItem[];
     defaultWeather: string[];
     tripDays: number;
+    laundry: LaundryAvailability;
+    activities: string[];
     onClose: () => void;
     onCreated: (items: PackingListItem[]) => void;
     onItemsHidden: (itemIds: string[]) => void;
@@ -32,6 +35,57 @@ const categoryOptions = [
     "Comfort & Travel",
 ];
 
+const activityItems: Record<string, Array<{
+    name: string;
+    category: string;
+    quantity: number;
+    source: "suggested";
+    packed: false;
+    hidden: false;
+    protected: boolean;
+}>> = {
+    Beach: [
+        { name: "Swimsuit", category: "Beach & Swim", quantity: 2, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Beach towel", category: "Beach & Swim", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Flip-flops", category: "Footwear", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Waterproof phone pouch", category: "Beach & Swim", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Beach bag", category: "Beach & Swim", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    Nightlife: [
+        { name: "Nice outfit", category: "Nightlife", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Dress shoes or nice shoes", category: "Footwear", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    "Business meetings": [
+        { name: "Business outfit", category: "City & Business", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Laptop", category: "Tech", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
+        { name: "Laptop charger", category: "Tech", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
+        { name: "Notebook and pen", category: "City & Business", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    Hiking: [
+        { name: "Hiking boots", category: "Outdoor & Hiking", quantity: 1, source: "suggested", packed: false, hidden: false, protected: true },
+        { name: "Daypack", category: "Outdoor & Hiking", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Hiking socks", category: "Outdoor & Hiking", quantity: 2, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Reusable water bottle", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    Swimming: [
+        { name: "Swimsuit", category: "Beach & Swim", quantity: 2, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Goggles", category: "Beach & Swim", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    "Fine dining": [
+        { name: "Dressy outfit", category: "Dining & Events", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Dress shoes or nice shoes", category: "Footwear", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    Museums: [
+        { name: "Comfortable walking shoes", category: "Footwear", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    Shopping: [
+        { name: "Foldable tote bag", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+    "City walks": [
+        { name: "Comfortable walking shoes", category: "Footwear", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+        { name: "Day bag", category: "Comfort & Travel", quantity: 1, source: "suggested", packed: false, hidden: false, protected: false },
+    ],
+};
 function normalizeName(name: string) {
     return name.trim().toLowerCase();
 }
@@ -42,6 +96,8 @@ export default function AddPackingCategoriesModal({
     existingItems,
     defaultWeather,
     tripDays,
+    laundry,
+    activities,
     onClose,
     onCreated,
     onItemsHidden,
@@ -106,16 +162,25 @@ export default function AddPackingCategoriesModal({
                         item.name === "Laundry bag"
                             ? "Comfort & Travel"
                             : item.category,
-                    quantity: getSmartQuantity(item, tripDays),
+                    quantity: getLaundryAwareQuantity({
+                        item,
+                        tripDays,
+                        laundry,
+                    }),
                     source: "suggested" as const,
                     packed: false,
                     hidden: false,
                     protected: Boolean(item.protected),
                 }));
-
-            const itemsToCreate = categoryGeneratedItems.filter(
-                (item) => !existingNames.has(normalizeName(item.name))
+            const activityGeneratedItems = activities.flatMap(
+                (activity) => activityItems[activity] ?? []
             );
+            console.log("Packing activities:", activities);
+            console.log("Activity generated items:", activityGeneratedItems);
+            const itemsToCreate = [
+                ...categoryGeneratedItems,
+                ...activityGeneratedItems,
+            ].filter((item) => !existingNames.has(normalizeName(item.name)));
 
             if (itemIdsToHide.length > 0) {
                 await Promise.all(

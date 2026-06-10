@@ -1,29 +1,34 @@
 "use client";
 
+import { getPackingItems, getPackingLists } from "@/features/packing/lib/packing-queries";
+import { createSuggestedPackingItems } from "@/features/packing/lib/packing-mutations";
+import { getActivityPackingItems } from "@/features/packing/lib/packing-profile-recommendations";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 const activityOptions = [
-    "Beach",
-    "Nightlife",
-    "Business meetings",
-    "Shopping",
-    "Museums",
-    "Hiking",
-    "Swimming",
-    "Fine dining",
-    "City walks",
+    { value: "Beach", emoji: "🏖️" },
+    { value: "Nightlife", emoji: "🍸" },
+    { value: "Hiking", emoji: "🥾" },
+    { value: "City walks", emoji: "🏙️" },
+    { value: "Fine dining", emoji: "🍽️" },
+    { value: "Swimming", emoji: "🏊" },
+    { value: "Museums", emoji: "🖼️" },
+    { value: "Shopping", emoji: "🛍️" },
+    { value: "Business meetings", emoji: "💼" },
 ];
 
 export default function ActivitiesPage() {
     const params = useParams<{ id: string }>();
     const tripId = params.id;
+    const router = useRouter();
 
-    const [selected, setSelected] = useState<string[]>([
-        "Beach",
-        "Nightlife",
-    ]);
+    const [selected, setSelected] = useState<string[]>([]);
+    const [initialSelected, setInitialSelected] = useState<string[]>([]);
+    const [saving, setSaving] = useState(false);
+    const [addedCount, setAddedCount] = useState<number | null>(null);
 
     function toggleActivity(activity: string) {
         setSelected((current) =>
@@ -33,51 +38,151 @@ export default function ActivitiesPage() {
         );
     }
 
+    useEffect(() => {
+        const saved = localStorage.getItem(
+            `packing-activities-${tripId}`
+        );
+
+        if (!saved) {
+            const defaults = ["Beach", "Nightlife"];
+
+            setSelected(defaults);
+            setInitialSelected(defaults);
+            return;
+        }
+
+        const parsed = JSON.parse(saved);
+
+        setSelected(parsed);
+        setInitialSelected(parsed);
+    }, [tripId]);
+
+    const hasChanges =
+        JSON.stringify(selected) !==
+        JSON.stringify(initialSelected);
+
     return (
         <main className="min-h-screen bg-[#f6f1e8]">
             <div className="mx-auto max-w-md px-5 py-8">
-                <Link
-                    href={`/trips/${tripId}/packing/personalize`}
-                    className="inline-flex items-center text-sm font-bold text-neutral-500"
-                >
-                    ← Back
-                </Link>
+                {addedCount !== null && (
+                    <div className="mb-6 rounded-2xl bg-green-50 p-4 text-center">
+                        <p className="font-semibold text-green-800">
+                            Added {addedCount} recommendation{addedCount === 1 ? "" : "s"}
+                        </p>
+                    </div>
+                )}
+                <div className="flex items-center justify-between">
+                    <Link
+                        href={`/trips/${tripId}/packing/personalize`}
+                        className="inline-flex items-center text-lg font-medium text-neutral-500"
+                    >
+                        ← Back
+                    </Link>
 
-                <h1 className="mt-6 text-3xl font-bold tracking-tight text-neutral-950">
+                    <button
+                        type="button"
+                        disabled={!hasChanges}
+                        onClick={async () => {
+                            setSaving(true);
+                            localStorage.setItem(
+                                `packing-activities-${tripId}`,
+                                JSON.stringify(selected)
+                            );
+
+                            const lists = await getPackingLists(Number(tripId));
+                            const mainList = lists[0];
+
+                            if (mainList) {
+                                const existingItems = await getPackingItems(mainList.id);
+
+                                const itemsToCreate = getActivityPackingItems({
+                                    activities: selected,
+                                    existingItems,
+                                });
+
+                                if (itemsToCreate.length > 0) {
+                                    await createSuggestedPackingItems({
+                                        packingListId: mainList.id,
+                                        items: itemsToCreate,
+                                    });
+
+                                    setAddedCount(itemsToCreate.length);
+                                } else {
+                                    setAddedCount(0);
+                                }
+                            }
+
+                            setTimeout(() => {
+                                router.push(`/trips/${tripId}/packing/personalize`);
+                            }, 1500);
+                        }}
+                        className={
+                            hasChanges
+                                ? "text-lg font-bold text-indigo-600"
+                                : "text-lg font-bold text-neutral-300"
+                        }
+                    >
+                        {saving ? "Updating..." : "Save"}
+                    </button>
+                </div>
+
+                <h1 className="mt-12 text-5xl font-bold tracking-[-0.06em] text-neutral-950">
                     Activities
                 </h1>
 
-                <p className="mt-2 text-sm leading-6 text-neutral-500">
-                    Tell us what you&apos;ll be doing on this trip.
+                <p className="mt-4 text-xl leading-7 text-neutral-500">
+                    Select everything that applies.
                 </p>
 
-                <div className="mt-8 flex flex-wrap gap-3">
-                    {activityOptions.map((activity) => {
-                        const active = selected.includes(activity);
+                <div className="mt-10 overflow-hidden rounded-[2rem] bg-white shadow-[0_14px_40px_rgba(0,0,0,0.08)]">
+                    {activityOptions.map((activity, index) => {
+                        const active = selected.includes(activity.value);
+                        const isLast = index === activityOptions.length - 1;
 
                         return (
                             <button
-                                key={activity}
+                                key={activity.value}
                                 type="button"
-                                onClick={() => toggleActivity(activity)}
+                                onClick={() => toggleActivity(activity.value)}
                                 className={
                                     active
-                                        ? "rounded-full bg-neutral-950 px-5 py-3 text-base font-bold text-white"
-                                        : "rounded-full bg-white px-5 py-3 text-base font-bold text-neutral-600"
+                                        ? "flex w-full items-center gap-5 bg-indigo-50 px-6 py-5 text-left transition active:scale-[0.99]"
+                                        : "flex w-full items-center gap-5 bg-white px-6 py-5 text-left transition active:bg-neutral-50"
                                 }
                             >
-                                {activity}
+                                <span className="w-10 text-center text-2xl">
+                                    {activity.emoji}
+                                </span>
+
+                                <div className="min-w-0 flex-1">
+                                    <p
+                                        className={
+                                            active
+                                                ? "text-2xl font-bold tracking-[-0.04em] text-indigo-800"
+                                                : "text-2xl font-bold tracking-[-0.04em] text-neutral-950"
+                                        }
+                                    >
+                                        {activity.value}
+                                    </p>
+
+                                    {!isLast && (
+                                        <div className="mt-5 h-px bg-neutral-200" />
+                                    )}
+                                </div>
+
+                                <span
+                                    className={
+                                        active
+                                            ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xl font-bold text-white"
+                                            : "h-10 w-10 shrink-0 rounded-full bg-neutral-100"
+                                    }
+                                >
+                                    {active ? "✓" : ""}
+                                </span>
                             </button>
                         );
                     })}
                 </div>
-
-                <button
-                    type="button"
-                    className="mt-10 w-full rounded-2xl bg-neutral-950 px-5 py-4 text-base font-bold text-white"
-                >
-                    Save Activities
-                </button>
             </div>
         </main>
     );

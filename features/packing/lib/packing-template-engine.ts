@@ -389,6 +389,49 @@ export function getSmartQuantity(
     }
 }
 
+export type LaundryAvailability =
+    | "Available"
+    | "Hotel service"
+    | "Not available";
+
+export function getLaundryAwareQuantity({
+    item,
+    tripDays,
+    laundry,
+}: {
+    item: PackingTemplateItem;
+    tripDays: number;
+    laundry: LaundryAvailability;
+}): number {
+    const normalQuantity = getSmartQuantity(item, tripDays);
+
+    if (laundry === "Not available") {
+        return normalQuantity;
+    }
+
+    const laundrySensitiveRules = [
+        "perDay",
+        "perNight",
+        "tripDaysMinusOne",
+        "everyTwoDays",
+        "onePerOutfitDay",
+    ];
+
+    if (!item.quantityRule || !laundrySensitiveRules.includes(item.quantityRule)) {
+        return normalQuantity;
+    }
+
+    if (laundry === "Available") {
+        return Math.max(item.minQuantity ?? 1, Math.ceil(normalQuantity * 0.6));
+    }
+
+    if (laundry === "Hotel service") {
+        return Math.max(item.minQuantity ?? 1, Math.ceil(normalQuantity * 0.75));
+    }
+
+    return normalQuantity;
+}
+
 export function mergePackingItems(
     groups: PackingTemplateItem[][]
 ): PackingTemplateItem[] {

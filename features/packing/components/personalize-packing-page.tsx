@@ -32,6 +32,11 @@ export default function PersonalizePackingPage({ tripId }: Props) {
     const [trip, setTrip] = useState<TripForPacking | null>(null);
     const [weatherSummary, setWeatherSummary] = useState<TripWeatherSummary | null>(null);
     const [loading, setLoading] = useState(true);
+    const [laundry, setLaundry] = useState("Available");
+    const [activities, setActivities] = useState<string[]>([
+        "Beach",
+        "Nightlife",
+    ]);
 
     useEffect(() => {
         async function load() {
@@ -53,12 +58,41 @@ export default function PersonalizePackingPage({ tripId }: Props) {
         load();
     }, [tripId]);
 
+    useEffect(() => {
+        const saved = localStorage.getItem(`packing-laundry-${tripId}`);
+
+        if (!saved) return;
+
+        setLaundry(saved);
+    }, [tripId]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem(
+            `packing-activities-${tripId}`
+        );
+
+        if (!saved) return;
+
+        setActivities(JSON.parse(saved));
+    }, [tripId]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem(
+            `packing-preference-${tripId}`
+        );
+
+        if (!saved) return;
+
+        setPackingPreference(saved);
+    }, [tripId]);
+
     const tripDays = trip ? calculateTripDays(trip.start_date, trip.end_date) : 1;
     const weatherDisplay = getWeatherDisplay(
         weatherSummary?.suggestedProfiles ?? [],
         weatherSummary?.weatherLabel
     );
-
+    const [packingPreference, setPackingPreference] =
+        useState("Balanced");
     return (
         <main className="min-h-screen bg-[#f6f1e8]">
             <div className="mx-auto max-w-md px-5 py-8">
@@ -96,9 +130,24 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                 <div className="mt-6 overflow-hidden rounded-3xl bg-white shadow-sm">
                     {[
                         ["🧳", "Luggage", "Carry-on", null],
-                        ["🏖️", "Activities", "Beach, Nightlife", `/trips/${tripId}/packing/personalize/activities`],
-                        ["🧺", "Laundry", "Available", null],
-                        ["⚖️", "Packing Preference", "Balanced", null],
+                        [
+                            "🏖️",
+                            "Activities",
+                            activities.join(", ") || "None selected",
+                            `/trips/${tripId}/packing/personalize/activities`
+                        ],
+                        [
+                            "🧺",
+                            "Laundry",
+                            laundry,
+                            `/trips/${tripId}/packing/personalize/laundry`
+                        ],
+                        [
+                            "⚖️",
+                            "Packing Preference",
+                            packingPreference,
+                            `/trips/${tripId}/packing/personalize/packing-preference`
+                        ],
                         ["⚙️", "Advanced", "Coming soon", null],
                     ].map(([icon, title, value, href], index, rows) => {
                         const content = (
