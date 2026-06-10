@@ -44,7 +44,7 @@ export default function ActivitiesPage() {
         );
 
         if (!saved) {
-            const defaults = ["Beach", "Nightlife"];
+            const defaults: string[] = [];
 
             setSelected(defaults);
             setInitialSelected(defaults);

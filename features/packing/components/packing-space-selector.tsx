@@ -229,46 +229,19 @@ export default function PackingSpaceSelector({
                 </div>
             )}
 
-            <div className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 scrollbar-hide">
-                {lists.map((list) => {
-                    const items = itemsByList[list.id] ?? [];
-                    const packedCount = items.filter((item) => item.packed).length;
-                    const isActive = list.id === activeListId;
-
-                    return (
-                        <button
-                            key={list.id}
-                            type="button"
-                            onClick={() => onSelectList(list.id)}
-                            className={
-                                isActive
-                                    ? "flex h-13 min-w-[8.5rem] flex-col justify-center rounded-[1rem] bg-white/50 px-4 text-left text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
-                                    : "flex h-13 min-w-[8.5rem] flex-col justify-center rounded-[1rem] bg-white/20 px-4 text-left text-neutral-500 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition active:scale-95"
-                            }
-                        >
-                            <p className="truncate text-sm font-semibold leading-none">
-                                {list.title}
-                            </p>
-
-                            <p className="mt-1 text-[11px] leading-none text-neutral-400">
-                                {packedCount} of {items.length}
-                            </p>
-                        </button>
-                    );
-                })}
-
+            <div className="pb-3">
                 <Link
                     href={`/trips/${tripId}/packing/personalize`}
-                    className="flex h-13 min-w-[11rem] items-center justify-center rounded-[1rem] bg-white/50 px-4 text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
+                    className="flex min-h-[4.5rem] w-full items-center justify-center rounded-[1.25rem] bg-white/60 px-5 text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
                     aria-label="Personalize trip"
                 >
                     <div className="text-center">
-                        <p className="text-sm font-semibold leading-none">
+                        <p className="text-base font-bold leading-none">
                             ✨ Personalize Trip
                         </p>
 
-                        <p className="mt-1 text-[11px] leading-none text-neutral-400">
-                            Edit assumptions
+                        <p className="mt-2 text-xs leading-none text-neutral-400">
+                            Edit recommendations
                         </p>
                     </div>
                 </Link>

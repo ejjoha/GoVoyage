@@ -64,7 +64,17 @@ export function getActivityPackingItems({
         existingItems.map((item) => normalizeName(item.name))
     );
 
+    const generatedNames = new Set<string>();
+
     return activities
         .flatMap((activity) => activityItems[activity] ?? [])
-        .filter((item) => !existingNames.has(normalizeName(item.name)));
+        .filter((item) => {
+            const normalized = normalizeName(item.name);
+
+            if (existingNames.has(normalized)) return false;
+            if (generatedNames.has(normalized)) return false;
+
+            generatedNames.add(normalized);
+            return true;
+        });
 }

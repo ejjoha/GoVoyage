@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import {
     baseItems,
     getLaundryAwareQuantity,
+    getPreferenceAdjustedQuantity,
     type LaundryAvailability,
+    type PackingPreference,
 } from "../lib/packing-template-engine";
 import {
     createSuggestedPackingItems,
@@ -20,6 +22,7 @@ type Props = {
     tripDays: number;
     laundry: LaundryAvailability;
     activities: string[];
+    packingPreference: PackingPreference;
     onClose: () => void;
     onCreated: (items: PackingListItem[]) => void;
     onItemsHidden: (itemIds: string[]) => void;
@@ -98,6 +101,7 @@ export default function AddPackingCategoriesModal({
     tripDays,
     laundry,
     activities,
+    packingPreference,
     onClose,
     onCreated,
     onItemsHidden,
@@ -162,10 +166,13 @@ export default function AddPackingCategoriesModal({
                         item.name === "Laundry bag"
                             ? "Comfort & Travel"
                             : item.category,
-                    quantity: getLaundryAwareQuantity({
-                        item,
-                        tripDays,
-                        laundry,
+                    quantity: getPreferenceAdjustedQuantity({
+                        quantity: getLaundryAwareQuantity({
+                            item,
+                            tripDays,
+                            laundry,
+                        }),
+                        preference: packingPreference,
                     }),
                     source: "suggested" as const,
                     packed: false,

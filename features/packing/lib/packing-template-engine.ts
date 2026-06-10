@@ -432,6 +432,31 @@ export function getLaundryAwareQuantity({
     return normalQuantity;
 }
 
+export type PackingPreference =
+    | "Light"
+    | "Balanced"
+    | "Pack Everything";
+
+export function getPreferenceAdjustedQuantity({
+    quantity,
+    preference,
+}: {
+    quantity: number;
+    preference: PackingPreference;
+}) {
+    switch (preference) {
+        case "Light":
+            return Math.max(1, Math.ceil(quantity * 0.8));
+
+        case "Pack Everything":
+            return Math.ceil(quantity * 1.2);
+
+        case "Balanced":
+        default:
+            return quantity;
+    }
+}
+
 export function mergePackingItems(
     groups: PackingTemplateItem[][]
 ): PackingTemplateItem[] {

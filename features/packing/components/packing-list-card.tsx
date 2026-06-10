@@ -87,7 +87,7 @@ export default function PackingListCard({
                                 onClick={() => onArchiveList(list.id)}
                                 className="text-sm font-bold text-neutral-300 transition hover:text-rose-500 active:scale-95"
                             >
-                                Remove list
+                                Reset list
                             </button>
                         </div>
                     </div>

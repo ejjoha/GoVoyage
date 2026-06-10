@@ -71,6 +71,8 @@ export default function PackingBoard({ tripId }: Props) {
         useState<TripWeatherSummary | null>(null);
     const [itemPendingRemove, setItemPendingRemove] =
         useState<PackingListItem | null>(null);
+    const [listPendingReset, setListPendingReset] =
+        useState<PackingList | null>(null);
 
     const [resetSwipeKey, setResetSwipeKey] = useState(0);
 
@@ -141,7 +143,7 @@ export default function PackingBoard({ tripId }: Props) {
         const saved = localStorage.getItem(`packing-activities-${tripId}`);
 
         if (!saved) {
-            setActivities(["Beach", "Nightlife"]);
+            setActivities([]);
             return;
         }
 
@@ -163,6 +165,20 @@ export default function PackingBoard({ tripId }: Props) {
         initializingFirstList,
     ]);
 
+    useEffect(() => {
+        const saved = localStorage.getItem(
+            `packing-preference-${tripId}`
+        );
+
+        if (
+            saved === "Light" ||
+            saved === "Balanced" ||
+            saved === "Pack Everything"
+        ) {
+            setPackingPreference(saved);
+        }
+    }, [tripId, categoryModalOpen]);
+
     const allItems = useMemo(
         () => Object.values(itemsByList).flat(),
         [itemsByList]
@@ -171,8 +187,8 @@ export default function PackingBoard({ tripId }: Props) {
     const packedCount = allItems.filter((item) => item.packed).length;
     const totalCount = allItems.length;
     const activeList = lists.find((list) => list.id === activeListId) ?? lists[0] ?? null;
-    const [laundry] = useState<"Available" | "Hotel service" | "Not available">(() => {
-        if (typeof window === "undefined") return "Available";
+    const [laundry, setLaundry] = useState<"Available" | "Hotel service" | "Not available">(() => {
+        if (typeof window === "undefined") setLaundry("Not available");
 
         const saved = localStorage.getItem(`packing-laundry-${tripId}`);
 
@@ -186,6 +202,10 @@ export default function PackingBoard({ tripId }: Props) {
 
         return "Available";
     });
+    const [packingPreference, setPackingPreference] =
+        useState<"Light" | "Balanced" | "Pack Everything">(
+            "Balanced"
+        );
     const [activities, setActivities] = useState<string[]>(["Beach", "Nightlife"]);
     async function handleToggleItem(item: PackingListItem) {
         const nextPacked = !item.packed;
@@ -340,28 +360,12 @@ export default function PackingBoard({ tripId }: Props) {
                             }
                         }}
                         onRemoveItem={(item) => setItemPendingRemove(item)}
-                        onArchiveList={async (listId) => {
-                            setLists((current) => current.filter((list) => list.id !== listId));
+                        onArchiveList={(listId) => {
+                            const list = lists.find((item) => item.id === listId);
 
-                            setItemsByList((current) => {
-                                const next = { ...current };
-                                delete next[listId];
-                                return next;
-                            });
+                            if (!list) return;
 
-                            setActiveListId((current) => {
-                                if (current !== listId) return current;
-
-                                const remainingLists = lists.filter((list) => list.id !== listId);
-                                return remainingLists[0]?.id ?? null;
-                            });
-
-                            try {
-                                await archivePackingList(listId);
-                            } catch (error) {
-                                console.error(error);
-                                await loadPacking();
-                            }
+                            setListPendingReset(list);
                         }}
                     />
 
@@ -447,6 +451,88 @@ export default function PackingBoard({ tripId }: Props) {
                         </motion.div>
                     </motion.div>
                 )}
+                {listPendingReset && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 18, scale: 0.96 }}
+                            transition={{ duration: 0.18 }}
+                            className="w-full max-w-sm rounded-[1.75rem] bg-white p-5 shadow-2xl"
+                        >
+                            <h2 className="text-xl font-bold tracking-[-0.03em] text-neutral-950">
+                                Reset packing list?
+                            </h2>
+
+                            <p className="mt-2 text-sm leading-6 text-neutral-500">
+                                Your packing list and personalization settings will be reset.
+                            </p>
+
+                            <div className="mt-6 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setListPendingReset(null)}
+                                    className="flex-1 rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-600"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        const listId = listPendingReset.id;
+
+                                        localStorage.removeItem(`packing-activities-${tripId}`);
+                                        localStorage.removeItem(`packing-laundry-${tripId}`);
+                                        localStorage.removeItem(`packing-preference-${tripId}`);
+
+                                        setActivities([]);
+                                        setLaundry("Not available");
+                                        setPackingPreference("Balanced");
+
+                                        setLists((current) =>
+                                            current.filter((list) => list.id !== listId)
+                                        );
+
+                                        setItemsByList((current) => {
+                                            const next = { ...current };
+                                            delete next[listId];
+                                            return next;
+                                        });
+
+                                        setActiveListId((current) => {
+                                            if (current !== listId) return current;
+
+                                            const remainingLists = lists.filter(
+                                                (list) => list.id !== listId
+                                            );
+
+                                            return remainingLists[0]?.id ?? null;
+                                        });
+
+                                        setListPendingReset(null);
+
+                                        try {
+                                            await archivePackingList(listId);
+                                        } catch (error) {
+                                            console.error(error);
+                                            await loadPacking();
+                                        }
+                                    }}
+                                    className="flex-1 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
+                                >
+                                    Reset
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
             </AnimatePresence>
             <AddPackingCategoriesModal
                 open={categoryModalOpen}
@@ -455,6 +541,7 @@ export default function PackingBoard({ tripId }: Props) {
                 tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
                 laundry={laundry}
                 activities={activities}
+                packingPreference={packingPreference}
                 defaultWeather={weatherSummary?.suggestedProfiles ?? []}
                 onClose={() => setCategoryModalOpen(false)}
                 onCreated={(createdItems) => {

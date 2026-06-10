@@ -32,11 +32,8 @@ export default function PersonalizePackingPage({ tripId }: Props) {
     const [trip, setTrip] = useState<TripForPacking | null>(null);
     const [weatherSummary, setWeatherSummary] = useState<TripWeatherSummary | null>(null);
     const [loading, setLoading] = useState(true);
-    const [laundry, setLaundry] = useState("Available");
-    const [activities, setActivities] = useState<string[]>([
-        "Beach",
-        "Nightlife",
-    ]);
+    const [laundry, setLaundry] = useState("Not available");
+    const [activities, setActivities] = useState<string[]>([]);
 
     useEffect(() => {
         async function load() {
@@ -129,7 +126,6 @@ export default function PersonalizePackingPage({ tripId }: Props) {
 
                 <div className="mt-6 overflow-hidden rounded-3xl bg-white shadow-sm">
                     {[
-                        ["🧳", "Luggage", "Carry-on", null],
                         [
                             "🏖️",
                             "Activities",
@@ -148,7 +144,6 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                             packingPreference,
                             `/trips/${tripId}/packing/personalize/packing-preference`
                         ],
-                        ["⚙️", "Advanced", "Coming soon", null],
                     ].map(([icon, title, value, href], index, rows) => {
                         const content = (
                             <>

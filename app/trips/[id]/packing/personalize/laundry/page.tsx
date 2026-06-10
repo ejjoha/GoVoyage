@@ -27,8 +27,8 @@ export default function LaundryPage() {
     const router = useRouter();
     const tripId = params.id;
 
-    const [selected, setSelected] = useState("Available");
-    const [initialSelected, setInitialSelected] = useState("Available");
+    const [selected, setSelected] = useState("Not available");
+    const [initialSelected, setInitialSelected] = useState("Not available");
 
     useEffect(() => {
         const saved = localStorage.getItem(`packing-laundry-${tripId}`);

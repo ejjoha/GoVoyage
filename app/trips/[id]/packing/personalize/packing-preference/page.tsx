@@ -57,7 +57,89 @@ export default function PackingPreferencePage() {
     return (
         <main className="min-h-screen bg-[#f6f1e8]">
             <div className="mx-auto max-w-md px-5 py-8">
-                {/* Use same layout as Laundry */}
+                <div className="flex items-center justify-between">
+                    <Link
+                        href={`/trips/${tripId}/packing/personalize`}
+                        className="inline-flex items-center text-lg font-medium text-neutral-500"
+                    >
+                        ← Back
+                    </Link>
+
+                    <button
+                        type="button"
+                        disabled={!hasChanges}
+                        onClick={handleSave}
+                        className={
+                            hasChanges
+                                ? "text-lg font-bold text-indigo-600"
+                                : "text-lg font-bold text-neutral-300"
+                        }
+                    >
+                        Save
+                    </button>
+                </div>
+
+                <h1 className="mt-12 text-5xl font-bold tracking-[-0.06em] text-neutral-950">
+                    Packing Preference
+                </h1>
+
+                <p className="mt-4 text-xl leading-7 text-neutral-500">
+                    How much do you like to prepare?
+                </p>
+
+                <div className="mt-10 overflow-hidden rounded-[2rem] bg-white shadow-[0_14px_40px_rgba(0,0,0,0.08)]">
+                    {options.map((option, index) => {
+                        const active = selected === option.value;
+                        const isLast = index === options.length - 1;
+
+                        return (
+                            <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => setSelected(option.value)}
+                                className={
+                                    active
+                                        ? "flex w-full items-center gap-5 bg-indigo-50 px-6 py-5 text-left transition active:scale-[0.99]"
+                                        : "flex w-full items-center gap-5 bg-white px-6 py-5 text-left transition active:bg-neutral-50"
+                                }
+                            >
+                                <span className="w-10 text-center text-2xl">
+                                    {option.emoji}
+                                </span>
+
+                                <div className="min-w-0 flex-1">
+                                    <p
+                                        className={
+                                            active
+                                                ? "text-2xl font-bold tracking-[-0.04em] text-indigo-800"
+                                                : "text-2xl font-bold tracking-[-0.04em] text-neutral-950"
+                                        }
+                                    >
+                                        {option.value}
+                                    </p>
+
+                                    <p className="mt-1 text-sm leading-5 text-neutral-500">
+                                        {option.description}
+                                    </p>
+
+                                    {!isLast && (
+                                        <div className="mt-5 h-px bg-neutral-200" />
+                                    )}
+                                </div>
+
+                                <span
+                                    className={
+                                        active
+                                            ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xl font-bold text-white"
+                                            : "h-10 w-10 shrink-0 rounded-full bg-neutral-100"
+                                    }
+                                >
+                                    {active ? "✓" : ""}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
         </main>
     );
