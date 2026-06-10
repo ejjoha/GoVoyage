@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
     createPackingList,
@@ -256,20 +257,21 @@ export default function PackingSpaceSelector({
                     );
                 })}
 
-                {availableOptions.length > 0 && (
-                    <button
-                        type="button"
-                        onClick={onOpenCategories}
-                        className="flex h-13 min-w-[8.5rem] items-center justify-center rounded-[1rem] bg-white/30 px-4 text-neutral-500 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition active:scale-95"
-                        aria-label="Create packing space"
-                    >
-                        <div className="text-center">
-                            <p className="mt-1 text-[11px] leading-none text-neutral-400">
-                                Categories
-                            </p>
-                        </div>
-                    </button>
-                )}
+                <Link
+                    href={`/trips/${tripId}/packing/personalize`}
+                    className="flex h-13 min-w-[11rem] items-center justify-center rounded-[1rem] bg-white/50 px-4 text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
+                    aria-label="Personalize trip"
+                >
+                    <div className="text-center">
+                        <p className="text-sm font-semibold leading-none">
+                            ✨ Personalize Trip
+                        </p>
+
+                        <p className="mt-1 text-[11px] leading-none text-neutral-400">
+                            Edit assumptions
+                        </p>
+                    </div>
+                </Link>
             </div>
         </section>
     );
