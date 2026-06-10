@@ -36,7 +36,12 @@ import {
 
 import PackingNextActions from "./packing-next-actions";
 
-import { getEssentialsStarterItems } from "../lib/packing-template-engine";
+import {
+    baseItems,
+    getEssentialsStarterItems,
+    getLaundryAwareQuantity,
+    getPreferenceAdjustedQuantity,
+} from "../lib/packing-template-engine";
 
 type TripForPacking = Awaited<ReturnType<typeof getTripForPacking>>;
 
@@ -120,10 +125,37 @@ export default function PackingBoard({ tripId }: Props) {
                 type: "personal",
                 emoji: "🧳",
             });
+            const tripDays = trip
+                ? calculateTripDays(trip.start_date, trip.end_date)
+                : 1;
+
+            const baselineItems = baseItems
+                .filter((item) =>
+                    ["Clothing", "Toiletries", "Tech"].includes(item.category)
+                )
+                .map((item) => ({
+                    name: item.name,
+                    category: item.category,
+                    quantity: getPreferenceAdjustedQuantity({
+                        quantity: getLaundryAwareQuantity({
+                            item,
+                            tripDays,
+                            laundry,
+                        }),
+                        preference: packingPreference,
+                    }),
+                    source: "suggested" as const,
+                    packed: false,
+                    hidden: false,
+                    protected: Boolean(item.protected),
+                }));
 
             const createdItems = await createSuggestedPackingItems({
                 packingListId: list.id,
-                items: getEssentialsStarterItems(),
+                items: [
+                    ...getEssentialsStarterItems(),
+                    ...baselineItems,
+                ],
             });
 
             setLists([list]);
@@ -188,7 +220,7 @@ export default function PackingBoard({ tripId }: Props) {
     const totalCount = allItems.length;
     const activeList = lists.find((list) => list.id === activeListId) ?? lists[0] ?? null;
     const [laundry, setLaundry] = useState<"Available" | "Hotel service" | "Not available">(() => {
-        if (typeof window === "undefined") setLaundry("Not available");
+        if (typeof window === "undefined") return "Not available";
 
         const saved = localStorage.getItem(`packing-laundry-${tripId}`);
 
