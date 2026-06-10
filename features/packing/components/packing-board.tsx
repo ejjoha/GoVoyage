@@ -118,6 +118,8 @@ export default function PackingBoard({ tripId }: Props) {
 
         setInitializingFirstList(true);
 
+        const startedAt = Date.now();
+
         try {
             const list = await createPackingList({
                 tripId,
@@ -166,7 +168,12 @@ export default function PackingBoard({ tripId }: Props) {
 
             setActiveListId(list.id);
         } finally {
-            setInitializingFirstList(false);
+            const elapsed = Date.now() - startedAt;
+            const remaining = Math.max(0, 1000 - elapsed);
+
+            window.setTimeout(() => {
+                setInitializingFirstList(false);
+            }, remaining);
         }
     }
     useEffect(() => {
@@ -232,13 +239,13 @@ export default function PackingBoard({ tripId }: Props) {
             return saved;
         }
 
-        return "Available";
+        return "Not available";
     });
     const [packingPreference, setPackingPreference] =
         useState<"Light" | "Balanced" | "Pack Everything">(
             "Balanced"
         );
-    const [activities, setActivities] = useState<string[]>(["Beach", "Nightlife"]);
+    const [activities, setActivities] = useState<string[]>([]);
     async function handleToggleItem(item: PackingListItem) {
         const nextPacked = !item.packed;
 
@@ -295,15 +302,59 @@ export default function PackingBoard({ tripId }: Props) {
             {loading && <PackingBoardSkeleton />}
 
             {!loading && lists.length === 0 && (
-                <div className="rounded-[1.25rem] bg-white p-8 text-center shadow-sm">
-                    <p className="text-base font-semibold text-neutral-900">
-                        Preparing your packing list...
-                    </p>
+                <motion.div
+                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                    className="overflow-hidden rounded-[2rem] bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.08)]"
+                >
+                    <div className="flex items-start gap-4">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-2xl">
+                            🧳
+                        </div>
 
-                    <p className="mt-2 text-sm leading-6 text-neutral-500">
-                        Adding travel essentials.
-                    </p>
-                </div>
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-500">
+                                Smart packing
+                            </p>
+
+                            <h2 className="mt-2 text-2xl font-bold tracking-[-0.05em] text-neutral-950">
+                                Creating your packing list
+                            </h2>
+
+                            <p className="mt-2 text-sm leading-6 text-neutral-500">
+                                We&apos;re tailoring your essentials to this trip.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 space-y-3">
+                        {[
+                            "Destination",
+                            "Weather forecast",
+                            "Trip duration",
+                        ].map((label, index) => (
+                            <motion.div
+                                key={label}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{
+                                    delay: 0.15 + index * 0.16,
+                                    duration: 0.28,
+                                }}
+                                className="flex items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-3"
+                            >
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
+                                    ✓
+                                </span>
+
+                                <span className="text-sm font-bold text-neutral-700">
+                                    {label}
+                                </span>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
             )}
 
             {!loading && lists.length > 0 && activeList && (
