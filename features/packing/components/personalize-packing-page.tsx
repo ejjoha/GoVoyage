@@ -31,6 +31,7 @@ function getWeatherDisplay(weatherProfiles: string[], weatherLabel?: string | nu
 export default function PersonalizePackingPage({ tripId }: Props) {
     const [trip, setTrip] = useState<TripForPacking | null>(null);
     const [weatherSummary, setWeatherSummary] = useState<TripWeatherSummary | null>(null);
+    const [climate, setClimate] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [laundry, setLaundry] = useState("Not available");
     const [activities, setActivities] = useState<string[]>([]);
@@ -53,6 +54,17 @@ export default function PersonalizePackingPage({ tripId }: Props) {
         }
 
         load();
+    }, [tripId]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem(`packing-climate-${tripId}`);
+
+        if (!saved) {
+            setClimate([]);
+            return;
+        }
+
+        setClimate(JSON.parse(saved));
     }, [tripId]);
 
     useEffect(() => {
@@ -131,6 +143,12 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                             "Activities",
                             activities.join(", ") || "None selected",
                             `/trips/${tripId}/packing/personalize/activities`
+                        ],
+                        [
+                            "🌎",
+                            "Climate & Conditions",
+                            climate.length > 0 ? climate.join(", ") : "None selected",
+                            `/trips/${tripId}/packing/personalize/climate`
                         ],
                         [
                             "🧺",

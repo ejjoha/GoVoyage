@@ -580,6 +580,7 @@ export default function PackingBoard({ tripId }: Props) {
                                         const listId = listPendingReset.id;
 
                                         localStorage.removeItem(`packing-activities-${tripId}`);
+                                        localStorage.removeItem(`packing-climate-${tripId}`);
                                         localStorage.removeItem(`packing-laundry-${tripId}`);
                                         localStorage.removeItem(`packing-preference-${tripId}`);
 
