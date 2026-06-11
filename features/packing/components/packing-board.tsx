@@ -81,6 +81,17 @@ export default function PackingBoard({ tripId }: Props) {
 
     const [resetSwipeKey, setResetSwipeKey] = useState(0);
 
+    async function getWeatherSummaryWithTimeout(destination: string) {
+        const timeoutMs = 1200;
+
+        return Promise.race([
+            getTripWeatherSummary(destination),
+            new Promise<TripWeatherSummary | null>((resolve) => {
+                window.setTimeout(() => resolve(null), timeoutMs);
+            }),
+        ]);
+    }
+
     async function loadPacking() {
         setLoading(true);
 
@@ -88,7 +99,19 @@ export default function PackingBoard({ tripId }: Props) {
             const tripData = await getTripForPacking(tripId);
             setTrip(tripData);
 
-            const packingLists = await getPackingLists(tripId);
+            const packingListsPromise = getPackingLists(tripId);
+
+            const weatherSummaryPromise = tripData?.destination
+                ? getWeatherSummaryWithTimeout(tripData.destination)
+                : Promise.resolve(null);
+
+            const [packingLists, weather] = await Promise.all([
+                packingListsPromise,
+                weatherSummaryPromise,
+            ]);
+
+            setWeatherSummary(weather);
+
             setLists(packingLists);
             setActiveListId((current) => current ?? packingLists[0]?.id ?? null);
 
@@ -100,20 +123,10 @@ export default function PackingBoard({ tripId }: Props) {
             );
 
             setItemsByList(Object.fromEntries(itemEntries));
-            setLoading(false);
-
-            if (tripData?.destination) {
-                getTripWeatherSummary(tripData.destination)
-                    .then((summary) => {
-                        setWeatherSummary(summary);
-                    })
-                    .catch((error) => {
-                        console.error("Failed to load packing weather", error);
-                        setWeatherSummary(null);
-                    });
-            }
         } catch (error) {
             console.error(error);
+            setWeatherSummary(null);
+        } finally {
             setLoading(false);
         }
     }

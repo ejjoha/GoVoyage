@@ -7,6 +7,23 @@ export type TripWeatherSummary = {
     weatherLabel: string;
     suggestedProfiles: ClimateOption[];
 };
+
+async function fetchWithTimeout(url: string, timeoutMs = 1200) {
+    const controller = new AbortController();
+
+    const timeoutId = window.setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
+
+    try {
+        return await fetch(url, {
+            signal: controller.signal,
+        });
+    } finally {
+        window.clearTimeout(timeoutId);
+    }
+}
+
 export async function getTripWeatherSummary(
     destination: string
 ): Promise<TripWeatherSummary | null> {
@@ -17,7 +34,7 @@ export async function getTripWeatherSummary(
             destination
         )}&count=1&language=en&format=json`;
 
-        const geoResponse = await fetch(geoUrl);
+        const geoResponse = await fetchWithTimeout(geoUrl);
         if (!geoResponse.ok) return null;
 
         const geoData = await geoResponse.json();
@@ -30,7 +47,7 @@ export async function getTripWeatherSummary(
         let forecastResponse: Response;
 
         try {
-            forecastResponse = await fetch(forecastUrl);
+            forecastResponse = await fetchWithTimeout(forecastUrl);
         } catch (error) {
             console.error("Failed to fetch weather forecast", error);
             return null;
