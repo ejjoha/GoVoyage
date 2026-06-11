@@ -327,7 +327,7 @@ export default function PackingBoard({ tripId }: Props) {
                 <div className="pb-24">
                     <PackingSpaceSelector
                         tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
-                        defaultClimates={weatherSummary?.suggestedProfiles ?? []}
+                        defaultClimates={[]}
                         tripId={tripId}
                         lists={lists}
                         itemsByList={itemsByList}
@@ -347,7 +347,7 @@ export default function PackingBoard({ tripId }: Props) {
                         key={activeList.id}
                         list={activeList}
                         items={itemsByList[activeList.id] ?? []}
-                        defaultClimates={weatherSummary?.suggestedProfiles ?? []}
+                        defaultClimates={[]}
                         tripDays={trip ? calculateTripDays(trip.start_date, trip.end_date) : 1}
                         resetSwipeKey={resetSwipeKey}
                         onToggleItem={handleToggleItem}
@@ -656,7 +656,7 @@ export default function PackingBoard({ tripId }: Props) {
                 laundry={laundry}
                 activities={activities}
                 packingPreference={packingPreference}
-                defaultWeather={weatherSummary?.suggestedProfiles ?? []}
+                defaultWeather={[]}
                 onClose={() => setCategoryModalOpen(false)}
                 onCreated={(createdItems) => {
                     if (!activeList) return;
