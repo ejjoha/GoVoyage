@@ -3,11 +3,13 @@
 import PackingBoardSkeleton from "./packing-board-skeleton";
 import PackingTripHero from "./packing-trip-hero";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import AddPackingCategoriesModal from "./add-packing-categories-modal";
 import PackingSpaceSelector from "./packing-space-selector";
 import PackingListCard from "./packing-list-card";
 import FloatingAddPackingItemButton from "./floating-add-packing-item-button";
 import { AnimatePresence, motion } from "framer-motion";
+import { kidsStarterItems } from "../lib/kids-packing-items";
 
 import {
     getTripWeatherSummary,
@@ -32,6 +34,7 @@ import {
     hidePackingItem,
     togglePackedItem,
     updatePackingItemQuantity,
+    hidePackingListItems,
 } from "../lib/packing-mutations";
 
 import PackingNextActions from "./packing-next-actions";
@@ -62,6 +65,8 @@ function calculateTripDays(startDate?: string | null, endDate?: string | null) {
 }
 
 export default function PackingBoard({ tripId }: Props) {
+    const searchParams = useSearchParams();
+    const requestedListId = searchParams.get("list");
     const [lists, setLists] = useState<PackingList[]>([]);
     const [itemsByList, setItemsByList] = useState<
         Record<string, PackingListItem[]>
@@ -76,8 +81,11 @@ export default function PackingBoard({ tripId }: Props) {
         useState<TripWeatherSummary | null>(null);
     const [itemPendingRemove, setItemPendingRemove] =
         useState<PackingListItem | null>(null);
-    const [listPendingReset, setListPendingReset] =
-        useState<PackingList | null>(null);
+    const [listActionPending, setListActionPending] =
+        useState<{
+            type: "reset" | "delete";
+            list: PackingList;
+        } | null>(null);
 
     const [resetSwipeKey, setResetSwipeKey] = useState(0);
 
@@ -113,7 +121,13 @@ export default function PackingBoard({ tripId }: Props) {
             setWeatherSummary(weather);
 
             setLists(packingLists);
-            setActiveListId((current) => current ?? packingLists[0]?.id ?? null);
+            setActiveListId((current) => {
+                if (requestedListId && packingLists.some((list) => list.id === requestedListId)) {
+                    return requestedListId;
+                }
+
+                return current ?? packingLists[0]?.id ?? null;
+            });
 
             const itemEntries = await Promise.all(
                 packingLists.map(async (list) => {
@@ -407,13 +421,19 @@ export default function PackingBoard({ tripId }: Props) {
                             }
                         }}
                         onRemoveItem={(item) => setItemPendingRemove(item)}
-                        onArchiveList={(listId) => {
-                            const list = lists.find((item) => item.id === listId);
+                        onResetList={(list) =>
+                            setListActionPending({
+                                type: "reset",
+                                list,
+                            })
+                        }
 
-                            if (!list) return;
-
-                            setListPendingReset(list);
-                        }}
+                        onDeleteList={(list) =>
+                            setListActionPending({
+                                type: "delete",
+                                list,
+                            })
+                        }
                     />
 
                     <FloatingAddPackingItemButton
@@ -562,7 +582,7 @@ export default function PackingBoard({ tripId }: Props) {
                         </motion.div>
                     </motion.div>
                 )}
-                {listPendingReset && (
+                {listActionPending && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -578,17 +598,25 @@ export default function PackingBoard({ tripId }: Props) {
                             className="w-full max-w-sm rounded-[1.75rem] bg-white p-5 shadow-2xl"
                         >
                             <h2 className="text-xl font-bold tracking-[-0.03em] text-neutral-950">
-                                Reset packing list?
+                                {listActionPending.type === "delete"
+                                    ? "Delete Kids List?"
+                                    : listActionPending.list.title === "Kids List"
+                                        ? "Reset Kids List?"
+                                        : "Reset My List?"}
                             </h2>
 
                             <p className="mt-2 text-sm leading-6 text-neutral-500">
-                                Your packing list and personalization settings will be reset.
+                                {listActionPending.type === "delete"
+                                    ? "This will remove the Kids List from this trip. You can create it again later from Personalize."
+                                    : listActionPending.list.title === "Kids List"
+                                        ? "This will restore the default kids packing recommendations. Any custom changes will be removed."
+                                        : "This will regenerate your packing list using your current personalization settings. Any custom changes will be removed."}
                             </p>
 
                             <div className="mt-6 flex gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => setListPendingReset(null)}
+                                    onClick={() => setListActionPending(null)}
                                     className="flex-1 rounded-2xl bg-neutral-100 px-4 py-3 text-sm font-bold text-neutral-600"
                                 >
                                     Cancel
@@ -597,41 +625,87 @@ export default function PackingBoard({ tripId }: Props) {
                                 <button
                                     type="button"
                                     onClick={async () => {
-                                        const listId = listPendingReset.id;
+                                        const action = listActionPending;
+                                        if (!action) return;
 
-                                        localStorage.removeItem(`packing-activities-${tripId}`);
-                                        localStorage.removeItem(`packing-climate-${tripId}`);
-                                        localStorage.removeItem(`packing-laundry-${tripId}`);
-                                        localStorage.removeItem(`packing-preference-${tripId}`);
+                                        const list = action.list;
+                                        const listId = list.id;
 
-                                        setActivities([]);
-                                        setLaundry("Not available");
-                                        setPackingPreference("Balanced");
-
-                                        setLists((current) =>
-                                            current.filter((list) => list.id !== listId)
-                                        );
-
-                                        setItemsByList((current) => {
-                                            const next = { ...current };
-                                            delete next[listId];
-                                            return next;
-                                        });
-
-                                        setActiveListId((current) => {
-                                            if (current !== listId) return current;
-
-                                            const remainingLists = lists.filter(
-                                                (list) => list.id !== listId
-                                            );
-
-                                            return remainingLists[0]?.id ?? null;
-                                        });
-
-                                        setListPendingReset(null);
+                                        setListActionPending(null);
 
                                         try {
-                                            await archivePackingList(listId);
+                                            if (action.type === "delete") {
+                                                await archivePackingList(listId);
+
+                                                setLists((current) =>
+                                                    current.filter((existing) => existing.id !== listId)
+                                                );
+
+                                                setItemsByList((current) => {
+                                                    const next = { ...current };
+                                                    delete next[listId];
+                                                    return next;
+                                                });
+
+                                                setActiveListId((current) => {
+                                                    if (current !== listId) return current;
+
+                                                    const remaining = lists.filter(
+                                                        (existing) => existing.id !== listId
+                                                    );
+
+                                                    return remaining[0]?.id ?? null;
+                                                });
+
+                                                return;
+                                            }
+
+                                            await hidePackingListItems(listId);
+
+                                            const tripDays = trip
+                                                ? calculateTripDays(trip.start_date, trip.end_date)
+                                                : 1;
+
+                                            const resetItems =
+                                                list.title === "Kids List"
+                                                    ? kidsStarterItems
+                                                    : [
+                                                        ...getEssentialsStarterItems(),
+                                                        ...baseItems
+                                                            .filter((item) =>
+                                                                ["Clothing", "Toiletries", "Tech"].includes(
+                                                                    item.category
+                                                                )
+                                                            )
+                                                            .map((item) => ({
+                                                                name: item.name,
+                                                                category: item.category,
+                                                                quantity: getPreferenceAdjustedQuantity({
+                                                                    quantity: getLaundryAwareQuantity({
+                                                                        item,
+                                                                        tripDays,
+                                                                        laundry,
+                                                                    }),
+                                                                    preference: packingPreference,
+                                                                }),
+                                                                source: "suggested" as const,
+                                                                packed: false,
+                                                                hidden: false,
+                                                                protected: Boolean(item.protected),
+                                                            })),
+                                                    ];
+
+                                            const createdItems = await createSuggestedPackingItems({
+                                                packingListId: listId,
+                                                items: resetItems,
+                                            });
+
+                                            setItemsByList((current) => ({
+                                                ...current,
+                                                [listId]: createdItems,
+                                            }));
+
+                                            setResetSwipeKey((current) => current + 1);
                                         } catch (error) {
                                             console.error(error);
                                             await loadPacking();
@@ -639,7 +713,7 @@ export default function PackingBoard({ tripId }: Props) {
                                     }}
                                     className="flex-1 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
                                 >
-                                    Reset
+                                    {listActionPending.type === "delete" ? "Delete" : "Reset"}
                                 </button>
                             </div>
                         </motion.div>

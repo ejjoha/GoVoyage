@@ -9,7 +9,8 @@ type Props = {
     items: PackingListItem[];
     onToggleItem: (item: PackingListItem) => void;
     onCreateItem: (listId: string, item: PackingListItem) => void;
-    onArchiveList: (listId: string) => void;
+    onResetList: (list: PackingList) => void;
+    onDeleteList: (list: PackingList) => void;
     onDecreaseQuantity: (item: PackingListItem) => void;
     onIncreaseQuantity: (item: PackingListItem) => void;
     onRemoveItem: (item: PackingListItem) => void;
@@ -21,7 +22,8 @@ export default function PackingListCard({
     items,
     onToggleItem,
     onCreateItem,
-    onArchiveList,
+    onResetList,
+    onDeleteList,
     onDecreaseQuantity,
     onIncreaseQuantity,
     onRemoveItem,
@@ -67,7 +69,7 @@ export default function PackingListCard({
                         <div className="mt-5 flex justify-end gap-4">
                             <button
                                 type="button"
-                                onClick={() => onArchiveList(list.id)}
+                                onClick={() => onResetList(list)}
                                 className="text-sm font-bold text-neutral-300 transition hover:text-rose-500 active:scale-95"
                             >
                                 Reset list
@@ -76,7 +78,7 @@ export default function PackingListCard({
                             {list.title === "Kids List" && (
                                 <button
                                     type="button"
-                                    onClick={() => onArchiveList(list.id)}
+                                    onClick={() => onDeleteList(list)}
                                     className="text-sm font-bold text-neutral-300 transition hover:text-rose-500 active:scale-95"
                                 >
                                     Delete kids list

@@ -34,7 +34,7 @@ export default function KidsPackingPage() {
                 items: kidsStarterItems,
             });
 
-            router.push(`/trips/${tripId}/packing`);
+            router.push(`/trips/${tripId}/packing?list=${list.id}`);
         } finally {
             setSaving(false);
         }

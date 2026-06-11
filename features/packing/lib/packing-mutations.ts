@@ -117,6 +117,22 @@ export async function archivePackingList(listId: string) {
     }
 }
 
+export async function hidePackingListItems(listId: string) {
+    const { error } = await supabase
+        .from("packing_list_items")
+        .update({
+            hidden: true,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("packing_list_id", listId)
+        .eq("hidden", false);
+
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 export async function createSuggestedPackingItems({
     packingListId,
     items,
