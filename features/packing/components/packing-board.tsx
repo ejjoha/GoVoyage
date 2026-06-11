@@ -83,30 +83,39 @@ export default function PackingBoard({ tripId }: Props) {
 
     async function loadPacking() {
         setLoading(true);
-        const tripData = await getTripForPacking(tripId);
-        setTrip(tripData);
 
-        if (tripData?.destination) {
-            const summary = await getTripWeatherSummary(
-                tripData.destination
+        try {
+            const tripData = await getTripForPacking(tripId);
+            setTrip(tripData);
+
+            const packingLists = await getPackingLists(tripId);
+            setLists(packingLists);
+            setActiveListId((current) => current ?? packingLists[0]?.id ?? null);
+
+            const itemEntries = await Promise.all(
+                packingLists.map(async (list) => {
+                    const items = await getPackingItems(list.id);
+                    return [list.id, items] as const;
+                })
             );
 
-            setWeatherSummary(summary);
+            setItemsByList(Object.fromEntries(itemEntries));
+            setLoading(false);
+
+            if (tripData?.destination) {
+                getTripWeatherSummary(tripData.destination)
+                    .then((summary) => {
+                        setWeatherSummary(summary);
+                    })
+                    .catch((error) => {
+                        console.error("Failed to load packing weather", error);
+                        setWeatherSummary(null);
+                    });
+            }
+        } catch (error) {
+            console.error(error);
+            setLoading(false);
         }
-
-        const packingLists = await getPackingLists(tripId);
-        setLists(packingLists);
-        setActiveListId((current) => current ?? packingLists[0]?.id ?? null);
-
-        const itemEntries = await Promise.all(
-            packingLists.map(async (list) => {
-                const items = await getPackingItems(list.id);
-                return [list.id, items] as const;
-            })
-        );
-
-        setItemsByList(Object.fromEntries(itemEntries));
-        setLoading(false);
     }
 
     useEffect(() => {
