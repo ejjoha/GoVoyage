@@ -57,7 +57,17 @@ export default function PackingSpaceSelector({
     const [selectedClimates, setSelectedClimates] = useState<string[]>(defaultClimates);
     const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
     const [selectedTripStyles, setSelectedTripStyles] = useState<string[]>([]);
-    const climateOptions = ["Hot", "Cold", "Rainy"];
+    const climateOptions = [
+        "Hot",
+        "Warm",
+        "Cold",
+        "Freezing",
+        "Rainy",
+        "Windy",
+        "Snowy",
+        "Humid",
+        "Dry",
+    ];
     const environmentOptions = ["City", "Beach", "Mountain"];
     const tripStyleOptions = ["Business", "Traveling with kids"];
 

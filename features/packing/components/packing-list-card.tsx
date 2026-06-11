@@ -2,14 +2,11 @@
 
 import { useState } from "react";
 import type { PackingList, PackingListItem } from "../types/packing.types";
-import SmartSuggestionsPrompt from "./smart-suggestions-prompt";
 import PackingCategorySection from "./packing-category-section";
 
 type Props = {
     list: PackingList;
     items: PackingListItem[];
-    tripDays: number;
-    defaultClimates: string[];
     onToggleItem: (item: PackingListItem) => void;
     onCreateItem: (listId: string, item: PackingListItem) => void;
     onArchiveList: (listId: string) => void;
@@ -22,8 +19,6 @@ type Props = {
 export default function PackingListCard({
     list,
     items,
-    tripDays,
-    defaultClimates,
     onToggleItem,
     onCreateItem,
     onArchiveList,
@@ -54,32 +49,20 @@ export default function PackingListCard({
             <div>
                 {open && (
                     <div className="mt-1">
-                        {items.length === 0 ? (
-                            <SmartSuggestionsPrompt
-                                list={list}
-                                tripDays={tripDays}
-                                defaultClimates={defaultClimates}
-                                onCreated={(createdItems) => {
-                                    createdItems.forEach((item) => onCreateItem(list.id, item));
-                                }}
-                            />
-                        ) : (
-                            <div className="space-y-4">
-                                {Object.entries(groupedItems).map(([category, categoryItems]) => (
-                                    <PackingCategorySection
-                                        key={category}
-                                        category={category}
-                                        items={categoryItems}
-                                        onToggleItem={onToggleItem}
-                                        onDecreaseQuantity={onDecreaseQuantity}
-                                        onIncreaseQuantity={onIncreaseQuantity}
-                                        onRemoveItem={onRemoveItem}
-                                        resetSwipeKey={resetSwipeKey}
-
-                                    />
-                                ))}
-                            </div>
-                        )}
+                        <div className="space-y-4">
+                            {Object.entries(groupedItems).map(([category, categoryItems]) => (
+                                <PackingCategorySection
+                                    key={category}
+                                    category={category}
+                                    items={categoryItems}
+                                    onToggleItem={onToggleItem}
+                                    onDecreaseQuantity={onDecreaseQuantity}
+                                    onIncreaseQuantity={onIncreaseQuantity}
+                                    onRemoveItem={onRemoveItem}
+                                    resetSwipeKey={resetSwipeKey}
+                                />
+                            ))}
+                        </div>
 
                         <div className="mt-5 flex justify-end">
                             <button
