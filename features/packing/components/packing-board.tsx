@@ -82,7 +82,7 @@ export default function PackingBoard({ tripId }: Props) {
     const [resetSwipeKey, setResetSwipeKey] = useState(0);
 
     async function getWeatherSummaryWithTimeout(destination: string) {
-        const timeoutMs = 1200;
+        const timeoutMs = 2500;
 
         return Promise.race([
             getTripWeatherSummary(destination),

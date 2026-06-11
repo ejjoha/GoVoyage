@@ -64,7 +64,7 @@ export default function PackingListCard({
                             ))}
                         </div>
 
-                        <div className="mt-5 flex justify-end">
+                        <div className="mt-5 flex justify-end gap-4">
                             <button
                                 type="button"
                                 onClick={() => onArchiveList(list.id)}
@@ -72,6 +72,16 @@ export default function PackingListCard({
                             >
                                 Reset list
                             </button>
+
+                            {list.title === "Kids List" && (
+                                <button
+                                    type="button"
+                                    onClick={() => onArchiveList(list.id)}
+                                    className="text-sm font-bold text-neutral-300 transition hover:text-rose-500 active:scale-95"
+                                >
+                                    Delete kids list
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

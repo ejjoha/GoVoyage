@@ -162,6 +162,12 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                             packingPreference,
                             `/trips/${tripId}/packing/personalize/packing-preference`
                         ],
+                        [
+                            "🧸",
+                            "Traveling with Kids",
+                            "Create shared kids list",
+                            `/trips/${tripId}/packing/personalize/kids`
+                        ],
                     ].map(([icon, title, value, href], index, rows) => {
                         const content = (
                             <>

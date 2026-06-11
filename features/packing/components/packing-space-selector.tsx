@@ -239,7 +239,7 @@ export default function PackingSpaceSelector({
                 </div>
             )}
 
-            <div className="pb-3">
+            <div className="space-y-3 pb-3">
                 <Link
                     href={`/trips/${tripId}/packing/personalize`}
                     className="flex min-h-[4.5rem] w-full items-center justify-center rounded-[1.25rem] bg-white/60 px-5 text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
@@ -255,6 +255,44 @@ export default function PackingSpaceSelector({
                         </p>
                     </div>
                 </Link>
+
+                {lists.length > 1 && (
+                    <div className="-mx-4 flex gap-2.5 overflow-x-auto px-4 scrollbar-hide">
+                        {lists.map((list) => {
+                            const active = list.id === activeListId;
+                            const itemCount = itemsByList[list.id]?.length ?? 0;
+
+                            return (
+                                <button
+                                    key={list.id}
+                                    type="button"
+                                    onClick={() => onSelectList(list.id)}
+                                    className={
+                                        active
+                                            ? "flex min-h-[4.5rem] min-w-[8.5rem] items-center justify-center rounded-[1.25rem] bg-neutral-950 px-5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition active:scale-[0.98]"
+                                            : "flex min-h-[4.5rem] min-w-[8.5rem] items-center justify-center rounded-[1.25rem] bg-white/60 px-5 text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
+                                    }
+                                >
+                                    <div className="text-center">
+                                        <p className="text-base font-bold leading-none">
+                                            {list.emoji ?? "🧳"} {list.title}
+                                        </p>
+
+                                        <p
+                                            className={
+                                                active
+                                                    ? "mt-2 text-xs leading-none text-white/60"
+                                                    : "mt-2 text-xs leading-none text-neutral-400"
+                                            }
+                                        >
+                                            {itemCount} {itemCount === 1 ? "item" : "items"}
+                                        </p>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </section>
     );
