@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { getPackingItems, getPackingLists } from "@/features/packing/lib/packing-queries";
+import { createSuggestedPackingItems } from "@/features/packing/lib/packing-mutations";
+import { getClimatePackingItems } from "@/features/packing/lib/packing-profile-recommendations";
 
 const temperatureOptions = [
     {
@@ -34,17 +37,17 @@ const temperatureOptions = [
 
 const conditionOptions = [
     {
-        value: "Rain",
+        value: "Rainy",
         emoji: "🌧️",
         description: "Wet conditions and waterproof gear",
     },
     {
-        value: "Snow",
+        value: "Snowy",
         emoji: "🌨️",
         description: "Snowy ground or winter conditions",
     },
     {
-        value: "Wind",
+        value: "Windy",
         emoji: "💨",
         description: "Windy days and exposed places",
     },
@@ -164,11 +167,30 @@ export default function ClimatePage() {
         );
     }
 
-    function handleSave() {
+    async function handleSave() {
         localStorage.setItem(
             `packing-climate-${tripId}`,
             JSON.stringify(selected)
         );
+
+        const lists = await getPackingLists(Number(tripId));
+        const mainList = lists[0];
+
+        if (mainList) {
+            const existingItems = await getPackingItems(mainList.id);
+
+            const itemsToCreate = getClimatePackingItems({
+                climate: selected,
+                existingItems,
+            });
+
+            if (itemsToCreate.length > 0) {
+                await createSuggestedPackingItems({
+                    packingListId: mainList.id,
+                    items: itemsToCreate,
+                });
+            }
+        }
 
         router.push(`/trips/${tripId}/packing/personalize`);
     }
