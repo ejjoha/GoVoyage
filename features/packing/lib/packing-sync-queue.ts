@@ -35,7 +35,37 @@ type PendingPackingMutation =
     | UpdateQuantityMutation
     | HideItemMutation;
 
+type PackingMutationType = PendingPackingMutation["type"];
+
+type PackingMutationHandler<T extends PendingPackingMutation> = (
+    mutation: T
+) => Promise<void>;
+
 const QUEUE_KEY = "packing-pending-mutations";
+
+const mutationHandlers: {
+    [Type in PackingMutationType]: PackingMutationHandler<
+        Extract<PendingPackingMutation, { type: Type }>
+    >;
+} = {
+    togglePacked: async (mutation) => {
+        await togglePackedItem({
+            itemId: mutation.itemId,
+            packed: mutation.packed,
+        });
+    },
+
+    updateQuantity: async (mutation) => {
+        await updatePackingItemQuantity({
+            itemId: mutation.itemId,
+            quantity: mutation.quantity,
+        });
+    },
+
+    hideItem: async (mutation) => {
+        await hidePackingItem(mutation.itemId);
+    },
+};
 
 function getQueue(): PendingPackingMutation[] {
     if (typeof window === "undefined") return [];
@@ -60,7 +90,7 @@ function saveQueue(queue: PendingPackingMutation[]) {
 function withoutOlderMutationForSameItem(
     queue: PendingPackingMutation[],
     itemId: string,
-    type: PendingPackingMutation["type"]
+    type: PackingMutationType
 ) {
     return queue.filter(
         (mutation) =>
@@ -69,6 +99,14 @@ function withoutOlderMutationForSameItem(
                 mutation.type === type
             )
     );
+}
+
+async function runPackingMutation(mutation: PendingPackingMutation) {
+    const handler = mutationHandlers[mutation.type] as PackingMutationHandler<
+        typeof mutation
+    >;
+
+    await handler(mutation);
 }
 
 export function enqueueTogglePackedMutation({
@@ -155,22 +193,7 @@ export async function syncPendingPackingMutations() {
 
     for (const mutation of queue) {
         try {
-            if (mutation.type === "togglePacked") {
-                await togglePackedItem({
-                    itemId: mutation.itemId,
-                    packed: mutation.packed,
-                });
-            }
-
-            if (mutation.type === "updateQuantity") {
-                await updatePackingItemQuantity({
-                    itemId: mutation.itemId,
-                    quantity: mutation.quantity,
-                });
-            }
-            if (mutation.type === "hideItem") {
-                await hidePackingItem(mutation.itemId);
-            }
+            await runPackingMutation(mutation);
         } catch (error) {
             console.error("Failed to sync packing mutation", error);
             remaining.push(mutation);
