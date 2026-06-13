@@ -54,6 +54,7 @@ import {
 
 import {
     enqueueTogglePackedMutation,
+    enqueueUpdateQuantityMutation,
     syncPendingPackingMutations,
 } from "../lib/packing-sync-queue";
 
@@ -467,16 +468,36 @@ export default function PackingBoard({ tripId }: Props) {
                             }
 
                             const nextQuantity = Math.max(1, item.quantity - 1);
+                            const now = new Date().toISOString();
 
                             setItemsByList((current) => ({
                                 ...current,
                                 [item.packing_list_id]: (current[item.packing_list_id] ?? []).map(
                                     (currentItem) =>
                                         currentItem.id === item.id
-                                            ? { ...currentItem, quantity: nextQuantity }
+                                            ? {
+                                                ...currentItem,
+                                                quantity: nextQuantity,
+                                                updated_at: now,
+                                            }
                                             : currentItem
                                 ),
                             }));
+
+                            updateCachedPackingItem(tripId, item.id, {
+                                quantity: nextQuantity,
+                                updated_at: now,
+                            });
+
+                            if (typeof navigator !== "undefined" && !navigator.onLine) {
+                                enqueueUpdateQuantityMutation({
+                                    tripId,
+                                    itemId: item.id,
+                                    quantity: nextQuantity,
+                                });
+
+                                return;
+                            }
 
                             try {
                                 await updatePackingItemQuantity({
@@ -484,22 +505,47 @@ export default function PackingBoard({ tripId }: Props) {
                                     quantity: nextQuantity,
                                 });
                             } catch (error) {
-                                console.error(error);
-                                await loadPacking();
+                                console.warn("Quantity change saved locally and will sync later.", error);
+
+                                enqueueUpdateQuantityMutation({
+                                    tripId,
+                                    itemId: item.id,
+                                    quantity: nextQuantity,
+                                });
                             }
                         }}
                         onIncreaseQuantity={async (item) => {
                             const nextQuantity = item.quantity + 1;
+                            const now = new Date().toISOString();
 
                             setItemsByList((current) => ({
                                 ...current,
                                 [item.packing_list_id]: (current[item.packing_list_id] ?? []).map(
                                     (currentItem) =>
                                         currentItem.id === item.id
-                                            ? { ...currentItem, quantity: nextQuantity }
+                                            ? {
+                                                ...currentItem,
+                                                quantity: nextQuantity,
+                                                updated_at: now,
+                                            }
                                             : currentItem
                                 ),
                             }));
+
+                            updateCachedPackingItem(tripId, item.id, {
+                                quantity: nextQuantity,
+                                updated_at: now,
+                            });
+
+                            if (typeof navigator !== "undefined" && !navigator.onLine) {
+                                enqueueUpdateQuantityMutation({
+                                    tripId,
+                                    itemId: item.id,
+                                    quantity: nextQuantity,
+                                });
+
+                                return;
+                            }
 
                             try {
                                 await updatePackingItemQuantity({
@@ -507,8 +553,13 @@ export default function PackingBoard({ tripId }: Props) {
                                     quantity: nextQuantity,
                                 });
                             } catch (error) {
-                                console.error(error);
-                                await loadPacking();
+                                console.warn("Quantity change saved locally and will sync later.", error);
+
+                                enqueueUpdateQuantityMutation({
+                                    tripId,
+                                    itemId: item.id,
+                                    quantity: nextQuantity,
+                                });
                             }
                         }}
                         onRemoveItem={(item) => setItemPendingRemove(item)}
