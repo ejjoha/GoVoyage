@@ -15,6 +15,32 @@ import {
     enqueueHideItemMutation,
 } from "./packing-sync-queue";
 
+async function executeOfflineAwarePackingMutation({
+    optimisticUpdate,
+    enqueue,
+    serverMutation,
+    warningMessage,
+}: {
+    optimisticUpdate: () => void;
+    enqueue: () => void;
+    serverMutation: () => Promise<void>;
+    warningMessage: string;
+}) {
+    optimisticUpdate();
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+        enqueue();
+        return;
+    }
+
+    try {
+        await serverMutation();
+    } catch (error) {
+        console.warn(warningMessage, error);
+        enqueue();
+    }
+}
+
 export async function togglePackedOfflineAware({
     tripId,
     itemId,
@@ -26,36 +52,29 @@ export async function togglePackedOfflineAware({
     packed: boolean;
     updatedAt: string;
 }) {
-    updateCachedPackingItem(tripId, itemId, {
-        packed,
-        packed_at: packed ? updatedAt : null,
-        updated_at: updatedAt,
+    return executeOfflineAwarePackingMutation({
+        optimisticUpdate: () => {
+            updateCachedPackingItem(tripId, itemId, {
+                packed,
+                packed_at: packed ? updatedAt : null,
+                updated_at: updatedAt,
+            });
+        },
+        enqueue: () => {
+            enqueueTogglePackedMutation({
+                tripId,
+                itemId,
+                packed,
+            });
+        },
+        serverMutation: () =>
+            togglePackedItem({
+                itemId,
+                packed,
+            }),
+        warningMessage:
+            "Packing change saved locally and will sync later.",
     });
-
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-        enqueueTogglePackedMutation({
-            tripId,
-            itemId,
-            packed,
-        });
-
-        return;
-    }
-
-    try {
-        await togglePackedItem({
-            itemId,
-            packed,
-        });
-    } catch (error) {
-        console.warn("Packing change saved locally and will sync later.", error);
-
-        enqueueTogglePackedMutation({
-            tripId,
-            itemId,
-            packed,
-        });
-    }
 }
 
 export async function updateQuantityOfflineAware({
@@ -69,35 +88,28 @@ export async function updateQuantityOfflineAware({
     quantity: number;
     updatedAt: string;
 }) {
-    updateCachedPackingItem(tripId, itemId, {
-        quantity,
-        updated_at: updatedAt,
+    return executeOfflineAwarePackingMutation({
+        optimisticUpdate: () => {
+            updateCachedPackingItem(tripId, itemId, {
+                quantity,
+                updated_at: updatedAt,
+            });
+        },
+        enqueue: () => {
+            enqueueUpdateQuantityMutation({
+                tripId,
+                itemId,
+                quantity,
+            });
+        },
+        serverMutation: () =>
+            updatePackingItemQuantity({
+                itemId,
+                quantity,
+            }),
+        warningMessage:
+            "Quantity change saved locally and will sync later.",
     });
-
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-        enqueueUpdateQuantityMutation({
-            tripId,
-            itemId,
-            quantity,
-        });
-
-        return;
-    }
-
-    try {
-        await updatePackingItemQuantity({
-            itemId,
-            quantity,
-        });
-    } catch (error) {
-        console.warn("Quantity change saved locally and will sync later.", error);
-
-        enqueueUpdateQuantityMutation({
-            tripId,
-            itemId,
-            quantity,
-        });
-    }
 }
 
 export async function hideItemOfflineAware({
@@ -107,25 +119,18 @@ export async function hideItemOfflineAware({
     tripId: number;
     itemId: string;
 }) {
-    removeCachedPackingItem(tripId, itemId);
-
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-        enqueueHideItemMutation({
-            tripId,
-            itemId,
-        });
-
-        return;
-    }
-
-    try {
-        await hidePackingItem(itemId);
-    } catch (error) {
-        console.warn("Item removal saved locally and will sync later.", error);
-
-        enqueueHideItemMutation({
-            tripId,
-            itemId,
-        });
-    }
+    return executeOfflineAwarePackingMutation({
+        optimisticUpdate: () => {
+            removeCachedPackingItem(tripId, itemId);
+        },
+        enqueue: () => {
+            enqueueHideItemMutation({
+                tripId,
+                itemId,
+            });
+        },
+        serverMutation: () => hidePackingItem(itemId),
+        warningMessage:
+            "Item removal saved locally and will sync later.",
+    });
 }
