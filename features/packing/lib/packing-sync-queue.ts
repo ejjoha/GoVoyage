@@ -1,6 +1,7 @@
 import {
     togglePackedItem,
     updatePackingItemQuantity,
+    hidePackingItem,
 } from "./packing-mutations";
 
 type TogglePackedMutation = {
@@ -21,9 +22,18 @@ type UpdateQuantityMutation = {
     createdAt: string;
 };
 
+type HideItemMutation = {
+    id: string;
+    tripId: number;
+    type: "hideItem";
+    itemId: string;
+    createdAt: string;
+};
+
 type PendingPackingMutation =
     | TogglePackedMutation
-    | UpdateQuantityMutation;
+    | UpdateQuantityMutation
+    | HideItemMutation;
 
 const QUEUE_KEY = "packing-pending-mutations";
 
@@ -109,6 +119,27 @@ export function enqueueUpdateQuantityMutation({
     ]);
 }
 
+export function enqueueHideItemMutation({
+    tripId,
+    itemId,
+}: {
+    tripId: number;
+    itemId: string;
+}) {
+    const queue = getQueue();
+
+    saveQueue([
+        ...withoutOlderMutationForSameItem(queue, itemId, "hideItem"),
+        {
+            id: crypto.randomUUID(),
+            tripId,
+            type: "hideItem",
+            itemId,
+            createdAt: new Date().toISOString(),
+        },
+    ]);
+}
+
 export async function syncPendingPackingMutations() {
     if (typeof window === "undefined") return;
 
@@ -136,6 +167,9 @@ export async function syncPendingPackingMutations() {
                     itemId: mutation.itemId,
                     quantity: mutation.quantity,
                 });
+            }
+            if (mutation.type === "hideItem") {
+                await hidePackingItem(mutation.itemId);
             }
         } catch (error) {
             console.error("Failed to sync packing mutation", error);

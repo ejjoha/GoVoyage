@@ -90,3 +90,37 @@ export function updateCachedPackingItem(
         })
     );
 }
+export function removeCachedPackingItem(
+    tripId: number,
+    itemId: string
+) {
+    const cache = loadPackingCache(tripId);
+
+    if (!cache) return;
+
+    const now = new Date().toISOString();
+
+    const nextItemsByList = Object.fromEntries(
+        Object.entries(cache.itemsByList).map(([listId, items]) => [
+            listId,
+            items.map((item) =>
+                item.id === itemId
+                    ? {
+                        ...item,
+                        hidden: true,
+                        updated_at: now,
+                    }
+                    : item
+            ),
+        ])
+    );
+
+    localStorage.setItem(
+        `packing-cache-${tripId}`,
+        JSON.stringify({
+            ...cache,
+            cachedAt: now,
+            itemsByList: nextItemsByList,
+        })
+    );
+}

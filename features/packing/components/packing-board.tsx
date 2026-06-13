@@ -14,7 +14,6 @@ import { kidsStarterItems } from "../lib/kids-packing-items";
 import {
     loadPackingCache,
     savePackingCache,
-    updateCachedPackingItem,
 } from "../lib/packing-cache";
 
 import {
@@ -37,9 +36,6 @@ import {
     archivePackingList,
     createPackingList,
     createSuggestedPackingItems,
-    hidePackingItem,
-    togglePackedItem,
-    updatePackingItemQuantity,
     hidePackingListItems,
 } from "../lib/packing-mutations";
 
@@ -53,10 +49,14 @@ import {
 } from "../lib/packing-template-engine";
 
 import {
-    enqueueTogglePackedMutation,
-    enqueueUpdateQuantityMutation,
     syncPendingPackingMutations,
 } from "../lib/packing-sync-queue";
+
+import {
+    togglePackedOfflineAware,
+    updateQuantityOfflineAware,
+    hideItemOfflineAware,
+} from "../lib/packing-offline-service";
 
 type TripForPacking = Awaited<ReturnType<typeof getTripForPacking>>;
 
@@ -118,7 +118,14 @@ export default function PackingBoard({ tripId }: Props) {
         if (cachedPacking) {
             setTrip(cachedPacking.trip);
             setLists(cachedPacking.lists);
-            setItemsByList(cachedPacking.itemsByList);
+            setItemsByList(
+                Object.fromEntries(
+                    Object.entries(cachedPacking.itemsByList).map(([listId, items]) => [
+                        listId,
+                        items.filter((item) => !item.hidden),
+                    ])
+                )
+            );
             setActiveListId((current) => {
                 if (
                     requestedListId &&
@@ -347,12 +354,10 @@ export default function PackingBoard({ tripId }: Props) {
         const nextPacked = !item.packed;
         const now = new Date().toISOString();
 
-        let nextItemsByList: Record<string, PackingListItem[]> = {};
-
         setItemsByList((current) => {
             const listItems = current[item.packing_list_id] ?? [];
 
-            nextItemsByList = {
+            return {
                 ...current,
                 [item.packing_list_id]: listItems.map((currentItem) =>
                     currentItem.id === item.id
@@ -365,40 +370,14 @@ export default function PackingBoard({ tripId }: Props) {
                         : currentItem
                 ),
             };
-
-            updateCachedPackingItem(tripId, item.id, {
-                packed: nextPacked,
-                packed_at: nextPacked ? now : null,
-                updated_at: now,
-            });
-
-            return nextItemsByList;
         });
 
-        if (typeof navigator !== "undefined" && !navigator.onLine) {
-            enqueueTogglePackedMutation({
-                tripId,
-                itemId: item.id,
-                packed: nextPacked,
-            });
-
-            return;
-        }
-
-        try {
-            await togglePackedItem({
-                itemId: item.id,
-                packed: nextPacked,
-            });
-        } catch (error) {
-            console.warn("Packing change saved locally and will sync later.", error);
-
-            enqueueTogglePackedMutation({
-                tripId,
-                itemId: item.id,
-                packed: nextPacked,
-            });
-        }
+        await togglePackedOfflineAware({
+            tripId,
+            itemId: item.id,
+            packed: nextPacked,
+            updatedAt: now,
+        });
     }
 
     function handleAddTripRecommendations() {
@@ -484,35 +463,12 @@ export default function PackingBoard({ tripId }: Props) {
                                 ),
                             }));
 
-                            updateCachedPackingItem(tripId, item.id, {
+                            await updateQuantityOfflineAware({
+                                tripId,
+                                itemId: item.id,
                                 quantity: nextQuantity,
-                                updated_at: now,
+                                updatedAt: now,
                             });
-
-                            if (typeof navigator !== "undefined" && !navigator.onLine) {
-                                enqueueUpdateQuantityMutation({
-                                    tripId,
-                                    itemId: item.id,
-                                    quantity: nextQuantity,
-                                });
-
-                                return;
-                            }
-
-                            try {
-                                await updatePackingItemQuantity({
-                                    itemId: item.id,
-                                    quantity: nextQuantity,
-                                });
-                            } catch (error) {
-                                console.warn("Quantity change saved locally and will sync later.", error);
-
-                                enqueueUpdateQuantityMutation({
-                                    tripId,
-                                    itemId: item.id,
-                                    quantity: nextQuantity,
-                                });
-                            }
                         }}
                         onIncreaseQuantity={async (item) => {
                             const nextQuantity = item.quantity + 1;
@@ -532,35 +488,12 @@ export default function PackingBoard({ tripId }: Props) {
                                 ),
                             }));
 
-                            updateCachedPackingItem(tripId, item.id, {
+                            await updateQuantityOfflineAware({
+                                tripId,
+                                itemId: item.id,
                                 quantity: nextQuantity,
-                                updated_at: now,
+                                updatedAt: now,
                             });
-
-                            if (typeof navigator !== "undefined" && !navigator.onLine) {
-                                enqueueUpdateQuantityMutation({
-                                    tripId,
-                                    itemId: item.id,
-                                    quantity: nextQuantity,
-                                });
-
-                                return;
-                            }
-
-                            try {
-                                await updatePackingItemQuantity({
-                                    itemId: item.id,
-                                    quantity: nextQuantity,
-                                });
-                            } catch (error) {
-                                console.warn("Quantity change saved locally and will sync later.", error);
-
-                                enqueueUpdateQuantityMutation({
-                                    tripId,
-                                    itemId: item.id,
-                                    quantity: nextQuantity,
-                                });
-                            }
                         }}
                         onRemoveItem={(item) => setItemPendingRemove(item)}
                         onResetList={(list) =>
@@ -709,12 +642,10 @@ export default function PackingBoard({ tripId }: Props) {
                                             ).filter((currentItem) => currentItem.id !== item.id),
                                         }));
 
-                                        try {
-                                            await hidePackingItem(item.id);
-                                        } catch (error) {
-                                            console.error(error);
-                                            await loadPacking();
-                                        }
+                                        await hideItemOfflineAware({
+                                            tripId,
+                                            itemId: item.id,
+                                        });
                                     }}
                                     className="rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
                                 >
