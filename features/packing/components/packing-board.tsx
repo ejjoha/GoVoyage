@@ -12,6 +12,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { kidsStarterItems } from "../lib/kids-packing-items";
 
 import {
+    loadPackingCache,
+    savePackingCache,
+    updateCachedPackingItem,
+} from "../lib/packing-cache";
+
+import {
     getTripWeatherSummary,
     type TripWeatherSummary,
 } from "../lib/weather-intelligence";
@@ -101,7 +107,35 @@ export default function PackingBoard({ tripId }: Props) {
     }
 
     async function loadPacking() {
-        setLoading(true);
+        const cachedPacking = loadPackingCache(tripId);
+
+        if (cachedPacking) {
+            setTrip(cachedPacking.trip);
+            setLists(cachedPacking.lists);
+            setItemsByList(cachedPacking.itemsByList);
+            setActiveListId((current) => {
+                if (
+                    requestedListId &&
+                    cachedPacking.lists.some((list) => list.id === requestedListId)
+                ) {
+                    return requestedListId;
+                }
+
+                return current ?? cachedPacking.lists[0]?.id ?? null;
+            });
+            setLoading(false);
+
+            if (typeof navigator !== "undefined" && !navigator.onLine) {
+                return;
+            }
+        } else {
+            setLoading(true);
+
+            if (typeof navigator !== "undefined" && !navigator.onLine) {
+                setLoading(false);
+                return;
+            }
+        }
 
         try {
             const tripData = await getTripForPacking(tripId);
@@ -122,7 +156,10 @@ export default function PackingBoard({ tripId }: Props) {
 
             setLists(packingLists);
             setActiveListId((current) => {
-                if (requestedListId && packingLists.some((list) => list.id === requestedListId)) {
+                if (
+                    requestedListId &&
+                    packingLists.some((list) => list.id === requestedListId)
+                ) {
                     return requestedListId;
                 }
 
@@ -136,7 +173,11 @@ export default function PackingBoard({ tripId }: Props) {
                 })
             );
 
-            setItemsByList(Object.fromEntries(itemEntries));
+            const nextItemsByList = Object.fromEntries(itemEntries);
+
+            setItemsByList(nextItemsByList);
+
+            savePackingCache(tripId, tripData, packingLists, nextItemsByList);
         } catch (error) {
             console.error(error);
             setWeatherSummary(null);
@@ -282,21 +323,42 @@ export default function PackingBoard({ tripId }: Props) {
             "Balanced"
         );
     const [activities, setActivities] = useState<string[]>([]);
+
     async function handleToggleItem(item: PackingListItem) {
         const nextPacked = !item.packed;
+        const now = new Date().toISOString();
+
+        let nextItemsByList: Record<string, PackingListItem[]> = {};
 
         setItemsByList((current) => {
             const listItems = current[item.packing_list_id] ?? [];
 
-            return {
+            nextItemsByList = {
                 ...current,
                 [item.packing_list_id]: listItems.map((currentItem) =>
                     currentItem.id === item.id
-                        ? { ...currentItem, packed: nextPacked }
+                        ? {
+                            ...currentItem,
+                            packed: nextPacked,
+                            packed_at: nextPacked ? now : null,
+                            updated_at: now,
+                        }
                         : currentItem
                 ),
             };
+
+            updateCachedPackingItem(tripId, item.id, {
+                packed: nextPacked,
+                packed_at: nextPacked ? now : null,
+                updated_at: now,
+            });
+
+            return nextItemsByList;
         });
+
+        if (typeof navigator !== "undefined" && !navigator.onLine) {
+            return;
+        }
 
         try {
             await togglePackedItem({
