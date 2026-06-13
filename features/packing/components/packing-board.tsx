@@ -52,6 +52,11 @@ import {
     getPreferenceAdjustedQuantity,
 } from "../lib/packing-template-engine";
 
+import {
+    enqueueTogglePackedMutation,
+    syncPendingPackingMutations,
+} from "../lib/packing-sync-queue";
+
 type TripForPacking = Awaited<ReturnType<typeof getTripForPacking>>;
 
 type Props = {
@@ -188,6 +193,19 @@ export default function PackingBoard({ tripId }: Props) {
 
     useEffect(() => {
         loadPacking();
+
+        async function handleOnline() {
+            if (!window.navigator.onLine) return;
+
+            await syncPendingPackingMutations();
+            await loadPacking();
+        }
+
+        window.addEventListener("online", handleOnline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+        };
     }, [tripId]);
 
     async function initializeFirstPackingList() {
@@ -357,6 +375,12 @@ export default function PackingBoard({ tripId }: Props) {
         });
 
         if (typeof navigator !== "undefined" && !navigator.onLine) {
+            enqueueTogglePackedMutation({
+                tripId,
+                itemId: item.id,
+                packed: nextPacked,
+            });
+
             return;
         }
 
@@ -366,8 +390,13 @@ export default function PackingBoard({ tripId }: Props) {
                 packed: nextPacked,
             });
         } catch (error) {
-            console.error(error);
-            await loadPacking();
+            console.warn("Packing change saved locally and will sync later.", error);
+
+            enqueueTogglePackedMutation({
+                tripId,
+                itemId: item.id,
+                packed: nextPacked,
+            });
         }
     }
 
