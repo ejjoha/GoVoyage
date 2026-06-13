@@ -186,7 +186,7 @@ export default function TripHero({
 
             <div className="space-y-3">
               <Link
-                href={tripId ? `/trips/${tripId}/pack-list` : "#"}
+                href={tripId ? `/trips/${tripId}/packing` : "#"}
                 className="block rounded-3xl bg-white p-4 shadow-sm transition active:scale-[0.98]"
               >
                 <div className="flex items-start justify-between gap-4">
