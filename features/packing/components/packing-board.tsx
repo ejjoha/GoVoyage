@@ -11,6 +11,7 @@ import FloatingAddPackingItemButton from "./floating-add-packing-item-button";
 import { AnimatePresence, motion } from "framer-motion";
 import { kidsStarterItems } from "../lib/kids-packing-items";
 import { usePackingData } from "../hooks/use-packing-data";
+import { usePackingPreferences } from "../hooks/use-packing-preferences";
 
 import type {
     PackingList,
@@ -76,6 +77,14 @@ export default function PackingBoard({ tripId }: Props) {
     });
     const [initializingFirstList, setInitializingFirstList] = useState(false);
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+    const {
+        laundry,
+        packingPreference,
+        activities,
+    } = usePackingPreferences({
+        tripId,
+        categoryModalOpen,
+    });
     const [itemPendingRemove, setItemPendingRemove] =
         useState<PackingListItem | null>(null);
     const [listActionPending, setListActionPending] =
@@ -150,18 +159,7 @@ export default function PackingBoard({ tripId }: Props) {
             }, remaining);
         }
     }
-    useEffect(() => {
-        if (!categoryModalOpen) return;
 
-        const saved = localStorage.getItem(`packing-activities-${tripId}`);
-
-        if (!saved) {
-            setActivities([]);
-            return;
-        }
-
-        setActivities(JSON.parse(saved));
-    }, [categoryModalOpen, tripId]);
     useEffect(() => {
         if (
             !loading &&
@@ -178,20 +176,6 @@ export default function PackingBoard({ tripId }: Props) {
         initializingFirstList,
     ]);
 
-    useEffect(() => {
-        const saved = localStorage.getItem(
-            `packing-preference-${tripId}`
-        );
-
-        if (
-            saved === "Light" ||
-            saved === "Balanced" ||
-            saved === "Pack Everything"
-        ) {
-            setPackingPreference(saved);
-        }
-    }, [tripId, categoryModalOpen]);
-
     const allItems = useMemo(
         () => Object.values(itemsByList).flat(),
         [itemsByList]
@@ -200,26 +184,6 @@ export default function PackingBoard({ tripId }: Props) {
     const packedCount = allItems.filter((item) => item.packed).length;
     const totalCount = allItems.length;
     const activeList = lists.find((list) => list.id === activeListId) ?? lists[0] ?? null;
-    const [laundry, setLaundry] = useState<"Available" | "Hotel service" | "Not available">(() => {
-        if (typeof window === "undefined") return "Not available";
-
-        const saved = localStorage.getItem(`packing-laundry-${tripId}`);
-
-        if (
-            saved === "Available" ||
-            saved === "Hotel service" ||
-            saved === "Not available"
-        ) {
-            return saved;
-        }
-
-        return "Not available";
-    });
-    const [packingPreference, setPackingPreference] =
-        useState<"Light" | "Balanced" | "Pack Everything">(
-            "Balanced"
-        );
-    const [activities, setActivities] = useState<string[]>([]);
 
     async function handleToggleItem(item: PackingListItem) {
         const nextPacked = !item.packed;
@@ -676,7 +640,6 @@ export default function PackingBoard({ tripId }: Props) {
                 onClose={() => setCategoryModalOpen(false)}
                 onCreated={(createdItems) => {
                     if (!activeList) return;
-
                     setItemsByList((current) => ({
                         ...current,
                         [activeList.id]: [
@@ -684,7 +647,6 @@ export default function PackingBoard({ tripId }: Props) {
                             ...createdItems,
                         ],
                     }));
-
                 }}
                 onItemsHidden={(itemIds) => {
                     if (!activeList) return;
