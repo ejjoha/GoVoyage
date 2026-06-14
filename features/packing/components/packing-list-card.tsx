@@ -4,6 +4,26 @@ import { useState } from "react";
 import type { PackingList, PackingListItem } from "../types/packing.types";
 import PackingCategorySection from "./packing-category-section";
 
+const CATEGORY_ORDER = [
+    "Essentials",
+    "Tech",
+    "Toiletries",
+    "Clothing",
+    "Footwear",
+    "Outdoor & Hiking",
+    "Comfort & Travel",
+    "Dining & Events",
+    "Weather",
+    "City & Business",
+    "Other",
+];
+
+function getCategorySortIndex(category: string) {
+    const index = CATEGORY_ORDER.indexOf(category);
+
+    return index === -1 ? CATEGORY_ORDER.length : index;
+}
+
 type Props = {
     list: PackingList;
     items: PackingListItem[];
@@ -52,18 +72,29 @@ export default function PackingListCard({
                 {open && (
                     <div className="mt-1">
                         <div className="space-y-4">
-                            {Object.entries(groupedItems).map(([category, categoryItems]) => (
-                                <PackingCategorySection
-                                    key={category}
-                                    category={category}
-                                    items={categoryItems}
-                                    onToggleItem={onToggleItem}
-                                    onDecreaseQuantity={onDecreaseQuantity}
-                                    onIncreaseQuantity={onIncreaseQuantity}
-                                    onRemoveItem={onRemoveItem}
-                                    resetSwipeKey={resetSwipeKey}
-                                />
-                            ))}
+                            {Object.entries(groupedItems)
+                                .sort(([categoryA], [categoryB]) => {
+                                    const sortIndexA = getCategorySortIndex(categoryA);
+                                    const sortIndexB = getCategorySortIndex(categoryB);
+
+                                    if (sortIndexA !== sortIndexB) {
+                                        return sortIndexA - sortIndexB;
+                                    }
+
+                                    return categoryA.localeCompare(categoryB);
+                                })
+                                .map(([category, categoryItems]) => (
+                                    <PackingCategorySection
+                                        key={category}
+                                        category={category}
+                                        items={categoryItems}
+                                        onToggleItem={onToggleItem}
+                                        onDecreaseQuantity={onDecreaseQuantity}
+                                        onIncreaseQuantity={onIncreaseQuantity}
+                                        onRemoveItem={onRemoveItem}
+                                        resetSwipeKey={resetSwipeKey}
+                                    />
+                                ))}
                         </div>
 
                         <div className="mt-5 flex justify-end gap-4">
