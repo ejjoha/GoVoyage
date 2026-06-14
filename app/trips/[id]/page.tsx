@@ -29,6 +29,12 @@ import {
 } from "./api";
 
 import {
+  emptyBookingFormValues,
+  getBookingFormValuesFromBooking,
+  type BookingFormValues,
+} from "./lib/booking-form-state";
+
+import {
   getFilteredBookings,
   getGroupedBookings,
   getHotelStays,
@@ -142,21 +148,18 @@ export default function TripPage() {
   const [bookingFormError, setBookingFormError] = useState("");
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState("");
 
-  const [newTitle, setNewTitle] = useState("");
-  const [newType, setNewType] = useState<BookingType>("flight");
-  const [newStartTime, setNewStartTime] = useState("");
-  const [newEndTime, setNewEndTime] = useState("");
-  const [newLocation, setNewLocation] = useState("");
-  const [newConfirmation, setNewConfirmation] = useState("");
-  const [newNotes, setNewNotes] = useState("");
-  const [newAirline, setNewAirline] = useState("");
-  const [newFlightNumber, setNewFlightNumber] = useState("");
-  const [newDeparture, setNewDeparture] = useState("");
-  const [newArrival, setNewArrival] = useState("");
-  const [newHotelName, setNewHotelName] = useState("");
-  const [newAddress, setNewAddress] = useState("");
-  const [newOrigin, setNewOrigin] = useState("");
-  const [newDestinationPoint, setNewDestinationPoint] = useState("");
+  const [bookingFormValues, setBookingFormValues] =
+    useState<BookingFormValues>(emptyBookingFormValues);
+
+  function updateBookingFormField<K extends keyof BookingFormValues>(
+    field: K,
+    value: BookingFormValues[K]
+  ) {
+    setBookingFormValues((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
   const [showStaysSheet, setShowStaysSheet] = useState(false);
   const [confirmState, setConfirmState] = useState<ConfirmState>({
     open: false,
@@ -658,41 +661,12 @@ export default function TripPage() {
     setShowTripForm(false);
     setExpandedId(null);
     setBookingFormError("");
-
-    setNewTitle(booking.title || "");
-    setNewType(booking.type);
-    setNewStartTime(formatForDateTimeLocal(booking.start_time));
-    setNewEndTime(formatForDateTimeLocal(booking.end_time));
-    setNewLocation(booking.location || "");
-    setNewConfirmation(booking.confirmation_code || "");
-    setNewNotes(booking.notes || "");
-    setNewAirline(booking.airline || "");
-    setNewFlightNumber(booking.flight_number || "");
-    setNewDeparture(booking.departure_airport || "");
-    setNewArrival(booking.arrival_airport || "");
-    setNewHotelName(booking.hotel_name || "");
-    setNewAddress(booking.address || "");
-    setNewOrigin(booking.origin || "");
-    setNewDestinationPoint(booking.destination || "");
+    setBookingFormValues(getBookingFormValuesFromBooking(booking));
   }
 
   function resetBookingForm() {
     setEditingBookingId(null);
-    setNewTitle("");
-    setNewType("flight");
-    setNewStartTime("");
-    setNewEndTime("");
-    setNewLocation("");
-    setNewConfirmation("");
-    setNewNotes("");
-    setNewAirline("");
-    setNewFlightNumber("");
-    setNewDeparture("");
-    setNewArrival("");
-    setNewHotelName("");
-    setNewAddress("");
-    setNewOrigin("");
-    setNewDestinationPoint("");
+    setBookingFormValues(emptyBookingFormValues);
     setBookingFormError("");
     setShowBookingForm(false);
   }
@@ -706,65 +680,76 @@ export default function TripPage() {
   async function handleSaveBooking(e: React.FormEvent) {
     e.preventDefault();
     setBookingFormError("");
-
-    const resolvedTitle =
-      newType === "hotel" ? newHotelName.trim() : newTitle.trim();
+    const {
+      title,
+      type,
+      startTime,
+      endTime,
+      location,
+      confirmation,
+      notes,
+      airline,
+      flightNumber,
+      departure,
+      arrival,
+      hotelName,
+      address,
+      origin,
+      destinationPoint,
+    } = bookingFormValues;
+    const resolvedTitle = type === "hotel" ? hotelName.trim() : title.trim();
 
     if (!resolvedTitle) {
       setBookingFormError(
-        newType === "hotel"
+        type === "hotel"
           ? "Please fill in the hotel name."
           : "Please fill in the booking title."
       );
       return;
     }
 
-    if (!newStartTime) {
+    if (!startTime) {
       setBookingFormError(
-        newType === "flight"
+        type === "flight"
           ? "Please fill in the departure date and time."
-          : `Please fill in ${getStartLabel(newType).toLowerCase()}.`
+          : `Please fill in ${getStartLabel(type).toLowerCase()}.`
       );
       return;
     }
 
-    if (newEndTime && newEndTime < newStartTime) {
+    if (endTime && endTime < startTime) {
       setBookingFormError(
-        newType === "flight"
+        type === "flight"
           ? "Arrival cannot be before departure."
           : "End time cannot be before start time."
       );
       return;
     }
 
-    if (
-      newType === "transport" &&
-      (!newOrigin.trim() || !newDestinationPoint.trim())
-    ) {
+    if (type === "transport" && (!origin.trim() || !destinationPoint.trim())) {
       setBookingFormError("Please fill in both origin and destination.");
       return;
     }
 
     const payload = {
-      type: newType,
+      type,
       title: resolvedTitle,
-      start_time: newStartTime,
-      end_time: newEndTime || null,
+      start_time: startTime,
+      end_time: endTime || null,
       location:
-        newType === "flight" || newType === "hotel" || newType === "transport"
+        type === "flight" || type === "hotel" || type === "transport"
           ? null
-          : newLocation.trim() || null,
-      confirmation_code: newConfirmation.trim() || null,
-      notes: newNotes.trim() || null,
-      airline: newAirline.trim() || null,
-      flight_number: newFlightNumber.trim() || null,
-      departure_airport: newDeparture.trim() || null,
-      arrival_airport: newArrival.trim() || null,
-      hotel_name: newHotelName.trim() || null,
-      address: newAddress.trim() || null,
-      origin: newType === "transport" ? newOrigin.trim() || null : null,
-      destination:
-        newType === "transport" ? newDestinationPoint.trim() || null : null,
+          : location.trim() || null,
+      confirmation_code: confirmation.trim() || null,
+      notes: notes.trim() || null,
+      airline: airline.trim() || null,
+      flight_number: flightNumber.trim() || null,
+      departure_airport: departure.trim() || null,
+      arrival_airport: arrival.trim() || null,
+      hotel_name: hotelName.trim() || null,
+      address: address.trim() || null,
+      origin: type === "transport" ? origin.trim() || null : null,
+      destination: type === "transport" ? destinationPoint.trim() || null : null,
     };
 
     let error = null;
@@ -1137,36 +1122,113 @@ export default function TripPage() {
                 bookingFormRef={bookingFormRef}
                 editingBookingId={editingBookingId}
                 bookingFormError={bookingFormError}
-                newTitle={newTitle}
-                setNewTitle={setNewTitle}
-                newType={newType}
-                setNewType={setNewType}
-                newStartTime={newStartTime}
-                setNewStartTime={setNewStartTime}
-                newEndTime={newEndTime}
-                setNewEndTime={setNewEndTime}
-                newLocation={newLocation}
-                setNewLocation={setNewLocation}
-                newConfirmation={newConfirmation}
-                setNewConfirmation={setNewConfirmation}
-                newNotes={newNotes}
-                setNewNotes={setNewNotes}
-                newAirline={newAirline}
-                setNewAirline={setNewAirline}
-                newFlightNumber={newFlightNumber}
-                setNewFlightNumber={setNewFlightNumber}
-                newDeparture={newDeparture}
-                setNewDeparture={setNewDeparture}
-                newArrival={newArrival}
-                setNewArrival={setNewArrival}
-                newHotelName={newHotelName}
-                setNewHotelName={setNewHotelName}
-                newAddress={newAddress}
-                setNewAddress={setNewAddress}
-                newOrigin={newOrigin}
-                setNewOrigin={setNewOrigin}
-                newDestinationPoint={newDestinationPoint}
-                setNewDestinationPoint={setNewDestinationPoint}
+                newTitle={bookingFormValues.title}
+                setNewTitle={(value) =>
+                  updateBookingFormField(
+                    "title",
+                    typeof value === "function" ? value(bookingFormValues.title) : value
+                  )
+                }
+                newType={bookingFormValues.type}
+                setNewType={(value) =>
+                  updateBookingFormField(
+                    "type",
+                    typeof value === "function" ? value(bookingFormValues.type) : value
+                  )
+                }
+                newStartTime={bookingFormValues.startTime}
+                setNewStartTime={(value) =>
+                  updateBookingFormField(
+                    "startTime",
+                    typeof value === "function" ? value(bookingFormValues.startTime) : value
+                  )
+                }
+                newEndTime={bookingFormValues.endTime}
+                setNewEndTime={(value) =>
+                  updateBookingFormField(
+                    "endTime",
+                    typeof value === "function" ? value(bookingFormValues.endTime) : value
+                  )
+                }
+                newLocation={bookingFormValues.location}
+                setNewLocation={(value) =>
+                  updateBookingFormField(
+                    "location",
+                    typeof value === "function" ? value(bookingFormValues.location) : value
+                  )
+                }
+                newConfirmation={bookingFormValues.confirmation}
+                setNewConfirmation={(value) =>
+                  updateBookingFormField(
+                    "confirmation",
+                    typeof value === "function" ? value(bookingFormValues.confirmation) : value
+                  )
+                }
+                newNotes={bookingFormValues.notes}
+                setNewNotes={(value) =>
+                  updateBookingFormField(
+                    "notes",
+                    typeof value === "function" ? value(bookingFormValues.notes) : value
+                  )
+                }
+                newAirline={bookingFormValues.airline}
+                setNewAirline={(value) =>
+                  updateBookingFormField(
+                    "airline",
+                    typeof value === "function" ? value(bookingFormValues.airline) : value
+                  )
+                }
+                newFlightNumber={bookingFormValues.flightNumber}
+                setNewFlightNumber={(value) =>
+                  updateBookingFormField(
+                    "flightNumber",
+                    typeof value === "function" ? value(bookingFormValues.flightNumber) : value
+                  )
+                }
+                newDeparture={bookingFormValues.departure}
+                setNewDeparture={(value) =>
+                  updateBookingFormField(
+                    "departure",
+                    typeof value === "function" ? value(bookingFormValues.departure) : value
+                  )
+                }
+                newArrival={bookingFormValues.arrival}
+                setNewArrival={(value) =>
+                  updateBookingFormField(
+                    "arrival",
+                    typeof value === "function" ? value(bookingFormValues.arrival) : value
+                  )
+                }
+                newHotelName={bookingFormValues.hotelName}
+                setNewHotelName={(value) =>
+                  updateBookingFormField(
+                    "hotelName",
+                    typeof value === "function" ? value(bookingFormValues.hotelName) : value
+                  )
+                }
+                newAddress={bookingFormValues.address}
+                setNewAddress={(value) =>
+                  updateBookingFormField(
+                    "address",
+                    typeof value === "function" ? value(bookingFormValues.address) : value
+                  )
+                }
+                newOrigin={bookingFormValues.origin}
+                setNewOrigin={(value) =>
+                  updateBookingFormField(
+                    "origin",
+                    typeof value === "function" ? value(bookingFormValues.origin) : value
+                  )
+                }
+                newDestinationPoint={bookingFormValues.destinationPoint}
+                setNewDestinationPoint={(value) =>
+                  updateBookingFormField(
+                    "destinationPoint",
+                    typeof value === "function"
+                      ? value(bookingFormValues.destinationPoint)
+                      : value
+                  )
+                }
                 onSubmit={handleSaveBooking}
                 onCancel={resetBookingForm}
               />
