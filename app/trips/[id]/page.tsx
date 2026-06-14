@@ -32,6 +32,8 @@ import {
 import {
   emptyBookingFormValues,
   getBookingFormValuesFromBooking,
+  getSaveBookingPayload,
+  validateBookingFormValues,
   type BookingFormValues,
 } from "./lib/booking-form-state";
 
@@ -684,87 +686,26 @@ export default function TripPage() {
   async function handleSaveBooking(e: React.FormEvent) {
     e.preventDefault();
     setBookingFormError("");
-    const {
-      title,
-      type,
-      startTime,
-      endTime,
-      location,
-      confirmation,
-      notes,
-      airline,
-      flightNumber,
-      departure,
-      arrival,
-      hotelName,
-      address,
-      origin,
-      destinationPoint,
-    } = bookingFormValues;
-    const resolvedTitle = type === "hotel" ? hotelName.trim() : title.trim();
 
-    if (!resolvedTitle) {
-      setBookingFormError(
-        type === "hotel"
-          ? "Please fill in the hotel name."
-          : "Please fill in the booking title."
-      );
+    const validationError = validateBookingFormValues(
+      bookingFormValues,
+      getStartLabel
+    );
+
+    if (validationError) {
+      setBookingFormError(validationError);
       return;
     }
 
-    if (!startTime) {
-      setBookingFormError(
-        type === "flight"
-          ? "Please fill in the departure date and time."
-          : `Please fill in ${getStartLabel(type).toLowerCase()}.`
-      );
-      return;
-    }
-
-    if (endTime && endTime < startTime) {
-      setBookingFormError(
-        type === "flight"
-          ? "Arrival cannot be before departure."
-          : "End time cannot be before start time."
-      );
-      return;
-    }
-
-    if (type === "transport" && (!origin.trim() || !destinationPoint.trim())) {
-      setBookingFormError("Please fill in both origin and destination.");
-      return;
-    }
-
-    const payload = {
-      type,
-      title: resolvedTitle,
-      start_time: startTime,
-      end_time: endTime || null,
-      location:
-        type === "flight" || type === "hotel" || type === "transport"
-          ? null
-          : location.trim() || null,
-      confirmation_code: confirmation.trim() || null,
-      notes: notes.trim() || null,
-      airline: airline.trim() || null,
-      flight_number: flightNumber.trim() || null,
-      departure_airport: departure.trim() || null,
-      arrival_airport: arrival.trim() || null,
-      hotel_name: hotelName.trim() || null,
-      address: address.trim() || null,
-      origin: type === "transport" ? origin.trim() || null : null,
-      destination: type === "transport" ? destinationPoint.trim() || null : null,
-    };
+    const payload = getSaveBookingPayload(bookingFormValues);
 
     let error = null;
 
     if (editingBookingId) {
       const response = await updateBooking(editingBookingId, payload);
-
       error = response.error;
     } else {
       const response = await createBooking(id, payload);
-
       error = response.error;
     }
 
