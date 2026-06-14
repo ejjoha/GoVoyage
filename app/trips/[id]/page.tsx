@@ -12,19 +12,17 @@ import Link from "next/link";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import TripSetupSheet from "./components/TripSetupSheet";
 
+import { useTripData } from "./hooks/useTripData";
+
 import {
   createBooking,
   createTripInvite,
   deleteBookingById,
   deleteTrip,
   deleteTripInvite,
-  getTrip,
-  getTripInvites,
-  leaveTripByEmail,
   leaveTripAsCollaborator,
   updateBooking,
   updateTrip,
-  getTripCollaborators,
   removeTripCollaborator,
   transferTripOwnership,
   type TripInvite,
@@ -36,9 +34,7 @@ import TripHero from "./components/TripHero";
 import EditTripModal from "./components/EditTripModal";
 import ConfirmModal from "./components/ConfirmModal";
 import type {
-  Trip,
   TripMember,
-  TripCollaborator,
   Booking,
   BookingType,
   BookingFilter,
@@ -70,13 +66,6 @@ export default function TripPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = Number(params.id);
-
-  const [trip, setTrip] = useState<Trip | null>(null);
-  const [isTripLoading, setIsTripLoading] = useState(true);
-
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
-  const [currentUserDisplayName, setCurrentUserDisplayName] = useState("");
 
   const [showTripForm, setShowTripForm] = useState(false);
   const [tripSuccessMessage, setTripSuccessMessage] = useState("");
@@ -115,8 +104,22 @@ export default function TripPage() {
   const [inviteName, setInviteName] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
 
-  const [tripInvites, setTripInvites] = useState<TripInvite[]>([]);
-  const [tripCollaborators, setTripCollaborators] = useState<TripCollaborator[]>([]);
+  const {
+    trip,
+    setTrip,
+    isTripLoading,
+    setIsTripLoading,
+    currentUserId,
+    currentUserRole,
+    currentUserDisplayName,
+    tripInvites,
+    tripCollaborators,
+    applyTripToState,
+    fetchTrip,
+    fetchTripInvites,
+    fetchTripCollaborators,
+    loadCurrentUser,
+  } = useTripData(id);
 
   const {
     bookings,
@@ -154,51 +157,6 @@ export default function TripPage() {
 
   const bookingFormRef = useRef<HTMLFormElement | null>(null);
   const timelineRef = useRef<HTMLDivElement | null>(null);
-
-  const tripCacheKey = `cached-trip-${id}`;
-
-  function applyTripToState(tripData: Trip) {
-    setTrip(tripData);
-
-    setEditTripTitle(tripData.title || "");
-    setEditTripDestination(tripData.destination || "");
-    setEditTripImageUrl(tripData.image_url || "");
-    setEditTripStartDate(formatForDateInput(tripData.start_date));
-    setEditTripEndDate(formatForDateInput(tripData.end_date));
-
-    setEditCurrencies(
-      tripData.currencies?.length
-        ? tripData.currencies
-        : ["NOK", "EUR", "USD"]
-    );
-  }
-
-  function loadCachedTrip() {
-    try {
-      const cached = localStorage.getItem(tripCacheKey);
-
-      if (!cached) {
-        return false;
-      }
-
-      const parsed = JSON.parse(cached) as Trip;
-      applyTripToState(parsed);
-      return true;
-    } catch (error) {
-      console.error("Error loading cached trip:", error);
-      localStorage.removeItem(tripCacheKey);
-      return false;
-    }
-  }
-
-  function saveCachedTrip(tripData: Trip) {
-    try {
-      localStorage.setItem(tripCacheKey, JSON.stringify(tripData));
-    } catch (error) {
-      console.error("Error saving cached trip:", error);
-    }
-  }
-
 
   function openConfirm(config: Omit<Extract<ConfirmState, { open: true }>, "open">) {
     setConfirmState({
@@ -315,90 +273,17 @@ export default function TripPage() {
     fetchTripMembers();
   }
 
-  async function fetchTripInvites() {
-    const { data, error } = await getTripInvites(id);
-
-    if (error) {
-      console.error("Error loading trip invites:", error);
-      setTripInvites([]);
-      return;
-    }
-
-    setTripInvites(data || []);
-  }
-
-  async function fetchTrip() {
-    setIsTripLoading(true);
-
-    const { data, error } = await getTrip(id);
-
-    if (error) {
-      console.error("Error loading trip:", error);
-
-      if (!navigator.onLine && loadCachedTrip()) {
-        setTripFormError("You’re offline, so this trip is shown from your saved cache.");
-      } else {
-        setTrip(null);
-      }
-
-      setIsTripLoading(false);
-      return;
-    }
-
-    if (!data) {
-      if (!navigator.onLine && loadCachedTrip()) {
-        setTripFormError("You’re offline, so this trip is shown from your saved cache.");
-      } else {
-        setTrip(null);
-      }
-
-      setIsTripLoading(false);
-      return;
-    }
-
-    const tripData = data;
-
-    applyTripToState(tripData);
-    saveCachedTrip(tripData);
-
-    setIsTripLoading(false);
-  }
-
   useEffect(() => {
     async function checkAuthAndLoad() {
       if (!Number.isFinite(id)) {
         setIsTripLoading(false);
         return;
       }
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const user = await loadCurrentUser();
       if (!user) {
         router.push("/login");
         return;
       }
-
-      setCurrentUserId(user.id);
-
-      const { data: profileRow } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      setCurrentUserDisplayName(profileRow?.display_name || user.email || "Someone");
-
-      const { data: collaboratorRow } = await supabase
-        .from("trip_collaborators")
-        .select("role")
-        .eq("trip_id", id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      setCurrentUserRole(collaboratorRow?.role || null);
-
       fetchTrip();
       fetchBookings();
       fetchTripMembers();
@@ -721,18 +606,6 @@ export default function TripPage() {
         await fetchTripCollaborators();
       },
     });
-  }
-
-  async function fetchTripCollaborators() {
-    const { data, error } = await getTripCollaborators(id);
-
-    if (error) {
-      console.error("Error loading trip collaborators:", error);
-      setTripCollaborators([]);
-      return;
-    }
-
-    setTripCollaborators(data || []);
   }
 
   function deleteBooking(bookingId: number) {
