@@ -11,6 +11,7 @@ import { useTripBookings } from "./hooks/useTripBookings";
 import Link from "next/link";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import TripSetupSheet from "./components/TripSetupSheet";
+import { getUpdateTripPayload } from "./lib/trip-form-state";
 
 import { useTripData } from "./hooks/useTripData";
 import { useTripPermissions } from "./hooks/useTripPermissions";
@@ -382,14 +383,17 @@ export default function TripPage() {
       return;
     }
 
-    const { error } = await updateTrip(id, {
-      title: editTripTitle.trim(),
-      destination: editTripDestination.trim(),
-      image_url: editTripImageUrl.trim() || null,
-      start_date: editTripStartDate,
-      end_date: editTripEndDate,
-      currencies: editCurrencies,
-    });
+    const { error } = await updateTrip(
+      id,
+      getUpdateTripPayload({
+        title: editTripTitle,
+        destination: editTripDestination,
+        imageUrl: editTripImageUrl,
+        startDate: editTripStartDate,
+        endDate: editTripEndDate,
+        currencies: editCurrencies,
+      })
+    );
 
     if (error) {
       console.error("Error updating trip:", error);
@@ -1323,14 +1327,17 @@ export default function TripPage() {
             setShowTripSetupSheet(true);
           }}
           onSave={async () => {
-            const { error } = await updateTrip(id, {
-              title: editTripTitle.trim(),
-              destination: editTripDestination.trim(),
-              image_url: editTripImageUrl.trim() || null,
-              start_date: editTripStartDate,
-              end_date: editTripEndDate,
-              currencies: editCurrencies,
-            });
+            const { error } = await updateTrip(
+              id,
+              getUpdateTripPayload({
+                title: editTripTitle,
+                destination: editTripDestination,
+                imageUrl: editTripImageUrl,
+                startDate: editTripStartDate,
+                endDate: editTripEndDate,
+                currencies: editCurrencies,
+              })
+            );
 
             if (error) {
               console.error("Error updating currencies:", error);
