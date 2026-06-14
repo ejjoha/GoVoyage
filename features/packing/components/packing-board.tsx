@@ -25,6 +25,16 @@ import {
     hidePackingListItems,
 } from "../lib/packing-mutations";
 
+import {
+    appendItemToList,
+    appendItemsToList,
+    removeItemFromList,
+    removeItemsFromList,
+    removeListFromItemsByList,
+    replaceListItems,
+    updateItemInList,
+} from "../lib/packing-state";
+
 import PackingNextActions from "./packing-next-actions";
 
 import {
@@ -189,23 +199,13 @@ export default function PackingBoard({ tripId }: Props) {
         const nextPacked = !item.packed;
         const now = new Date().toISOString();
 
-        setItemsByList((current) => {
-            const listItems = current[item.packing_list_id] ?? [];
-
-            return {
-                ...current,
-                [item.packing_list_id]: listItems.map((currentItem) =>
-                    currentItem.id === item.id
-                        ? {
-                            ...currentItem,
-                            packed: nextPacked,
-                            packed_at: nextPacked ? now : null,
-                            updated_at: now,
-                        }
-                        : currentItem
-                ),
-            };
-        });
+        setItemsByList((current) =>
+            updateItemInList(current, item.packing_list_id, item.id, {
+                packed: nextPacked,
+                packed_at: nextPacked ? now : null,
+                updated_at: now,
+            })
+        );
 
         await togglePackedOfflineAware({
             tripId,
@@ -255,10 +255,9 @@ export default function PackingBoard({ tripId }: Props) {
                         onSelectList={setActiveListId}
                         onCreated={(list, createdItems = []) => {
                             setLists((current) => [...current, list]);
-                            setItemsByList((current) => ({
-                                ...current,
-                                [list.id]: createdItems,
-                            }));
+                            setItemsByList((current) =>
+                                replaceListItems(current, list.id, createdItems)
+                            );
                             setActiveListId(list.id);
                         }}
                         onOpenCategories={() => setCategoryModalOpen(true)}
@@ -270,10 +269,9 @@ export default function PackingBoard({ tripId }: Props) {
                         resetSwipeKey={resetSwipeKey}
                         onToggleItem={handleToggleItem}
                         onCreateItem={(listId, item) => {
-                            setItemsByList((current) => ({
-                                ...current,
-                                [listId]: [...(current[listId] ?? []), item],
-                            }));
+                            setItemsByList((current) =>
+                                appendItemToList(current, listId, item)
+                            );
                         }}
                         onDecreaseQuantity={async (item) => {
                             if (item.quantity <= 1) {
@@ -284,19 +282,12 @@ export default function PackingBoard({ tripId }: Props) {
                             const nextQuantity = Math.max(1, item.quantity - 1);
                             const now = new Date().toISOString();
 
-                            setItemsByList((current) => ({
-                                ...current,
-                                [item.packing_list_id]: (current[item.packing_list_id] ?? []).map(
-                                    (currentItem) =>
-                                        currentItem.id === item.id
-                                            ? {
-                                                ...currentItem,
-                                                quantity: nextQuantity,
-                                                updated_at: now,
-                                            }
-                                            : currentItem
-                                ),
-                            }));
+                            setItemsByList((current) =>
+                                updateItemInList(current, item.packing_list_id, item.id, {
+                                    quantity: nextQuantity,
+                                    updated_at: now,
+                                })
+                            );
 
                             await updateQuantityOfflineAware({
                                 tripId,
@@ -309,19 +300,12 @@ export default function PackingBoard({ tripId }: Props) {
                             const nextQuantity = item.quantity + 1;
                             const now = new Date().toISOString();
 
-                            setItemsByList((current) => ({
-                                ...current,
-                                [item.packing_list_id]: (current[item.packing_list_id] ?? []).map(
-                                    (currentItem) =>
-                                        currentItem.id === item.id
-                                            ? {
-                                                ...currentItem,
-                                                quantity: nextQuantity,
-                                                updated_at: now,
-                                            }
-                                            : currentItem
-                                ),
-                            }));
+                            setItemsByList((current) =>
+                                updateItemInList(current, item.packing_list_id, item.id, {
+                                    quantity: nextQuantity,
+                                    updated_at: now,
+                                })
+                            );
 
                             await updateQuantityOfflineAware({
                                 tripId,
@@ -350,10 +334,9 @@ export default function PackingBoard({ tripId }: Props) {
                         packingListId={activeList.id}
                         existingItems={itemsByList[activeList.id] ?? []}
                         onCreated={(item) => {
-                            setItemsByList((current) => ({
-                                ...current,
-                                [activeList.id]: [...(current[activeList.id] ?? []), item],
-                            }));
+                            setItemsByList((current) =>
+                                appendItemToList(current, activeList.id, item)
+                            );
                         }}
                     />
                 </div>
@@ -470,12 +453,9 @@ export default function PackingBoard({ tripId }: Props) {
 
                                         setItemPendingRemove(null);
 
-                                        setItemsByList((current) => ({
-                                            ...current,
-                                            [item.packing_list_id]: (
-                                                current[item.packing_list_id] ?? []
-                                            ).filter((currentItem) => currentItem.id !== item.id),
-                                        }));
+                                        setItemsByList((current) =>
+                                            removeItemFromList(current, item.packing_list_id, item.id)
+                                        );
 
                                         await hideItemOfflineAware({
                                             tripId,
@@ -549,11 +529,9 @@ export default function PackingBoard({ tripId }: Props) {
                                                     current.filter((existing) => existing.id !== listId)
                                                 );
 
-                                                setItemsByList((current) => {
-                                                    const next = { ...current };
-                                                    delete next[listId];
-                                                    return next;
-                                                });
+                                                setItemsByList((current) =>
+                                                    removeListFromItemsByList(current, listId)
+                                                );
 
                                                 setActiveListId((current) => {
                                                     if (current !== listId) return current;
@@ -608,10 +586,9 @@ export default function PackingBoard({ tripId }: Props) {
                                                 items: resetItems,
                                             });
 
-                                            setItemsByList((current) => ({
-                                                ...current,
-                                                [listId]: createdItems,
-                                            }));
+                                            setItemsByList((current) =>
+                                                replaceListItems(current, listId, createdItems)
+                                            );
 
                                             setResetSwipeKey((current) => current + 1);
                                         } catch (error) {
@@ -640,23 +617,16 @@ export default function PackingBoard({ tripId }: Props) {
                 onClose={() => setCategoryModalOpen(false)}
                 onCreated={(createdItems) => {
                     if (!activeList) return;
-                    setItemsByList((current) => ({
-                        ...current,
-                        [activeList.id]: [
-                            ...(current[activeList.id] ?? []),
-                            ...createdItems,
-                        ],
-                    }));
+                    setItemsByList((current) =>
+                        appendItemsToList(current, activeList.id, createdItems)
+                    );
                 }}
                 onItemsHidden={(itemIds) => {
                     if (!activeList) return;
 
-                    setItemsByList((current) => ({
-                        ...current,
-                        [activeList.id]: (current[activeList.id] ?? []).filter(
-                            (item) => !itemIds.includes(item.id)
-                        ),
-                    }));
+                    setItemsByList((current) =>
+                        removeItemsFromList(current, activeList.id, itemIds)
+                    );
                 }}
             />
         </div>
