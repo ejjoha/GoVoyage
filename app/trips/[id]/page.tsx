@@ -13,7 +13,7 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import TripSetupSheet from "./components/TripSetupSheet";
 
 import { useTripData } from "./hooks/useTripData";
-
+import { useTripPermissions } from "./hooks/useTripPermissions";
 import {
   createBooking,
   createTripInvite,
@@ -841,13 +841,17 @@ export default function TripPage() {
     }
   >);
 
-  const isTripOwner = Boolean(
-    trip && currentUserId && trip.user_id === currentUserId
-  );
-  const canManageTrip = isTripOwner || currentUserRole === "editor";
-  const canInvitePeople = canManageTrip;
-  const canManageTravellers = canManageTrip;
-  const canDeleteTrip = isTripOwner;
+  const {
+    isTripOwner,
+    canManageTrip,
+    canInvitePeople,
+    canManageTravellers,
+    canDeleteTrip,
+  } = useTripPermissions({
+    trip,
+    currentUserId,
+    currentUserRole,
+  });
 
   const filterOptions: BookingFilter[] = ["all", "flight", "hotel", "plans"];
 
