@@ -28,6 +28,13 @@ import {
   type TripInvite,
 } from "./api";
 
+import {
+  getFilteredBookings,
+  getGroupedBookings,
+  getHotelStays,
+  getTripNights,
+} from "./lib/trip-selectors";
+
 import BookingTimeline from "./components/BookingTimeline";
 import BookingForm from "./components/BookingForm";
 import TripHero from "./components/TripHero";
@@ -791,55 +798,15 @@ export default function TripPage() {
     }, 2000);
   }
 
-  const filteredBookings = useMemo(() => {
-    if (activeFilter === "all") return bookings;
-    if (activeFilter === "flight") {
-      return bookings.filter((booking) => booking.type === "flight");
-    }
-    if (activeFilter === "hotel") {
-      return bookings.filter((booking) => booking.type === "hotel");
-    }
-    return bookings.filter(
-      (booking) =>
-        booking.type === "activity" ||
-        booking.type === "transport" ||
-        booking.type === "dining"
-    );
-  }, [bookings, activeFilter]);
+  const filteredBookings = useMemo(
+    () => getFilteredBookings(bookings, activeFilter),
+    [bookings, activeFilter]
+  );
 
-  const groupedBookings = filteredBookings.reduce((acc, booking) => {
-    const rawDate = booking.start_time;
-    const dateKey = rawDate ? new Date(rawDate).toDateString() : "No date";
-    const hour = rawDate ? new Date(rawDate).getHours() : -1;
-
-    let bucket: "Morning" | "Afternoon" | "Evening" | "Unscheduled" =
-      "Unscheduled";
-
-    if (hour >= 0 && hour < 12) bucket = "Morning";
-    else if (hour >= 12 && hour < 18) bucket = "Afternoon";
-    else if (hour >= 18) bucket = "Evening";
-
-    if (!acc[dateKey]) {
-      acc[dateKey] = {
-        Morning: [],
-        Afternoon: [],
-        Evening: [],
-        Unscheduled: [],
-      };
-    }
-
-    acc[dateKey][bucket].push(booking);
-
-    return acc;
-  }, {} as Record<
-    string,
-    {
-      Morning: Booking[];
-      Afternoon: Booking[];
-      Evening: Booking[];
-      Unscheduled: Booking[];
-    }
-  >);
+  const groupedBookings = useMemo(
+    () => getGroupedBookings(filteredBookings),
+    [filteredBookings]
+  );
 
   const {
     isTripOwner,
@@ -855,49 +822,15 @@ export default function TripPage() {
 
   const filterOptions: BookingFilter[] = ["all", "flight", "hotel", "plans"];
 
-  const tripNights = useMemo(() => {
-    if (!trip?.start_date || !trip?.end_date) return 0;
+  const tripNights = useMemo(
+    () => getTripNights(trip?.start_date, trip?.end_date),
+    [trip?.start_date, trip?.end_date]
+  );
 
-    const start = new Date(trip.start_date);
-    const end = new Date(trip.end_date);
-
-    const diffMs = end.getTime() - start.getTime();
-    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-
-    return diffDays > 0 ? diffDays : 0;
-  }, [trip]);
-
-  const hotelStays = useMemo(() => {
-    return bookings
-      .filter((booking) => booking.type === "hotel")
-      .map((booking) => {
-        const start = booking.start_time ? new Date(booking.start_time) : null;
-        const end = booking.end_time ? new Date(booking.end_time) : null;
-
-        let nights = 0;
-
-        if (
-          start &&
-          end &&
-          !Number.isNaN(start.getTime()) &&
-          !Number.isNaN(end.getTime())
-        ) {
-          const diffMs = end.getTime() - start.getTime();
-          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-          nights = diffDays > 0 ? diffDays : 0;
-        }
-
-        return {
-          id: booking.id,
-          hotelName: booking.hotel_name || booking.title || "Hotel stay",
-          address: booking.address || "",
-          startTime: booking.start_time,
-          endTime: booking.end_time || "",
-          nights,
-        };
-      })
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  }, [bookings]);
+  const hotelStays = useMemo(
+    () => getHotelStays(bookings),
+    [bookings]
+  );
 
   const heroStats = useMemo(() => {
     const pendingInviteCount = tripInvites.filter(
