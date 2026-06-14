@@ -403,11 +403,12 @@ export default function TripPage() {
       return;
     }
 
-    await fetchTrip();
-    await fetchTripMembers();
+    setShowTripForm(false);
     setTripSuccessMessage("Trip updated");
     setTripFormError("");
-    setShowTripForm(false);
+
+    await fetchTrip();
+    await fetchTripMembers();
 
     if (returnToSetupAfterEdit) {
       setReturnToSetupAfterEdit(false);
@@ -849,6 +850,17 @@ export default function TripPage() {
           backHref="/"
           tripId={trip.id}
           onEdit={() => {
+            if (trip) {
+              setEditTripTitle(trip.title || "");
+              setEditTripDestination(trip.destination || "");
+              setEditTripImageUrl(trip.image_url || "");
+              setEditTripStartDate(formatForDateInput(trip.start_date));
+              setEditTripEndDate(formatForDateInput(trip.end_date));
+              setEditCurrencies(
+                trip.currencies?.length ? trip.currencies : ["NOK", "EUR", "USD"]
+              );
+            }
+
             setShowTripForm(true);
             setShowBookingForm(false);
             setTripFormError("");
@@ -858,7 +870,7 @@ export default function TripPage() {
         />
 
         {(tripSuccessMessage || bookingSuccessMessage || deleteSuccessMessage) && (
-          <div className="fixed inset-1 z-[70] flex items-center justify-center bg-black/10 px-6 pointer-events-none">
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-6 backdrop-blur-[2px] pointer-events-none">
             <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl shadow-sm">
                 ✓
