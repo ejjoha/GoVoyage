@@ -10,6 +10,7 @@ import {
     getTripWeatherSummary,
     type TripWeatherSummary,
 } from "../lib/weather-intelligence";
+import BackButton from "@/components/ui/back-button";
 
 type Props = {
     tripId: number;
@@ -143,34 +144,27 @@ export default function PersonalizePackingPage({ tripId }: Props) {
     ];
 
     return (
-        <main className="min-h-screen bg-[#F8F9FF] text-[#070B2D]">
-            <div className="mx-auto min-h-screen max-w-[430px] overflow-hidden bg-[radial-gradient(circle_at_92%_12%,#E0E5FF_0%,transparent_34%),linear-gradient(180deg,#FCFCFF_0%,#F6F8FF_100%)] px-6 pb-24 pt-12">
-                <Link
-                    href={`/trips/${tripId}/packing`}
-                    aria-label="Go back"
-                    className="flex h-14 w-14 items-center justify-center rounded-full bg-[#EEF0FF] text-3xl font-medium transition active:scale-95"
-                >
-                    ←
-                </Link>
+        <main className="min-h-screen bg-[#f6f1e8] text-neutral-950">
+            <div className="mx-auto min-h-screen max-w-[430px] overflow-hidden px-6 pb-24 pt-12">
+                <BackButton href={`/trips/${tripId}/packing`} ariaLabel="Go back" />
 
                 <section className="relative mt-9 min-h-[180px]">
-                    <div className="relative z-10 max-w-[270px]">
+                    <div className="relative z-10 max-w-[210px]">
                         <h1 className="text-[30px] font-extrabold leading-[0.98] tracking-[-0.045em]">
                             Personalize Trip
                         </h1>
 
-                        <p className="mt-5 text-[16px] font-medium leading-[1.55] text-[#747B93]">
+                        <p className="mt-5 text-[15px] font-medium leading-[1.55] text-[#747B93]">
                             Help us tailor the perfect packing list for your adventure.
                         </p>
                     </div>
 
-                    <div className="absolute -right-3 -top-8 h-[165px] w-[165px] overflow-hidden rounded-full bg-[#E6EAFF]">
-                        <div className="absolute -left-3 bottom-4 rotate-[-18deg] text-[68px]">
-                            🌿
-                        </div>
-                        <div className="absolute bottom-1 right-1 text-[92px]">
-                            🧳
-                        </div>
+                    <div className="absolute -right-3 -top-8 flex h-[165px] w-[165px] items-center justify-center overflow-hidden rounded-full bg-[#eadfcd] shadow-[inset_0_8px_24px_rgba(80,55,30,0.12)] ring-1 ring-white/80">
+                        <img
+                            src="/images/personalize-trip-hero.png"
+                            alt="Travel suitcase"
+                            className="h-[185px] w-[185px] object-contain"
+                        />
                     </div>
                 </section>
 

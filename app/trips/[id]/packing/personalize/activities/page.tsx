@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import BackButton from "@/components/ui/back-button";
 
 const activityOptions = [
     { value: "Beach", emoji: "🏖️" },
@@ -72,13 +73,7 @@ export default function ActivitiesPage() {
                     </div>
                 )}
                 <div className="flex items-center justify-between">
-                    <Link
-                        href={`/trips/${tripId}/packing/personalize`}
-                        className="inline-flex items-center text-lg font-medium text-neutral-500"
-                    >
-                        ← Back
-                    </Link>
-
+                    <BackButton href={`/trips/${tripId}/packing/personalize`} ariaLabel="Go back" />
                     <button
                         type="button"
                         disabled={!hasChanges}
