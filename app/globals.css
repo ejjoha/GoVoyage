@@ -92,3 +92,57 @@ input[type="datetime-local"] {
     transform: translateX(100%);
   }
 }
+
+@keyframes packingSlideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0.96;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.packing-slide-in-page {
+  animation: packingSlideInFromRight 260ms ease-out;
+  min-height: 100dvh;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .packing-slide-in-page {
+    animation: none;
+  }
+}
+
+@keyframes packingSlideUpFromBottom {
+  from {
+    transform: translate3d(0, 100dvh, 0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+.packing-slide-up-page {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  background: #f6f1e8;
+  animation: packingSlideUpFromBottom 260ms ease-out both;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .packing-slide-up-page {
+    position: static;
+    animation: none;
+  }
+}

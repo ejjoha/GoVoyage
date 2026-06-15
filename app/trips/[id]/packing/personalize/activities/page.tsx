@@ -4,7 +4,6 @@ import { getPackingItems, getPackingLists } from "@/features/packing/lib/packing
 import { createSuggestedPackingItems } from "@/features/packing/lib/packing-mutations";
 import { getActivityPackingItems } from "@/features/packing/lib/packing-profile-recommendations";
 import { useEffect } from "react";
-import Link from "next/link";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import BackButton from "@/components/ui/back-button";
@@ -63,7 +62,7 @@ export default function ActivitiesPage() {
         JSON.stringify(initialSelected);
 
     return (
-        <main className="min-h-screen bg-[#f6f1e8]">
+        <main className="packing-slide-up-page min-h-screen bg-[#f6f1e8] text-neutral-950">
             <div className="mx-auto max-w-md px-5 py-8">
                 {addedCount !== null && (
                     <div className="mb-6 rounded-2xl bg-green-50 p-4 text-center">

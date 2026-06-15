@@ -144,59 +144,72 @@ export default function PersonalizePackingPage({ tripId }: Props) {
     ];
 
     return (
-        <main className="min-h-screen bg-[#f6f1e8] text-neutral-950">
-            <div className="mx-auto min-h-screen max-w-[430px] overflow-hidden px-6 pb-24 pt-12">
-                <BackButton href={`/trips/${tripId}/packing`} ariaLabel="Go back" />
+        <main className="packing-slide-in-page min-h-screen bg-[#f6f1e8] text-neutral-950">
+            <div className="mx-auto min-h-screen max-w-xl overflow-hidden pb-24">
 
-                <section className="relative mt-9 min-h-[145px]">
-                    <div className="relative z-10 max-w-none pr-[150px]">
-                        <h1 className="text-[25px] font-extrabold leading-[0.98] tracking-[-0.045em]">
-                            Personalize Trip
-                        </h1>
-
-                        <p className="mt-5 text-[13px] font-medium leading-[1.55] text-neutral-500">
-                            Help us tailor the perfect packing list for your adventure.
-                        </p>
-                    </div>
-
-                    <div className="absolute right-0 -top-8 h-[150px] w-[150px] overflow-hidden rounded-full bg-[#eadfcd] shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-                        {trip?.image_url && (
-                            <>
-                                <img
-                                    src={trip.image_url}
-                                    alt={trip.title ?? "Trip"}
-                                    className="h-full w-full object-cover"
-                                />
-                                <div className="absolute inset-0 bg-black/10" />
-                            </>
+                <section className="relative mb-24">
+                    <div className="relative overflow-hidden rounded-b-[2.75rem] bg-neutral-200">
+                        {trip?.image_url ? (
+                            <img
+                                src={trip.image_url}
+                                alt={trip.title ?? "Trip"}
+                                className="h-[18rem] w-full object-cover"
+                            />
+                        ) : (
+                            <div className="h-[18rem] w-full bg-gradient-to-br from-neutral-200 to-neutral-300" />
                         )}
+
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/15 to-black/55" />
+
+                        <div className="absolute left-4 top-4 z-30">
+                            <BackButton
+                                href={`/trips/${tripId}/packing`}
+                                ariaLabel="Go back"
+                            />
+                        </div>
+
+                        <div className="absolute inset-x-0 bottom-10 px-6 text-white">
+                            <p className="text-xs font-bold uppercase tracking-[0.28em] text-white/75">
+                                Personalize
+                            </p>
+
+                            <h1 className="mt-3 max-w-[18rem] font-serif text-[42px] font-semibold leading-[0.92] tracking-[-0.06em]">
+                                {trip?.destination
+                                    ? `Pack for ${trip.destination}`
+                                    : "Personalize Trip"}
+                            </h1>
+
+                            <p className="mt-4 max-w-[18rem] text-sm font-medium leading-6 text-white/85">
+                                Help us tailor the perfect packing list for your adventure.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="absolute inset-x-0 -bottom-16 z-20 mx-6 rounded-[1.25rem] bg-white p-5 shadow-[0_18px_45px_rgba(70,55,35,0.10)]">
+                        <div className="flex items-center gap-3">
+                            <span className="text-xl">✨</span>
+
+                            <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8C6F45]">
+                                Your recommendations are based on
+                            </p>
+                        </div>
+
+                        <div className="mt-5 flex flex-wrap gap-3">
+                            <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
+                                📍 {loading ? "Loading..." : trip?.destination || "Destination"}
+                            </div>
+
+                            <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
+                                🌦 {loading ? "Checking..." : weatherDisplay}
+                            </div>
+
+                            <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
+                                📅 {tripDays} {tripDays === 1 ? "Day" : "Days"}
+                            </div>
+                        </div>
                     </div>
                 </section>
-
-                <section className="mt-1 rounded-[1.25rem] bg-white/90 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl">✨</span>
-                        <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8C6F45]">
-                            Your recommendations are based on
-                        </p>
-                    </div>
-
-                    <div className="mt-5 flex flex-wrap gap-3">
-                        <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
-                            📍 {loading ? "Loading..." : trip?.destination || "Destination"}
-                        </div>
-
-                        <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
-                            🌦 {loading ? "Checking..." : weatherDisplay}
-                        </div>
-
-                        <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
-                            📅 {tripDays} {tripDays === 1 ? "Day" : "Days"}
-                        </div>
-                    </div>
-                </section>
-
-                <section className="mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
+                <section className="mx-6 mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
                     {rows.map((row, index) => (
                         <Link
                             key={row.title}
@@ -231,8 +244,7 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                         </Link>
                     ))}
                 </section>
-
-                <section className="mt-6 rounded-[1rem] bg-white/70 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.04)]">
+                <section className="mx-6 mt-6 rounded-[1rem] bg-white/70 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.04)]">
                     <p className="text-sm font-medium leading-6 text-neutral-500">
                         Changes will update your packing list.
                     </p>

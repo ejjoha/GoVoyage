@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BackButton from "@/components/ui/back-button";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -41,14 +41,12 @@ export default function KidsPackingPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#f6f1e8]">
+        <main className="packing-slide-up-page min-h-screen bg-[#f6f1e8] text-neutral-950">
             <div className="mx-auto max-w-md px-5 py-8">
-                <Link
+                <BackButton
                     href={`/trips/${tripId}/packing/personalize`}
-                    className="inline-flex items-center text-lg font-medium text-neutral-500"
-                >
-                    ← Back
-                </Link>
+                    ariaLabel="Go back"
+                />
 
                 <div className="mt-12 rounded-[2rem] bg-white p-6 shadow-[0_14px_40px_rgba(0,0,0,0.08)]">
                     <div className="text-5xl">🧸</div>

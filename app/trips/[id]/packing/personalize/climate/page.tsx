@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BackButton from "@/components/ui/back-button";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getPackingItems, getPackingLists } from "@/features/packing/lib/packing-queries";
@@ -196,15 +196,13 @@ export default function ClimatePage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#f6f1e8]">
+        <main className="packing-slide-up-page min-h-screen bg-[#f6f1e8] text-neutral-950">
             <div className="mx-auto max-w-md px-5 py-8">
                 <div className="flex items-center justify-between">
-                    <Link
+                    <BackButton
                         href={`/trips/${tripId}/packing/personalize`}
-                        className="inline-flex items-center text-lg font-medium text-neutral-500"
-                    >
-                        ← Back
-                    </Link>
+                        ariaLabel="Go back"
+                    />
 
                     <button
                         type="button"
