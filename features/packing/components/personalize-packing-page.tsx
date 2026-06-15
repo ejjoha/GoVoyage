@@ -137,7 +137,7 @@ export default function PersonalizePackingPage({ tripId }: Props) {
         {
             icon: "🧸",
             title: "Traveling with Kids",
-            value: hasKidsList ? "Kids List active" : "Create shared kids list",
+            value: hasKidsList ? "Kids List active" : "Create a separate Kid's List",
             href: `/trips/${tripId}/packing/personalize/kids`,
             tone: "bg-yellow-100",
         },
@@ -148,27 +148,44 @@ export default function PersonalizePackingPage({ tripId }: Props) {
             <div className="mx-auto min-h-screen max-w-[430px] overflow-hidden px-6 pb-24 pt-12">
                 <BackButton href={`/trips/${tripId}/packing`} ariaLabel="Go back" />
 
-                <section className="relative mt-9 min-h-[180px]">
-                    <div className="relative z-10 max-w-[210px]">
-                        <h1 className="text-[30px] font-extrabold leading-[0.98] tracking-[-0.045em]">
+                <section className="relative mt-9 min-h-[145px]">
+                    <div className="relative z-10 max-w-none pr-[150px]">
+                        <h1 className="text-[25px] font-extrabold leading-[0.98] tracking-[-0.045em]">
                             Personalize Trip
                         </h1>
 
-                        <p className="mt-5 text-[15px] font-medium leading-[1.55] text-[#747B93]">
+                        <p className="mt-5 text-[13px] font-medium leading-[1.55] text-neutral-500">
                             Help us tailor the perfect packing list for your adventure.
                         </p>
                     </div>
 
-                    <div className="absolute -right-3 -top-8 flex h-[165px] w-[165px] items-center justify-center overflow-hidden rounded-full bg-[#eadfcd] shadow-[inset_0_8px_24px_rgba(80,55,30,0.12)]">
-                        <img
-                            src="/images/personalize-trip-hero.png"
-                            alt="Travel suitcase"
-                            className="h-[185px] w-[185px] object-contain"
-                        />
+                    <div className="absolute right-0 -top-8 h-[150px] w-[150px] overflow-hidden rounded-full shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
+                        {trip?.image_url ? (
+                            <img
+                                src={trip.image_url}
+                                alt={trip.title ?? "Trip"}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <div className="absolute right-0 -top-8 h-[135px] w-[135px] overflow-hidden rounded-full bg-[#eadfcd] shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
+                                {trip?.image_url ? (
+                                    <>
+                                        <img
+                                            src={trip.image_url}
+                                            alt={trip.title ?? "Trip"}
+                                            className="h-full w-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-black/10" />
+                                    </>
+                                ) : (
+                                    <div className="h-full w-full bg-[#eadfcd]" />
+                                )}
+                            </div>
+                        )}
                     </div>
                 </section>
 
-                <section className="mt-6 rounded-[2rem] bg-white/90 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
+                <section className="mt-1 rounded-[1.25rem] bg-white/90 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
                     <div className="flex items-center gap-3">
                         <span className="text-xl">✨</span>
                         <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8C6F45]">
@@ -191,27 +208,27 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                     </div>
                 </section>
 
-                <section className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
+                <section className="mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
                     {rows.map((row, index) => (
                         <Link
                             key={row.title}
                             href={row.href}
-                            className="group relative flex min-h-[86px] w-full items-center px-5 text-left transition active:scale-[0.99]"
+                            className="group relative flex min-h-[72px] w-full items-center px-5 text-left transition active:scale-[0.99]"
                         >
                             <div
-                                className={`mr-[18px] flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.35rem] ${row.tone}`}
+                                className={`mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] ${row.tone}`}
                             >
-                                <span className="text-[26px] leading-none">
+                                <span className="text-[24px] leading-none">
                                     {row.icon}
                                 </span>
                             </div>
 
                             <div className="min-w-0 flex-1">
-                                <p className="text-[18px] font-extrabold tracking-[-0.015em]">
+                                <p className="text-[16px] font-bold tracking-[-0.015em]">
                                     {row.title}
                                 </p>
 
-                                <p className="mt-1.5 truncate text-[14px] font-semibold text-[#747B93]">
+                                <p className="mt-1.5 truncate text-[13px] font-normal text-black">
                                     {row.value}
                                 </p>
                             </div>
@@ -227,8 +244,8 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                     ))}
                 </section>
 
-                <section className="mt-6 rounded-[2rem] bg-white/70 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.04)]">
-                    <p className="text-sm font-medium leading-6 text-[#747B93]">
+                <section className="mt-6 rounded-[1rem] bg-white/70 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.04)]">
+                    <p className="text-sm font-medium leading-6 text-neutral-500">
                         Changes will update your packing list.
                     </p>
                 </section>
