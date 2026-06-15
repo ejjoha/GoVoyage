@@ -159,7 +159,7 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                         </p>
                     </div>
 
-                    <div className="absolute -right-3 -top-8 flex h-[165px] w-[165px] items-center justify-center overflow-hidden rounded-full bg-[#eadfcd] shadow-[inset_0_8px_24px_rgba(80,55,30,0.12)] ring-1 ring-white/80">
+                    <div className="absolute -right-3 -top-8 flex h-[165px] w-[165px] items-center justify-center overflow-hidden rounded-full bg-[#eadfcd] shadow-[inset_0_8px_24px_rgba(80,55,30,0.12)]">
                         <img
                             src="/images/personalize-trip-hero.png"
                             alt="Travel suitcase"
@@ -168,68 +168,70 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                     </div>
                 </section>
 
-                <section className="mt-2">
+                <section className="mt-6 rounded-[2rem] bg-white/90 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
                     <div className="flex items-center gap-3">
                         <span className="text-xl">✨</span>
-                        <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#715CFF]">
+                        <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8C6F45]">
                             Your recommendations are based on
                         </p>
                     </div>
 
                     <div className="mt-5 flex flex-wrap gap-3">
-                        <div className="flex h-[30px] items-center gap-2 rounded-full border border-[#E7EAF4] bg-white px-5 text-[14px] font-bold shadow-[0_8px_22px_rgba(35,42,95,0.04)]">
+                        <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
                             📍 {loading ? "Loading..." : trip?.destination || "Destination"}
                         </div>
 
-                        <div className="flex h-[30px] items-center gap-2 rounded-full border border-[#E7EAF4] bg-white px-5 text-[14px] font-bold shadow-[0_8px_22px_rgba(35,42,95,0.04)]">
+                        <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
                             🌦 {loading ? "Checking..." : weatherDisplay}
                         </div>
 
-                        <div className="flex h-[30px] items-center gap-2 rounded-full border border-[#E7EAF4] bg-white px-5 text-[14px] font-bold shadow-[0_8px_22px_rgba(35,42,95,0.04)]">
+                        <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
                             📅 {tripDays} {tripDays === 1 ? "Day" : "Days"}
                         </div>
                     </div>
                 </section>
 
-                <section className="mt-8">
+                <section className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
                     {rows.map((row, index) => (
                         <Link
                             key={row.title}
                             href={row.href}
-                            className="group flex min-h-[80px] w-full items-center text-left transition active:scale-[0.99]"
+                            className="group relative flex min-h-[86px] w-full items-center px-5 text-left transition active:scale-[0.99]"
                         >
                             <div
-                                className={`mr-[18px] flex h-13 w-13 shrink-0 items-center justify-center rounded-[22px] ${row.tone}`}
+                                className={`mr-[18px] flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.35rem] ${row.tone}`}
                             >
-                                <span className="text-[24px] leading-none">
+                                <span className="text-[26px] leading-none">
                                     {row.icon}
                                 </span>
                             </div>
 
-                            <div className="relative flex min-h-[80px] flex-1 flex-col justify-center">
-                                <p className="text-[17px] font-extrabold tracking-[-0.015em]">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[18px] font-extrabold tracking-[-0.015em]">
                                     {row.title}
                                 </p>
 
-                                <p className="mt-1.5 truncate text-[14px] font-medium text-[#747B93]">
+                                <p className="mt-1.5 truncate text-[14px] font-semibold text-[#747B93]">
                                     {row.value}
                                 </p>
-
-                                {index !== rows.length - 1 && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-px bg-[#E7EAF4]" />
-                                )}
                             </div>
 
                             <span className="ml-3 text-2xl text-[#4D5369] transition group-hover:translate-x-0.5">
                                 ›
                             </span>
+
+                            {index !== rows.length - 1 && (
+                                <div className="absolute bottom-0 left-5 right-5 h-px bg-black/10" />
+                            )}
                         </Link>
                     ))}
                 </section>
 
-                <p className="mt-8 text-center text-sm leading-6 text-[#747B93]">
-                    Changes will update your packing list.
-                </p>
+                <section className="mt-6 rounded-[2rem] bg-white/70 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.04)]">
+                    <p className="text-sm font-medium leading-6 text-[#747B93]">
+                        Changes will update your packing list.
+                    </p>
+                </section>
             </div>
         </main>
     );
