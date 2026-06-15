@@ -159,28 +159,16 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                         </p>
                     </div>
 
-                    <div className="absolute right-0 -top-8 h-[150px] w-[150px] overflow-hidden rounded-full shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-                        {trip?.image_url ? (
-                            <img
-                                src={trip.image_url}
-                                alt={trip.title ?? "Trip"}
-                                className="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <div className="absolute right-0 -top-8 h-[135px] w-[135px] overflow-hidden rounded-full bg-[#eadfcd] shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
-                                {trip?.image_url ? (
-                                    <>
-                                        <img
-                                            src={trip.image_url}
-                                            alt={trip.title ?? "Trip"}
-                                            className="h-full w-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-black/10" />
-                                    </>
-                                ) : (
-                                    <div className="h-full w-full bg-[#eadfcd]" />
-                                )}
-                            </div>
+                    <div className="absolute right-0 -top-8 h-[150px] w-[150px] overflow-hidden rounded-full bg-[#eadfcd] shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
+                        {trip?.image_url && (
+                            <>
+                                <img
+                                    src={trip.image_url}
+                                    alt={trip.title ?? "Trip"}
+                                    className="h-full w-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/10" />
+                            </>
                         )}
                     </div>
                 </section>
