@@ -159,29 +159,11 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                             <div className="h-[18rem] w-full bg-gradient-to-br from-neutral-200 to-neutral-300" />
                         )}
 
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/15 to-black/55" />
-
                         <div className="absolute left-4 top-4 z-30">
                             <BackButton
                                 href={`/trips/${tripId}/packing`}
                                 ariaLabel="Go back"
                             />
-                        </div>
-
-                        <div className="absolute inset-x-0 bottom-10 px-6 text-white">
-                            <p className="text-xs font-bold uppercase tracking-[0.28em] text-white/75">
-                                Personalize
-                            </p>
-
-                            <h1 className="mt-3 max-w-[18rem] font-serif text-[42px] font-semibold leading-[0.92] tracking-[-0.06em]">
-                                {trip?.destination
-                                    ? `Pack for ${trip.destination}`
-                                    : "Personalize Trip"}
-                            </h1>
-
-                            <p className="mt-4 max-w-[18rem] text-sm font-medium leading-6 text-white/85">
-                                Help us tailor the perfect packing list for your adventure.
-                            </p>
                         </div>
                     </div>
 
@@ -194,16 +176,16 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                             </p>
                         </div>
 
-                        <div className="mt-5 flex flex-wrap gap-3">
-                            <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
+                        <div className="mt-5 flex flex-wrap gap-2">
+                            <div className="flex h-[24px] items-center gap-1 rounded-full border border-black/10 bg-white px-2 text-[13px] font-bold shadow-sm">
                                 📍 {loading ? "Loading..." : trip?.destination || "Destination"}
                             </div>
 
-                            <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
+                            <div className="flex h-[24px] items-center gap-1 rounded-full border border-black/10 bg-white px-2 text-[13px] font-bold shadow-sm">
                                 🌦 {loading ? "Checking..." : weatherDisplay}
                             </div>
 
-                            <div className="flex h-[34px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-[13px] font-bold shadow-sm">
+                            <div className="flex h-[24px] items-center gap-1 rounded-full border border-black/10 bg-white px-2 text-[13px] font-bold shadow-sm">
                                 📅 {tripDays} {tripDays === 1 ? "Day" : "Days"}
                             </div>
                         </div>

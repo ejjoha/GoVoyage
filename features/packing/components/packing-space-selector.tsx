@@ -247,11 +247,11 @@ export default function PackingSpaceSelector({
                 >
                     <div className="text-center">
                         <p className="text-base font-bold leading-none">
-                            ✨ Personalize Trip
+                            ✨ Personalize list
                         </p>
 
                         <p className="mt-2 text-xs leading-none text-neutral-400">
-                            Edit recommendations
+                            Edit your trip profile
                         </p>
                     </div>
                 </Link>
