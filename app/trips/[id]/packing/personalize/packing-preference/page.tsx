@@ -93,18 +93,10 @@ export default function PackingPreferencePage() {
                                 key={option.value}
                                 type="button"
                                 onClick={() => setSelected(option.value)}
-                                className={
-                                    active
-                                        ? "relative flex min-h-[72px] w-full items-center bg-indigo-50 px-5 text-left transition active:scale-[0.99]"
-                                        : "relative flex min-h-[72px] w-full items-center bg-white px-5 text-left transition active:bg-neutral-50"
-                                }
+                                className="relative flex min-h-[72px] w-full items-center bg-white px-5 text-left transition active:bg-neutral-50"
                             >
                                 <div
-                                    className={
-                                        active
-                                            ? "mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-indigo-100"
-                                            : "mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-neutral-100"
-                                    }
+                                    className="mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-neutral-100"
                                 >
                                     <span className="text-[24px] leading-none">
                                         {option.emoji}
@@ -113,11 +105,7 @@ export default function PackingPreferencePage() {
 
                                 <div className="min-w-0 flex-1">
                                     <p
-                                        className={
-                                            active
-                                                ? "text-[16px] font-bold tracking-[-0.015em] text-indigo-800 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]"
-                                                : "text-[16px] font-bold tracking-[-0.015em] text-neutral-950 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]"
-                                        }
+                                        className="text-[16px] font-bold tracking-[-0.015em] text-neutral-950 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]"
                                     >
                                         {option.value}
                                     </p>
