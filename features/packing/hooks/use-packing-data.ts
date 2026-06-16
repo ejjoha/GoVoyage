@@ -50,12 +50,15 @@ export function usePackingData({
         Record<string, PackingListItem[]>
     >({});
     const [loading, setLoading] = useState(true);
+    const [hasCheckedServer, setHasCheckedServer] = useState(false);
     const [trip, setTrip] = useState<TripForPacking | null>(null);
     const [activeListId, setActiveListId] = useState<string | null>(null);
     const [weatherSummary, setWeatherSummary] =
         useState<TripWeatherSummary | null>(null);
 
     const loadPacking = useCallback(async () => {
+        setHasCheckedServer(false);
+
         const cachedPacking = loadPackingCache(tripId);
 
         if (cachedPacking) {
@@ -108,9 +111,11 @@ export function usePackingData({
                 weatherSummaryPromise,
             ]);
 
+            setHasCheckedServer(true);
             setWeatherSummary(weather);
 
             setLists(packingLists);
+
             setActiveListId((current) => {
                 if (
                     requestedListId &&
@@ -166,6 +171,7 @@ export function usePackingData({
         itemsByList,
         setItemsByList,
         loading,
+        hasCheckedServer,
         activeListId,
         setActiveListId,
         weatherSummary,

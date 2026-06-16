@@ -115,7 +115,13 @@ export default function ActivitiesPage() {
         let addedCount = 0;
 
         const lists = await getPackingLists(Number(tripId));
-        const mainList = lists[0];
+
+        const mainList = lists.find(
+            (list) =>
+                list.type === "personal" &&
+                list.title === "My List" &&
+                list.member_id === null
+        );
 
         if (mainList) {
             const existingItems = await getPackingItems(mainList.id);

@@ -174,6 +174,61 @@ export async function createSuggestedPackingItems({
     return data;
 }
 
+export async function getOrCreateMyPackingList({
+    tripId,
+}: {
+    tripId: number;
+}) {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("Not authenticated");
+    }
+
+    const { data: existing, error: existingError } = await supabase
+        .from("packing_lists")
+        .select("*")
+        .eq("trip_id", tripId)
+        .eq("title", "My List")
+        .eq("type", "personal")
+        .is("member_id", null)
+        .eq("archived", false)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+    if (existingError) {
+        console.error(existingError);
+        throw existingError;
+    }
+
+    if (existing) {
+        return existing;
+    }
+
+    const { data, error } = await supabase
+        .from("packing_lists")
+        .insert({
+            trip_id: tripId,
+            member_id: null,
+            title: "My List",
+            type: "personal",
+            emoji: "🧳",
+            created_by: user.id,
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+
+    return data;
+}
+
 export async function updatePackingItemQuantity({
     itemId,
     quantity,

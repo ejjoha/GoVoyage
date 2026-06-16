@@ -45,6 +45,8 @@ export default function PackingPreferencePage() {
     const hasChanges = selected !== initialSelected;
 
     async function handleSave() {
+        if (!hasChanges || successMessage) return;
+
         localStorage.setItem(
             `packing-preference-${tripId}`,
             selected
@@ -57,6 +59,7 @@ export default function PackingPreferencePage() {
         };
 
         setSuccessMessage(preferenceMessages[selected] ?? "Preference saved.");
+        setInitialSelected(selected);
 
         setTimeout(() => {
             router.push(

@@ -20,7 +20,7 @@ import type {
 
 import {
     archivePackingList,
-    createPackingList,
+    getOrCreateMyPackingList,
     createSuggestedPackingItems,
     hidePackingListItems,
 } from "../lib/packing-mutations";
@@ -77,6 +77,7 @@ export default function PackingBoard({ tripId }: Props) {
         itemsByList,
         setItemsByList,
         loading,
+        hasCheckedServer,
         activeListId,
         setActiveListId,
         weatherSummary,
@@ -114,11 +115,8 @@ export default function PackingBoard({ tripId }: Props) {
         const startedAt = Date.now();
 
         try {
-            const list = await createPackingList({
+            const list = await getOrCreateMyPackingList({
                 tripId,
-                title: "My List",
-                type: "personal",
-                emoji: "🧳",
             });
             const tripDays = trip
                 ? calculateTripDays(trip.start_date, trip.end_date)
@@ -135,9 +133,9 @@ export default function PackingBoard({ tripId }: Props) {
                         quantity: getLaundryAwareQuantity({
                             item,
                             tripDays,
-                            laundry,
+                            laundry: "Not available",
                         }),
-                        preference: packingPreference,
+                        preference: "Balanced",
                     }),
                     source: "suggested" as const,
                     packed: false,
@@ -153,7 +151,15 @@ export default function PackingBoard({ tripId }: Props) {
                 ],
             });
 
-            setLists([list]);
+            setLists((current) => {
+                const exists = current.some((existingList) => existingList.id === list.id);
+
+                if (exists) {
+                    return current;
+                }
+
+                return [list, ...current];
+            });
 
             setItemsByList({
                 [list.id]: createdItems,
@@ -173,6 +179,7 @@ export default function PackingBoard({ tripId }: Props) {
     useEffect(() => {
         if (
             !loading &&
+            hasCheckedServer &&
             lists.length === 0 &&
             trip &&
             !initializingFirstList
@@ -181,6 +188,7 @@ export default function PackingBoard({ tripId }: Props) {
         }
     }, [
         loading,
+        hasCheckedServer,
         lists.length,
         trip,
         initializingFirstList,
@@ -498,7 +506,7 @@ export default function PackingBoard({ tripId }: Props) {
                                     ? "This will remove the Kids List from this trip. You can create it again later from Personalize."
                                     : listActionPending.list.title === "Kids List"
                                         ? "This will restore the default kids packing recommendations. Any custom changes will be removed."
-                                        : "This will regenerate your packing list using your current personalization settings. Any custom changes will be removed."}
+                                        : "This will reset your personalization choices and restore the default packing list. Any custom changes will be removed."}
                             </p>
 
                             <div className="mt-6 flex gap-3">
@@ -548,12 +556,21 @@ export default function PackingBoard({ tripId }: Props) {
 
                                             await hidePackingListItems(listId);
 
+                                            const isKidsList = list.title === "Kids List";
+
+                                            if (!isKidsList) {
+                                                localStorage.removeItem(`packing-activities-${tripId}`);
+                                                localStorage.removeItem(`packing-climate-${tripId}`);
+                                                localStorage.removeItem(`packing-laundry-${tripId}`);
+                                                localStorage.removeItem(`packing-preference-${tripId}`);
+                                            }
+
                                             const tripDays = trip
                                                 ? calculateTripDays(trip.start_date, trip.end_date)
                                                 : 1;
 
                                             const resetItems =
-                                                list.title === "Kids List"
+                                                isKidsList
                                                     ? kidsStarterItems
                                                     : [
                                                         ...getEssentialsStarterItems(),
@@ -570,9 +587,9 @@ export default function PackingBoard({ tripId }: Props) {
                                                                     quantity: getLaundryAwareQuantity({
                                                                         item,
                                                                         tripDays,
-                                                                        laundry,
+                                                                        laundry: "Not available",
                                                                     }),
-                                                                    preference: packingPreference,
+                                                                    preference: "Balanced",
                                                                 }),
                                                                 source: "suggested" as const,
                                                                 packed: false,

@@ -174,7 +174,13 @@ export default function ClimatePage() {
         let addedCount = 0;
 
         const lists = await getPackingLists(Number(tripId));
-        const mainList = lists[0];
+
+        const mainList = lists.find(
+            (list) =>
+                list.type === "personal" &&
+                list.title === "My List" &&
+                list.member_id === null
+        );
 
         if (mainList) {
             const existingItems = await getPackingItems(mainList.id);
@@ -209,6 +215,9 @@ export default function ClimatePage() {
                 `We'll tailor your list around ${climateCount} selected ${climateCount === 1 ? "condition" : "conditions"}. No new recommendations were needed.`
             );
         }
+
+        setInitialSelected(selected);
+        setSaving(false);
 
         setTimeout(() => {
             router.push(`/trips/${tripId}/packing/personalize`);

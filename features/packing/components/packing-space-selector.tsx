@@ -25,7 +25,6 @@ const options = [
     { title: "My List", type: "personal" as const, emoji: "🧳" },
     { title: "Carry-on", type: "luggage" as const, emoji: "🎒" },
     { title: "Shared Bag", type: "shared" as const, emoji: "👜" },
-    { title: "Kids List", type: "personal" as const, emoji: "🧸" },
 ];
 
 export default function PackingSpaceSelector({

@@ -1,6 +1,17 @@
 "use client";
 
 import BackButton from "@/components/ui/back-button";
+import { updatePackingItemQuantity } from "@/features/packing/lib/packing-mutations";
+import {
+    getPackingItems,
+    getPackingLists,
+    getTripForPacking,
+} from "@/features/packing/lib/packing-queries";
+import {
+    baseItems,
+    getLaundryAwareQuantity,
+    type LaundryAvailability,
+} from "@/features/packing/lib/packing-template-engine";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -22,6 +33,18 @@ const laundryOptions = [
     },
 ];
 
+function calculateTripDays(startDate?: string | null, endDate?: string | null) {
+    if (!startDate || !endDate) return 1;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const differenceInMs = end.getTime() - start.getTime();
+    const days = Math.ceil(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
+
+    return Math.max(days, 1);
+}
+
 export default function LaundryPage() {
     const params = useParams<{ id: string }>();
     const router = useRouter();
@@ -42,10 +65,52 @@ export default function LaundryPage() {
 
     const hasChanges = selected !== initialSelected;
 
-    function handleSave() {
+    async function handleSave() {
         if (!hasChanges || successMessage) return;
 
         localStorage.setItem(`packing-laundry-${tripId}`, selected);
+
+        const lists = await getPackingLists(Number(tripId));
+
+        const mainList = lists.find(
+            (list) =>
+                list.type === "personal" &&
+                list.title === "My List" &&
+                list.member_id === null
+        );
+
+        if (mainList) {
+            const trip = await getTripForPacking(Number(tripId));
+            const tripDays = calculateTripDays(trip.start_date, trip.end_date);
+            const existingItems = await getPackingItems(mainList.id);
+
+            const laundrySensitiveBaseItems = baseItems.filter((item) =>
+                ["underwear", "socks", "t-shirts-or-tops"].includes(item.key)
+            );
+
+            await Promise.all(
+                laundrySensitiveBaseItems.map(async (templateItem) => {
+                    const existingItem = existingItems.find(
+                        (item) =>
+                            item.name.toLowerCase() === templateItem.name.toLowerCase() &&
+                            item.category === templateItem.category
+                    );
+
+                    if (!existingItem) return;
+
+                    const quantity = getLaundryAwareQuantity({
+                        item: templateItem,
+                        tripDays,
+                        laundry: selected as LaundryAvailability,
+                    });
+
+                    await updatePackingItemQuantity({
+                        itemId: existingItem.id,
+                        quantity,
+                    });
+                })
+            );
+        }
 
         const laundryMessages: Record<string, string> = {
             Available: "We'll suggest fewer clothing backups because you can wash clothes during the trip.",
@@ -54,6 +119,7 @@ export default function LaundryPage() {
         };
 
         setSuccessMessage(laundryMessages[selected] ?? "Laundry preference saved.");
+        setInitialSelected(selected);
 
         setTimeout(() => {
             router.push(`/trips/${tripId}/packing/personalize`);
