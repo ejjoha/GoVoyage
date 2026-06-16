@@ -7,12 +7,14 @@ export async function createPackingList({
     title,
     type,
     emoji,
+    kidsAgeGroup,
 }: {
     tripId: number;
     memberId?: number | null;
     title: string;
     type: "personal" | "shared" | "luggage" | "activity";
     emoji?: string | null;
+    kidsAgeGroup?: "baby" | "toddler" | "child" | "teen" | null;
 }) {
     const {
         data: { user },
@@ -30,6 +32,7 @@ export async function createPackingList({
             title,
             type,
             emoji: emoji ?? null,
+            kids_age_group: kidsAgeGroup ?? null,
             created_by: user.id,
         })
         .select()

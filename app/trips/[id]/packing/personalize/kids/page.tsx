@@ -94,6 +94,7 @@ export default function KidsPackingPage() {
                 title: trimmedChildName,
                 type: "shared",
                 emoji: "🧸",
+                kidsAgeGroup: ageGroup,
             });
 
             const trip = await getTripForPacking(tripId);

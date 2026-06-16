@@ -17,6 +17,7 @@ export type PackingList = {
     type: PackingListType;
     emoji: string | null;
     color: string | null;
+    kids_age_group: "baby" | "toddler" | "child" | "teen" | null;
     created_by: string | null;
     archived: boolean;
     sort_order: number;

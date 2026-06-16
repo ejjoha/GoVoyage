@@ -575,6 +575,7 @@ export default function PackingBoard({ tripId }: Props) {
                                                 isKidsList
                                                     ? getKidsStarterItems({
                                                         tripDays,
+                                                        ageGroup: list.kids_age_group ?? "child",
                                                     })
                                                     : [
                                                         ...getEssentialsStarterItems(),
