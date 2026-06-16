@@ -5,7 +5,9 @@ import { createSuggestedPackingItems } from "@/features/packing/lib/packing-muta
 import { getPackingItems, getPackingLists } from "@/features/packing/lib/packing-queries";
 import { getActivityPackingItems } from "@/features/packing/lib/packing-profile-recommendations";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useEffect, useState, type MouseEvent } from "react";
+
 
 const activityOptions = [
     {
@@ -64,8 +66,12 @@ export default function ActivitiesPage() {
     const [initialSelected, setInitialSelected] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [toastRoot, setToastRoot] = useState<HTMLElement | null>(null);
+    const [isLeaving, setIsLeaving] = useState(false);
 
     function toggleActivity(activity: string) {
+        setSuccessMessage(null);
+
         setSelected((current) =>
             current.includes(activity)
                 ? current.filter((item) => item !== activity)
@@ -145,15 +151,40 @@ export default function ActivitiesPage() {
             );
         }
 
+        setInitialSelected(selected);
+        setSaving(false);
+
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 2200);
+    }
+
+    useEffect(() => {
+        setToastRoot(document.body);
+    }, []);
+
+    function handleBack(event: MouseEvent<HTMLDivElement>) {
+        event.preventDefault();
+
+        if (isLeaving || successMessage) return;
+
+        setIsLeaving(true);
+
         setTimeout(() => {
             router.push(`/trips/${tripId}/packing/personalize`);
-        }, 2500);
+        }, 220);
     }
 
     return (
-        <main className="packing-slide-up-page min-h-screen bg-[#f6f1e8] text-neutral-950">
+        <main
+            className={`${isLeaving ? "packing-slide-down-page" : "packing-slide-up-page"
+                } min-h-screen bg-[#f6f1e8] text-neutral-950`}
+        >
             <div className="mx-auto max-w-md px-5 py-8">
-                <div className="flex items-center justify-between">
+                <div
+                    className="flex items-center justify-between"
+                    onClickCapture={handleBack}
+                >
                     <BackButton
                         href={`/trips/${tripId}/packing/personalize`}
                         ariaLabel="Go back"
@@ -227,23 +258,25 @@ export default function ActivitiesPage() {
                     {saving || successMessage ? "Saved" : "Save Activities"}
                 </button>
 
-                {successMessage && (
-                    <>
-                        <div className="fixed inset-0 z-[70] bg-black/10 backdrop-blur-[3px]" />
+                {successMessage && toastRoot &&
+                    createPortal(
+                        <>
+                            <div className="fixed inset-0 z-[9998] bg-black/20 backdrop-blur-[6px]" />
 
-                        <div className="fixed inset-0 z-[80] flex items-center justify-center px-5">
-                            <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
-                                <p className="text-base font-extrabold tracking-[-0.03em] text-neutral-950">
-                                    Activities saved
-                                </p>
+                            <div className="fixed inset-x-0 top-[68dvh] z-[9999] flex justify-center px-5">
+                                <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
+                                    <p className="text-base font-extrabold tracking-[-0.03em] text-neutral-950">
+                                        Activities saved
+                                    </p>
 
-                                <p className="mt-2 text-sm font-medium leading-5 text-neutral-500">
-                                    {successMessage}
-                                </p>
+                                    <p className="mt-2 text-sm font-medium leading-5 text-neutral-500">
+                                        {successMessage}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    </>
-                )}
+                        </>,
+                        toastRoot
+                    )}
             </div>
         </main>
     );

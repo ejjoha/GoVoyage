@@ -146,3 +146,32 @@ input[type="datetime-local"] {
     animation: none;
   }
 }
+
+@keyframes packingSlideDownToBottom {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate3d(0, 100dvh, 0);
+    opacity: 1;
+  }
+}
+
+.packing-slide-down-page {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  background: #f6f1e8;
+  animation: packingSlideDownToBottom 220ms ease-in both;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .packing-slide-down-page {
+    position: static;
+    animation: none;
+  }
+}

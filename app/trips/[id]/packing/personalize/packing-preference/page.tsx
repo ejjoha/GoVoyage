@@ -1,8 +1,8 @@
 "use client";
 
 import BackButton from "@/components/ui/back-button";
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, type MouseEvent } from "react";
 
 const options = [
     {
@@ -64,11 +64,30 @@ export default function PackingPreferencePage() {
             );
         }, 2500);
     }
+    const [isLeaving, setIsLeaving] = useState(false);
+
+    function handleBack(event: MouseEvent<HTMLDivElement>) {
+        event.preventDefault();
+
+        if (isLeaving || successMessage) return;
+
+        setIsLeaving(true);
+
+        setTimeout(() => {
+            router.push(`/trips/${tripId}/packing/personalize`);
+        }, 220);
+    }
 
     return (
-        <main className="packing-slide-up-page min-h-screen bg-[#f6f1e8] text-neutral-950">
+        <main
+            className={`${isLeaving ? "packing-slide-down-page" : "packing-slide-up-page"
+                } min-h-screen bg-[#f6f1e8] text-neutral-950`}
+        >
             <div className="mx-auto max-w-md px-5 py-8">
-                <div className="flex items-center justify-between">
+                <div
+                    className="flex items-center justify-between"
+                    onClickCapture={handleBack}
+                >
                     <BackButton
                         href={`/trips/${tripId}/packing/personalize`}
                         ariaLabel="Go back"
