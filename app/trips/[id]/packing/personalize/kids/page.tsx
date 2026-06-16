@@ -11,7 +11,10 @@ import {
     getPackingLists,
     getTripForPacking,
 } from "@/features/packing/lib/packing-queries";
-import { getKidsStarterItems } from "@/features/packing/lib/kids-packing-items";
+import {
+    getKidsStarterItems,
+    type KidsAgeGroup,
+} from "@/features/packing/lib/kids-packing-items";
 
 function calculateTripDays(startDate?: string | null, endDate?: string | null) {
     if (!startDate || !endDate) return 1;
@@ -25,12 +28,40 @@ function calculateTripDays(startDate?: string | null, endDate?: string | null) {
     return Math.max(days, 1);
 }
 
+const ageOptions: Array<{
+    value: KidsAgeGroup;
+    label: string;
+    description: string;
+}> = [
+        {
+            value: "baby",
+            label: "Baby",
+            description: "Diapers, feeding items and stroller basics",
+        },
+        {
+            value: "toddler",
+            label: "Toddler",
+            description: "Extra clothes, snacks, potty and comfort items",
+        },
+        {
+            value: "child",
+            label: "Child",
+            description: "Clothes, snacks, games and everyday essentials",
+        },
+        {
+            value: "teen",
+            label: "Teen",
+            description: "More independence, tech and personal items",
+        },
+    ];
+
 export default function KidsPackingPage() {
     const params = useParams<{ id: string }>();
     const router = useRouter();
     const tripId = Number(params.id);
 
     const [childName, setChildName] = useState("");
+    const [ageGroup, setAgeGroup] = useState<KidsAgeGroup>("child");
     const [saving, setSaving] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -72,6 +103,7 @@ export default function KidsPackingPage() {
                 packingListId: list.id,
                 items: getKidsStarterItems({
                     tripDays,
+                    ageGroup,
                 }),
             });
 
@@ -122,7 +154,38 @@ export default function KidsPackingPage() {
                             {errorMessage}
                         </p>
                     )}
+                    <div className="mt-8">
+                        <p className="text-sm font-bold text-neutral-700">
+                            Age group
+                        </p>
 
+                        <div className="mt-3 grid gap-2">
+                            {ageOptions.map((option) => {
+                                const active = ageGroup === option.value;
+
+                                return (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => setAgeGroup(option.value)}
+                                        className={
+                                            active
+                                                ? "rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-left shadow-[0_10px_24px_rgba(244,63,94,0.12)]"
+                                                : "rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-left"
+                                        }
+                                    >
+                                        <p className="text-sm font-extrabold text-neutral-950">
+                                            {option.label}
+                                        </p>
+
+                                        <p className="mt-1 text-xs font-medium leading-5 text-neutral-500">
+                                            {option.description}
+                                        </p>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                     <button
                         type="button"
                         disabled={!canCreate}

@@ -1,3 +1,9 @@
+export type KidsAgeGroup =
+    | "baby"
+    | "toddler"
+    | "child"
+    | "teen";
+
 type KidsStarterItem = {
     name: string;
     category: string;
@@ -36,8 +42,10 @@ function clamp(value: number, min: number, max: number) {
 
 export function getKidsStarterItems({
     tripDays,
+    ageGroup = "child",
 }: {
     tripDays: number;
+    ageGroup?: KidsAgeGroup;
 }): KidsStarterItem[] {
     const days = Math.max(1, Math.ceil(tripDays));
 
@@ -48,7 +56,7 @@ export function getKidsStarterItems({
     const pajamas = clamp(Math.ceil(days / 5) + 1, 2, 5);
     const travelSnacks = clamp(Math.ceil(days / 3), 1, 7);
 
-    return [
+    const baseItems: KidsStarterItem[] = [
         kidsItem({
             name: "Kids' passports or IDs",
             category: "Kids Documents",
@@ -239,8 +247,135 @@ export function getKidsStarterItems({
             category: "Kids Practical",
         }),
     ];
+
+    const babyItems: KidsStarterItem[] = [
+        kidsItem({
+            name: "Diapers",
+            category: "Baby Essentials",
+            quantity: clamp(days * 6, 12, 90),
+        }),
+        kidsItem({
+            name: "Diaper cream",
+            category: "Baby Essentials",
+        }),
+        kidsItem({
+            name: "Changing pad",
+            category: "Baby Essentials",
+        }),
+        kidsItem({
+            name: "Baby wipes",
+            category: "Baby Essentials",
+            quantity: clamp(Math.ceil(days / 3), 1, 8),
+        }),
+        kidsItem({
+            name: "Bottles or sippy cups",
+            category: "Baby Food",
+            quantity: 2,
+        }),
+        kidsItem({
+            name: "Formula or baby food",
+            category: "Baby Food",
+        }),
+        kidsItem({
+            name: "Bibs",
+            category: "Baby Food",
+            quantity: clamp(Math.ceil(days / 2), 2, 8),
+        }),
+        kidsItem({
+            name: "Stroller",
+            category: "Baby Travel Gear",
+        }),
+        kidsItem({
+            name: "Stroller rain cover",
+            category: "Baby Travel Gear",
+        }),
+    ];
+
+    const toddlerItems: KidsStarterItem[] = [
+        kidsItem({
+            name: "Pull-ups if needed",
+            category: "Toddler Essentials",
+            quantity: clamp(days * 3, 6, 45),
+        }),
+        kidsItem({
+            name: "Portable potty seat",
+            category: "Toddler Essentials",
+        }),
+        kidsItem({
+            name: "Snack cup",
+            category: "Toddler Food",
+        }),
+        kidsItem({
+            name: "Spill-proof cup",
+            category: "Toddler Food",
+        }),
+        kidsItem({
+            name: "Small toys",
+            category: "Toddler Entertainment",
+            quantity: 2,
+        }),
+        kidsItem({
+            name: "Stroller or carrier",
+            category: "Toddler Travel Gear",
+        }),
+    ];
+
+    const childItems: KidsStarterItem[] = [
+        kidsItem({
+            name: "Small toy or game",
+            category: "Kids Entertainment",
+        }),
+        kidsItem({
+            name: "Extra activity book",
+            category: "Kids Entertainment",
+        }),
+        kidsItem({
+            name: "Cap or sun hat",
+            category: "Kids Clothing",
+        }),
+    ];
+
+    const teenItems: KidsStarterItem[] = [
+        kidsItem({
+            name: "Personal toiletries",
+            category: "Teen Toiletries",
+        }),
+        kidsItem({
+            name: "Phone charger",
+            category: "Teen Tech",
+            protected: true,
+        }),
+        kidsItem({
+            name: "Power bank",
+            category: "Teen Tech",
+        }),
+        kidsItem({
+            name: "Extra hoodie",
+            category: "Teen Clothing",
+        }),
+        kidsItem({
+            name: "Personal day bag",
+            category: "Teen Day Bag",
+        }),
+    ];
+
+    switch (ageGroup) {
+        case "baby":
+            return [...baseItems, ...babyItems];
+
+        case "toddler":
+            return [...baseItems, ...toddlerItems];
+
+        case "teen":
+            return [...baseItems, ...teenItems];
+
+        case "child":
+        default:
+            return [...baseItems, ...childItems];
+    }
 }
 
 export const kidsStarterItems = getKidsStarterItems({
     tripDays: 3,
+    ageGroup: "child",
 });
