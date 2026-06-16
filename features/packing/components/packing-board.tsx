@@ -9,7 +9,7 @@ import PackingSpaceSelector from "./packing-space-selector";
 import PackingListCard from "./packing-list-card";
 import FloatingAddPackingItemButton from "./floating-add-packing-item-button";
 import { AnimatePresence, motion } from "framer-motion";
-import { kidsStarterItems } from "../lib/kids-packing-items";
+import { getKidsStarterItems } from "../lib/kids-packing-items";
 import { usePackingData } from "../hooks/use-packing-data";
 import { usePackingPreferences } from "../hooks/use-packing-preferences";
 
@@ -573,7 +573,9 @@ export default function PackingBoard({ tripId }: Props) {
 
                                             const resetItems =
                                                 isKidsList
-                                                    ? kidsStarterItems
+                                                    ? getKidsStarterItems({
+                                                        tripDays,
+                                                    })
                                                     : [
                                                         ...getEssentialsStarterItems(),
                                                         ...baseItems

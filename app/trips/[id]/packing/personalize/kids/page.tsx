@@ -7,8 +7,23 @@ import {
     createPackingList,
     createSuggestedPackingItems,
 } from "@/features/packing/lib/packing-mutations";
-import { getPackingLists } from "@/features/packing/lib/packing-queries";
-import { kidsStarterItems } from "@/features/packing/lib/kids-packing-items";
+import {
+    getPackingLists,
+    getTripForPacking,
+} from "@/features/packing/lib/packing-queries";
+import { getKidsStarterItems } from "@/features/packing/lib/kids-packing-items";
+
+function calculateTripDays(startDate?: string | null, endDate?: string | null) {
+    if (!startDate || !endDate) return 1;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const differenceInMs = end.getTime() - start.getTime();
+    const days = Math.ceil(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
+
+    return Math.max(days, 1);
+}
 
 export default function KidsPackingPage() {
     const params = useParams<{ id: string }>();
@@ -50,9 +65,14 @@ export default function KidsPackingPage() {
                 emoji: "🧸",
             });
 
+            const trip = await getTripForPacking(tripId);
+            const tripDays = calculateTripDays(trip.start_date, trip.end_date);
+
             await createSuggestedPackingItems({
                 packingListId: list.id,
-                items: kidsStarterItems,
+                items: getKidsStarterItems({
+                    tripDays,
+                }),
             });
 
             router.push(`/trips/${tripId}/packing?list=${list.id}`);
