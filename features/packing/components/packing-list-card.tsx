@@ -106,7 +106,7 @@ export default function PackingListCard({
                                 Reset list
                             </button>
 
-                            {list.title === "Kids List" && (
+                            {list.type === "shared" && list.emoji === "🧸" && (
                                 <button
                                     type="button"
                                     onClick={() => onDeleteList(list)}

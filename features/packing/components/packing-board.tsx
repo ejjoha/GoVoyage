@@ -495,16 +495,18 @@ export default function PackingBoard({ tripId }: Props) {
                         >
                             <h2 className="text-xl font-bold tracking-[-0.03em] text-neutral-950">
                                 {listActionPending.type === "delete"
-                                    ? "Delete Kids List?"
-                                    : listActionPending.list.title === "Kids List"
-                                        ? "Reset Kids List?"
+                                    ? `Delete ${listActionPending.list.title}?`
+                                    : listActionPending.list.type === "shared" &&
+                                        listActionPending.list.emoji === "🧸"
+                                        ? `Reset ${listActionPending.list.title}?`
                                         : "Reset My List?"}
                             </h2>
 
                             <p className="mt-2 text-sm leading-6 text-neutral-500">
                                 {listActionPending.type === "delete"
-                                    ? "This will remove the Kids List from this trip. You can create it again later from Personalize."
-                                    : listActionPending.list.title === "Kids List"
+                                    ? `This will remove ${listActionPending.list.title}'s list from this trip. You can create it again later from Personalize.`
+                                    : listActionPending.list.type === "shared" &&
+                                        listActionPending.list.emoji === "🧸"
                                         ? "This will restore the default kids packing recommendations. Any custom changes will be removed."
                                         : "This will reset your personalization choices and restore the default packing list. Any custom changes will be removed."}
                             </p>
@@ -556,7 +558,7 @@ export default function PackingBoard({ tripId }: Props) {
 
                                             await hidePackingListItems(listId);
 
-                                            const isKidsList = list.title === "Kids List";
+                                            const isKidsList = list.type === "shared" && list.emoji === "🧸";
 
                                             if (!isKidsList) {
                                                 localStorage.removeItem(`packing-activities-${tripId}`);

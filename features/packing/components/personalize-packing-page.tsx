@@ -59,7 +59,7 @@ export default function PersonalizePackingPage({ tripId }: Props) {
 
                 const lists = await getPackingLists(tripId);
                 setHasKidsList(
-                    lists.some((list) => list.title === "Kids List")
+                    lists.some((list) => list.type === "shared" && list.emoji === "🧸")
                 );
 
                 if (tripData?.destination) {

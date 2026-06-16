@@ -7,6 +7,7 @@ import {
     createPackingList,
     createSuggestedPackingItems,
 } from "@/features/packing/lib/packing-mutations";
+import { getPackingLists } from "@/features/packing/lib/packing-queries";
 import { kidsStarterItems } from "@/features/packing/lib/kids-packing-items";
 
 export default function KidsPackingPage() {
@@ -14,17 +15,37 @@ export default function KidsPackingPage() {
     const router = useRouter();
     const tripId = Number(params.id);
 
+    const [childName, setChildName] = useState("");
     const [saving, setSaving] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const trimmedChildName = childName.trim();
+    const canCreate = trimmedChildName.length > 0 && !saving;
 
     async function handleCreateKidsList() {
-        if (saving) return;
+        if (!canCreate) return;
 
         setSaving(true);
+        setErrorMessage(null);
 
         try {
+            const existingLists = await getPackingLists(tripId);
+
+            const duplicateKidsList = existingLists.some(
+                (list) =>
+                    list.type === "shared" &&
+                    list.emoji === "🧸" &&
+                    list.title.trim().toLowerCase() === trimmedChildName.toLowerCase()
+            );
+
+            if (duplicateKidsList) {
+                setErrorMessage(`You already have a kids list for ${trimmedChildName}.`);
+                return;
+            }
+
             const list = await createPackingList({
                 tripId,
-                title: "Kids List",
+                title: trimmedChildName,
                 type: "shared",
                 emoji: "🧸",
             });
@@ -61,14 +82,35 @@ export default function KidsPackingPage() {
                         Create a dedicated packing list for your child and invite someone to help.
                     </p>
 
+                    <label className="mt-8 block text-sm font-bold text-neutral-700">
+                        Child name
+                    </label>
+
+                    <input
+                        type="text"
+                        value={childName}
+                        onChange={(event) => {
+                            setChildName(event.target.value);
+                            setErrorMessage(null);
+                        }}
+                        placeholder="Emma"
+                        className="mt-3 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-base font-bold text-neutral-950 outline-none focus:border-rose-300 focus:bg-white"
+                    />
+
+                    {errorMessage && (
+                        <p className="mt-3 text-sm font-semibold text-rose-600">
+                            {errorMessage}
+                        </p>
+                    )}
+
                     <button
                         type="button"
-                        disabled={saving}
+                        disabled={!canCreate}
                         onClick={handleCreateKidsList}
                         className={
-                            saving
-                                ? "mt-12 w-full rounded-2xl bg-rose-600 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.18)]"
-                                : "mt-12 w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                            canCreate
+                                ? "mt-12 w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                                : "mt-12 w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
                         }
                     >
                         {saving ? "Creating..." : "Create Kids List"}
