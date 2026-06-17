@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { PackingList, PackingListItem } from "../types/packing.types";
 import PackingCategorySection from "./packing-category-section";
 
-const CATEGORY_ORDER = [
+const DEFAULT_CATEGORY_ORDER = [
     "Essentials",
     "Tech",
     "Toiletries",
@@ -18,10 +18,45 @@ const CATEGORY_ORDER = [
     "Other",
 ];
 
-function getCategorySortIndex(category: string) {
-    const index = CATEGORY_ORDER.indexOf(category);
+const KIDS_CATEGORY_ORDER = [
+    "Kids Documents",
+    "Kids Health",
+    "Kids Clothing",
+    "Kids Weather",
+    "Kids Toiletries",
+    "Baby Essentials",
+    "Baby Food",
+    "Baby Travel Gear",
+    "Toddler Essentials",
+    "Toddler Food",
+    "Toddler Entertainment",
+    "Toddler Travel Gear",
+    "Kids Food & Day Bag",
+    "Kids Comfort",
+    "Kids Entertainment",
+    "Kids Activities",
+    "Kids Practical",
+    "Teen Toiletries",
+    "Teen Tech",
+    "Teen Clothing",
+    "Teen Day Bag",
+    "Other",
+];
 
-    return index === -1 ? CATEGORY_ORDER.length : index;
+function getCategorySortIndex({
+    category,
+    isKidsList,
+}: {
+    category: string;
+    isKidsList: boolean;
+}) {
+    const categoryOrder = isKidsList
+        ? KIDS_CATEGORY_ORDER
+        : DEFAULT_CATEGORY_ORDER;
+
+    const index = categoryOrder.indexOf(category);
+
+    return index === -1 ? categoryOrder.length : index;
 }
 
 type Props = {
@@ -50,6 +85,7 @@ export default function PackingListCard({
     resetSwipeKey,
 }: Props) {
     const [open, setOpen] = useState(true);
+    const isKidsList = list.type === "shared" && list.emoji === "🧸";
 
     const packedCount = items.filter((item) => item.packed).length;
     const totalCount = items.length;
@@ -74,8 +110,14 @@ export default function PackingListCard({
                         <div className="space-y-4">
                             {Object.entries(groupedItems)
                                 .sort(([categoryA], [categoryB]) => {
-                                    const sortIndexA = getCategorySortIndex(categoryA);
-                                    const sortIndexB = getCategorySortIndex(categoryB);
+                                    const sortIndexA = getCategorySortIndex({
+                                        category: categoryA,
+                                        isKidsList,
+                                    });
+                                    const sortIndexB = getCategorySortIndex({
+                                        category: categoryB,
+                                        isKidsList,
+                                    });
 
                                     if (sortIndexA !== sortIndexB) {
                                         return sortIndexA - sortIndexB;
@@ -106,7 +148,7 @@ export default function PackingListCard({
                                 Reset list
                             </button>
 
-                            {list.type === "shared" && list.emoji === "🧸" && (
+                            {isKidsList && (
                                 <button
                                     type="button"
                                     onClick={() => onDeleteList(list)}
