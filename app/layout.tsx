@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import OfflineBanner from "@/components/OfflineBanner";
@@ -14,22 +14,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "GoVoyage",
   description: "Plan it. See it. Enjoy it.",
+
   manifest: "/manifest.json",
+
   appleWebApp: {
     capable: true,
     title: "GoVoyage",
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
   },
 };
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-  themeColor: "transparent",
+export const viewport = {
+  themeColor: "#f43f5e",
 };
 
 export default function RootLayout({
@@ -45,7 +44,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="min-h-dvh flex flex-col bg-transparent text-neutral-900">
+      <body className="min-h-full flex flex-col">
         <RegisterServiceWorker />
         <OfflineBanner />
         {children}
