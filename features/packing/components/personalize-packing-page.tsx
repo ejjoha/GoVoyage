@@ -47,7 +47,7 @@ export default function PersonalizePackingPage({ tripId }: Props) {
     const [laundry, setLaundry] = useState("Not available");
     const [activities, setActivities] = useState<string[]>([]);
     const [packingPreference, setPackingPreference] = useState("Balanced");
-    const [hasKidsList, setHasKidsList] = useState(false);
+    const [kidsListNames, setKidsListNames] = useState<string[]>([]);
 
     useEffect(() => {
         async function load() {
@@ -58,8 +58,10 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                 setTrip(tripData);
 
                 const lists = await getPackingLists(tripId);
-                setHasKidsList(
-                    lists.some((list) => list.type === "shared" && list.emoji === "🧸")
+                setKidsListNames(
+                    lists
+                        .filter((list) => list.type === "shared" && list.emoji === "🧸")
+                        .map((list) => list.title)
                 );
 
                 if (tripData?.destination) {
@@ -137,7 +139,10 @@ export default function PersonalizePackingPage({ tripId }: Props) {
         {
             icon: "🧸",
             title: "Traveling with Kids",
-            value: hasKidsList ? "Kids List active" : "Create a separate Kid's List",
+            value:
+                kidsListNames.length > 0
+                    ? kidsListNames.join(", ")
+                    : "Create a separate Kid's List",
             href: `/trips/${tripId}/packing/personalize/kids`,
             tone: "bg-yellow-100",
         },
