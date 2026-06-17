@@ -576,6 +576,13 @@ export default function PackingBoard({ tripId }: Props) {
 
                                             const savedActivities = localStorage.getItem(`packing-activities-${tripId}`);
                                             const activities = savedActivities ? JSON.parse(savedActivities) : [];
+                                            const savedLaundry = localStorage.getItem(`packing-laundry-${tripId}`);
+                                            const laundry =
+                                                savedLaundry === "Available" ||
+                                                    savedLaundry === "Hotel service" ||
+                                                    savedLaundry === "Not available"
+                                                    ? savedLaundry
+                                                    : "Not available";
 
                                             const resetItems =
                                                 isKidsList
@@ -584,6 +591,7 @@ export default function PackingBoard({ tripId }: Props) {
                                                         ageGroup: list.kids_age_group ?? "child",
                                                         climate,
                                                         activities,
+                                                        laundry,
                                                     })
                                                     : [
                                                         ...getEssentialsStarterItems(),

@@ -12,6 +12,11 @@ import {
     getLaundryAwareQuantity,
     type LaundryAvailability,
 } from "@/features/packing/lib/packing-template-engine";
+import {
+    getKidsLaundryQuantityUpdates,
+    type KidsAgeGroup,
+    type KidsLaundryAvailability,
+} from "@/features/packing/lib/kids-packing-items";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -110,6 +115,38 @@ export default function LaundryPage() {
                     });
                 })
             );
+        }
+
+        const kidsLists = lists.filter(
+            (list) =>
+                list.type === "shared" &&
+                list.emoji === "🧸" &&
+                !list.archived
+        );
+
+        if (kidsLists.length > 0) {
+            const trip = await getTripForPacking(Number(tripId));
+            const tripDays = calculateTripDays(trip.start_date, trip.end_date);
+
+            for (const kidsList of kidsLists) {
+                const existingItems = await getPackingItems(kidsList.id);
+
+                const quantityUpdates = getKidsLaundryQuantityUpdates({
+                    tripDays,
+                    ageGroup: (kidsList.kids_age_group ?? "child") as KidsAgeGroup,
+                    laundry: selected as KidsLaundryAvailability,
+                    existingItems,
+                });
+
+                await Promise.all(
+                    quantityUpdates.map((update) =>
+                        updatePackingItemQuantity({
+                            itemId: update.itemId,
+                            quantity: update.quantity,
+                        })
+                    )
+                );
+            }
         }
 
         const laundryMessages: Record<string, string> = {

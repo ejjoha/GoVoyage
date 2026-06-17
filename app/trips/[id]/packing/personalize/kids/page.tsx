@@ -105,6 +105,13 @@ export default function KidsPackingPage() {
 
             const savedActivities = localStorage.getItem(`packing-activities-${tripId}`);
             const activities = savedActivities ? JSON.parse(savedActivities) : [];
+            const savedLaundry = localStorage.getItem(`packing-laundry-${tripId}`);
+            const laundry =
+                savedLaundry === "Available" ||
+                    savedLaundry === "Hotel service" ||
+                    savedLaundry === "Not available"
+                    ? savedLaundry
+                    : "Not available";
 
             await createSuggestedPackingItems({
                 packingListId: list.id,
@@ -113,6 +120,7 @@ export default function KidsPackingPage() {
                     ageGroup,
                     climate,
                     activities,
+                    laundry,
                 }),
             });
 

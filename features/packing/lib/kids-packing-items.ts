@@ -6,6 +6,11 @@ export type KidsAgeGroup =
     | "child"
     | "teen";
 
+export type KidsLaundryAvailability =
+    | "Available"
+    | "Hotel service"
+    | "Not available";
+
 type KidsStarterItem = {
     name: string;
     category: string;
@@ -47,19 +52,33 @@ export function getKidsStarterItems({
     ageGroup = "child",
     climate = [],
     activities = [],
+    laundry = "Not available",
 }: {
     tripDays: number;
     ageGroup?: KidsAgeGroup;
     climate?: string[];
     activities?: string[];
+    laundry?: KidsLaundryAvailability;
 }): KidsStarterItem[] {
+
     const days = Math.max(1, Math.ceil(tripDays));
 
-    const socksAndUnderwear = clamp(days + 2, 3, 18);
-    const tops = clamp(days + 2, 3, 18);
-    const bottoms = clamp(Math.ceil(days / 2) + 2, 3, 10);
-    const spareOutfits = clamp(Math.ceil(days / 4), 1, 4);
-    const pajamas = clamp(Math.ceil(days / 5) + 1, 2, 5);
+    const fullDailyClothing = days + 2;
+
+    const laundryFactor =
+        laundry === "Available"
+            ? 0.65
+            : laundry === "Hotel service"
+                ? 0.8
+                : 1;
+
+    const dailyClothing = Math.ceil(fullDailyClothing * laundryFactor);
+
+    const socksAndUnderwear = clamp(dailyClothing, 3, 18);
+    const tops = clamp(dailyClothing, 3, 18);
+    const bottoms = clamp(Math.ceil((Math.ceil(days / 2) + 2) * laundryFactor), 3, 10);
+    const spareOutfits = clamp(Math.ceil((Math.ceil(days / 4)) * laundryFactor), 1, 4);
+    const pajamas = clamp(Math.ceil((Math.ceil(days / 5) + 1) * laundryFactor), 2, 5);
     const travelSnacks = clamp(Math.ceil(days / 3), 1, 7);
 
     const baseItems: KidsStarterItem[] = [
@@ -368,7 +387,7 @@ export function getKidsStarterItems({
     const climateItems: KidsStarterItem[] = [];
 
     const hasClimate = (value: string) => climate.includes(value);
-    
+
     const hasActivity = (value: string) => activities.includes(value);
     const activityItems: KidsStarterItem[] = [];
 
@@ -655,6 +674,50 @@ export function getKidsActivityPackingItems({
 
             generatedNames.add(normalized);
             return true;
+        });
+}
+
+export function getKidsLaundryQuantityUpdates({
+    tripDays,
+    ageGroup = "child",
+    laundry,
+    existingItems,
+}: {
+    tripDays: number;
+    ageGroup?: KidsAgeGroup;
+    laundry: KidsLaundryAvailability;
+    existingItems: PackingListItem[];
+}) {
+    const updatedStarterItems = getKidsStarterItems({
+        tripDays,
+        ageGroup,
+        laundry,
+    });
+
+    const laundrySensitiveNames = new Set([
+        "kids' tops or shirts",
+        "kids' bottoms",
+        "spare outfit set",
+        "kids' pajamas",
+        "kids' socks",
+        "kids' underwear",
+    ]);
+
+    return updatedStarterItems
+        .filter((item) => laundrySensitiveNames.has(normalizeName(item.name)))
+        .flatMap((templateItem) => {
+            const existingItem = existingItems.find(
+                (item) => normalizeName(item.name) === normalizeName(templateItem.name)
+            );
+
+            if (!existingItem) return [];
+
+            return [
+                {
+                    itemId: existingItem.id,
+                    quantity: templateItem.quantity,
+                },
+            ];
         });
 }
 
