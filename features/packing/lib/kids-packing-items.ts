@@ -46,10 +46,12 @@ export function getKidsStarterItems({
     tripDays,
     ageGroup = "child",
     climate = [],
+    activities = [],
 }: {
     tripDays: number;
     ageGroup?: KidsAgeGroup;
     climate?: string[];
+    activities?: string[];
 }): KidsStarterItem[] {
     const days = Math.max(1, Math.ceil(tripDays));
 
@@ -366,6 +368,126 @@ export function getKidsStarterItems({
     const climateItems: KidsStarterItem[] = [];
 
     const hasClimate = (value: string) => climate.includes(value);
+    
+    const hasActivity = (value: string) => activities.includes(value);
+    const activityItems: KidsStarterItem[] = [];
+
+    if (hasActivity("Beach")) {
+        activityItems.push(
+            kidsItem({
+                name: "Kids' beach shoes",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Beach toys",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Kids' beach towel",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Floaties if needed",
+                category: "Kids Activities",
+            })
+        );
+    }
+
+    if (hasActivity("Swimming")) {
+        activityItems.push(
+            kidsItem({
+                name: "Kids' goggles",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Swim bag",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Wet bag for swimwear",
+                category: "Kids Activities",
+            })
+        );
+    }
+
+    if (hasActivity("Hiking")) {
+        activityItems.push(
+            kidsItem({
+                name: "Kids' hiking shoes",
+                category: "Kids Activities",
+                protected: true,
+            }),
+            kidsItem({
+                name: "Kids' daypack",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Trail snacks",
+                category: "Kids Activities",
+                quantity: clamp(Math.ceil(days / 3), 1, 7),
+            }),
+            kidsItem({
+                name: "Blister plasters",
+                category: "Kids Activities",
+            })
+        );
+    }
+
+    if (hasActivity("City walks") || hasActivity("Museums") || hasActivity("Shopping")) {
+        activityItems.push(
+            kidsItem({
+                name: "Comfortable walking shoes",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Small activity book",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Light day bag",
+                category: "Kids Activities",
+            })
+        );
+    }
+
+    if (hasActivity("Fine dining")) {
+        activityItems.push(
+            kidsItem({
+                name: "Dressy kids outfit",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Dressy kids shoes",
+                category: "Kids Activities",
+            })
+        );
+    }
+
+    if (hasActivity("Nightlife")) {
+        activityItems.push(
+            kidsItem({
+                name: "Evening comfort layer",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Quiet activity for evenings",
+                category: "Kids Activities",
+            })
+        );
+    }
+
+    if (hasActivity("Business meetings")) {
+        activityItems.push(
+            kidsItem({
+                name: "Quiet activity kit",
+                category: "Kids Activities",
+            }),
+            kidsItem({
+                name: "Neat kids outfit",
+                category: "Kids Activities",
+            })
+        );
+    }
 
     if (
         hasClimate("Hot weather") ||
@@ -450,17 +572,17 @@ export function getKidsStarterItems({
 
     switch (ageGroup) {
         case "baby":
-            return [...baseItems, ...babyItems, ...climateItems];
+            return [...baseItems, ...babyItems, ...climateItems, ...activityItems];
 
         case "toddler":
-            return [...baseItems, ...toddlerItems, ...climateItems];
+            return [...baseItems, ...toddlerItems, ...climateItems, ...activityItems];
 
         case "teen":
-            return [...baseItems, ...teenItems, ...climateItems];
+            return [...baseItems, ...teenItems, ...climateItems, ...activityItems];
 
         case "child":
         default:
-            return [...baseItems, ...childItems, ...climateItems];
+            return [...baseItems, ...childItems, ...climateItems, ...activityItems];
     }
 }
 
@@ -491,6 +613,40 @@ export function getKidsClimatePackingItems({
         climate,
     })
         .filter((item) => item.category === "Kids Weather")
+        .filter((item) => {
+            const normalized = normalizeName(item.name);
+
+            if (existingNames.has(normalized)) return false;
+            if (generatedNames.has(normalized)) return false;
+
+            generatedNames.add(normalized);
+            return true;
+        });
+}
+
+export function getKidsActivityPackingItems({
+    tripDays,
+    ageGroup = "child",
+    activities,
+    existingItems,
+}: {
+    tripDays: number;
+    ageGroup?: KidsAgeGroup;
+    activities: string[];
+    existingItems: PackingListItem[];
+}) {
+    const existingNames = new Set(
+        existingItems.map((item) => normalizeName(item.name))
+    );
+
+    const generatedNames = new Set<string>();
+
+    return getKidsStarterItems({
+        tripDays,
+        ageGroup,
+        activities,
+    })
+        .filter((item) => item.category === "Kids Activities")
         .filter((item) => {
             const normalized = normalizeName(item.name);
 

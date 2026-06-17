@@ -2,7 +2,15 @@
 
 import BackButton from "@/components/ui/back-button";
 import { createSuggestedPackingItems } from "@/features/packing/lib/packing-mutations";
-import { getPackingItems, getPackingLists } from "@/features/packing/lib/packing-queries";
+import {
+    getPackingItems,
+    getPackingLists,
+    getTripForPacking,
+} from "@/features/packing/lib/packing-queries";
+import {
+    getKidsActivityPackingItems,
+    type KidsAgeGroup,
+} from "@/features/packing/lib/kids-packing-items";
 import { getActivityPackingItems } from "@/features/packing/lib/packing-profile-recommendations";
 import { useParams, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -56,6 +64,18 @@ const activityOptions = [
         description: "Workwear, documents and professional essentials",
     },
 ];
+
+function calculateTripDays(startDate?: string | null, endDate?: string | null) {
+    if (!startDate || !endDate) return 1;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const differenceInMs = end.getTime() - start.getTime();
+    const days = Math.ceil(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
+
+    return Math.max(days, 1);
+}
 
 export default function ActivitiesPage() {
     const params = useParams<{ id: string }>();
@@ -137,7 +157,39 @@ export default function ActivitiesPage() {
                     items: itemsToCreate,
                 });
 
-                addedCount = itemsToCreate.length;
+                addedCount += itemsToCreate.length;
+            }
+        }
+
+        const kidsLists = lists.filter(
+            (list) =>
+                list.type === "shared" &&
+                list.emoji === "🧸" &&
+                !list.archived
+        );
+
+        if (kidsLists.length > 0) {
+            const trip = await getTripForPacking(Number(tripId));
+            const tripDays = calculateTripDays(trip.start_date, trip.end_date);
+
+            for (const kidsList of kidsLists) {
+                const existingItems = await getPackingItems(kidsList.id);
+
+                const itemsToCreate = getKidsActivityPackingItems({
+                    tripDays,
+                    ageGroup: (kidsList.kids_age_group ?? "child") as KidsAgeGroup,
+                    activities: selected,
+                    existingItems,
+                });
+
+                if (itemsToCreate.length > 0) {
+                    await createSuggestedPackingItems({
+                        packingListId: kidsList.id,
+                        items: itemsToCreate,
+                    });
+
+                    addedCount += itemsToCreate.length;
+                }
             }
         }
 

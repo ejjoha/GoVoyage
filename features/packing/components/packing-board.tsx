@@ -574,12 +574,16 @@ export default function PackingBoard({ tripId }: Props) {
                                             const savedClimate = localStorage.getItem(`packing-climate-${tripId}`);
                                             const climate = savedClimate ? JSON.parse(savedClimate) : [];
 
+                                            const savedActivities = localStorage.getItem(`packing-activities-${tripId}`);
+                                            const activities = savedActivities ? JSON.parse(savedActivities) : [];
+
                                             const resetItems =
                                                 isKidsList
                                                     ? getKidsStarterItems({
                                                         tripDays,
                                                         ageGroup: list.kids_age_group ?? "child",
                                                         climate,
+                                                        activities,
                                                     })
                                                     : [
                                                         ...getEssentialsStarterItems(),
