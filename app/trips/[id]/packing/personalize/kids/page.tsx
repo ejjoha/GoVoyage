@@ -162,8 +162,8 @@ export default function KidsPackingPage() {
                             setChildName(event.target.value);
                             setErrorMessage(null);
                         }}
-                        placeholder="Emma"
-                        className="mt-3 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-base font-bold text-neutral-950 outline-none focus:border-rose-300 focus:bg-white"
+                        placeholder="e.g. Emma"
+                        className="mt-3 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-[13px] font-regular text-neutral-950 outline-none placeholder:text-neutral-300 focus:border-rose-300 focus:bg-white"
                     />
 
                     {errorMessage && (
