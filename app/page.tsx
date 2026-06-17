@@ -374,8 +374,8 @@ export default function HomePage() {
   const hasAnyTrips = trips.length > 0 || pendingInvites.length > 0;
 
   return (
-    <main className="min-h-screen overflow-x-clip px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto w-full max-w-2xl min-w-0">
+    <main className="min-h-dvh overflow-x-clip pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+      <div className="mx-auto w-full max-w-2xl min-w-0 px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] sm:px-6 sm:pt-8">
         {isLoading ? (
           <HomeHeroSkeleton />
         ) : (
