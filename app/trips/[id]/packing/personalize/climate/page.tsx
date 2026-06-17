@@ -2,8 +2,16 @@
 
 import BackButton from "@/components/ui/back-button";
 import { createSuggestedPackingItems } from "@/features/packing/lib/packing-mutations";
-import { getPackingItems, getPackingLists } from "@/features/packing/lib/packing-queries";
+import {
+    getPackingItems,
+    getPackingLists,
+    getTripForPacking,
+} from "@/features/packing/lib/packing-queries";
 import { getClimatePackingItems } from "@/features/packing/lib/packing-profile-recommendations";
+import {
+    getKidsClimatePackingItems,
+    type KidsAgeGroup,
+} from "@/features/packing/lib/kids-packing-items";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -73,6 +81,18 @@ type ClimateOption = {
     emoji: string;
     description: string;
 };
+
+function calculateTripDays(startDate?: string | null, endDate?: string | null) {
+    if (!startDate || !endDate) return 1;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const differenceInMs = end.getTime() - start.getTime();
+    const days = Math.ceil(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
+
+    return Math.max(days, 1);
+}
 
 function ClimateRow({
     option,
@@ -196,7 +216,39 @@ export default function ClimatePage() {
                     items: itemsToCreate,
                 });
 
-                addedCount = itemsToCreate.length;
+                addedCount += itemsToCreate.length;
+            }
+        }
+
+        const kidsLists = lists.filter(
+            (list) =>
+                list.type === "shared" &&
+                list.emoji === "🧸" &&
+                !list.archived
+        );
+
+        if (kidsLists.length > 0) {
+            const trip = await getTripForPacking(Number(tripId));
+            const tripDays = calculateTripDays(trip.start_date, trip.end_date);
+
+            for (const kidsList of kidsLists) {
+                const existingItems = await getPackingItems(kidsList.id);
+
+                const itemsToCreate = getKidsClimatePackingItems({
+                    tripDays,
+                    ageGroup: (kidsList.kids_age_group ?? "child") as KidsAgeGroup,
+                    climate: selected,
+                    existingItems,
+                });
+
+                if (itemsToCreate.length > 0) {
+                    await createSuggestedPackingItems({
+                        packingListId: kidsList.id,
+                        items: itemsToCreate,
+                    });
+
+                    addedCount += itemsToCreate.length;
+                }
             }
         }
 

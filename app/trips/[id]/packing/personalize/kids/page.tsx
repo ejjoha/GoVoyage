@@ -100,11 +100,26 @@ export default function KidsPackingPage() {
             const trip = await getTripForPacking(tripId);
             const tripDays = calculateTripDays(trip.start_date, trip.end_date);
 
+            const savedClimate = localStorage.getItem(`packing-climate-${tripId}`);
+            const climate = savedClimate ? JSON.parse(savedClimate) : [];
+
+            console.log("Creating kids list with climate", {
+                tripId,
+                savedClimate,
+                climate,
+                generatedItems: getKidsStarterItems({
+                    tripDays,
+                    ageGroup,
+                    climate,
+                }).map((item) => item.name),
+            });
+
             await createSuggestedPackingItems({
                 packingListId: list.id,
                 items: getKidsStarterItems({
                     tripDays,
                     ageGroup,
+                    climate,
                 }),
             });
 

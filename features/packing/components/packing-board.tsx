@@ -571,11 +571,15 @@ export default function PackingBoard({ tripId }: Props) {
                                                 ? calculateTripDays(trip.start_date, trip.end_date)
                                                 : 1;
 
+                                            const savedClimate = localStorage.getItem(`packing-climate-${tripId}`);
+                                            const climate = savedClimate ? JSON.parse(savedClimate) : [];
+
                                             const resetItems =
                                                 isKidsList
                                                     ? getKidsStarterItems({
                                                         tripDays,
                                                         ageGroup: list.kids_age_group ?? "child",
+                                                        climate,
                                                     })
                                                     : [
                                                         ...getEssentialsStarterItems(),

@@ -1,3 +1,5 @@
+import type { PackingListItem } from "../types/packing.types";
+
 export type KidsAgeGroup =
     | "baby"
     | "toddler"
@@ -43,9 +45,11 @@ function clamp(value: number, min: number, max: number) {
 export function getKidsStarterItems({
     tripDays,
     ageGroup = "child",
+    climate = [],
 }: {
     tripDays: number;
     ageGroup?: KidsAgeGroup;
+    climate?: string[];
 }): KidsStarterItem[] {
     const days = Math.max(1, Math.ceil(tripDays));
 
@@ -359,20 +363,143 @@ export function getKidsStarterItems({
         }),
     ];
 
+    const climateItems: KidsStarterItem[] = [];
+
+    const hasClimate = (value: string) => climate.includes(value);
+
+    if (
+        hasClimate("Hot weather") ||
+        hasClimate("Warm") ||
+        hasClimate("Humid") ||
+        hasClimate("Dry")
+    ) {
+        climateItems.push(
+            kidsItem({
+                name: "Kids' sun hat",
+                category: "Kids Weather",
+            }),
+            kidsItem({
+                name: "Kids' sunglasses",
+                category: "Kids Weather",
+            }),
+            kidsItem({
+                name: "Kids' swimwear",
+                category: "Kids Weather",
+                quantity: clamp(Math.ceil(days / 4), 1, 4),
+            }),
+            kidsItem({
+                name: "After-sun lotion",
+                category: "Kids Weather",
+            })
+        );
+    }
+
+    if (hasClimate("Rainy")) {
+        climateItems.push(
+            kidsItem({
+                name: "Kids' rain jacket",
+                category: "Kids Weather",
+            }),
+            kidsItem({
+                name: "Waterproof shoes",
+                category: "Kids Weather",
+            }),
+            kidsItem({
+                name: "Extra socks for wet days",
+                category: "Kids Weather",
+                quantity: clamp(Math.ceil(days / 3), 1, 6),
+            })
+        );
+    }
+
+    if (hasClimate("Cold weather") || hasClimate("Freezing") || hasClimate("Snowy")) {
+        climateItems.push(
+            kidsItem({
+                name: "Warm hat",
+                category: "Kids Weather",
+            }),
+            kidsItem({
+                name: "Gloves or mittens",
+                category: "Kids Weather",
+            }),
+            kidsItem({
+                name: "Thermal base layer",
+                category: "Kids Weather",
+                quantity: clamp(Math.ceil(days / 3), 1, 5),
+            }),
+            kidsItem({
+                name: "Warm socks",
+                category: "Kids Weather",
+                quantity: clamp(Math.ceil(days / 3), 1, 6),
+            })
+        );
+    }
+
+    if (hasClimate("Windy") || hasClimate("Mountains")) {
+        climateItems.push(
+            kidsItem({
+                name: "Windbreaker",
+                category: "Kids Weather",
+            }),
+            kidsItem({
+                name: "Extra warm layer",
+                category: "Kids Weather",
+            })
+        );
+    }
+
     switch (ageGroup) {
         case "baby":
-            return [...baseItems, ...babyItems];
+            return [...baseItems, ...babyItems, ...climateItems];
 
         case "toddler":
-            return [...baseItems, ...toddlerItems];
+            return [...baseItems, ...toddlerItems, ...climateItems];
 
         case "teen":
-            return [...baseItems, ...teenItems];
+            return [...baseItems, ...teenItems, ...climateItems];
 
         case "child":
         default:
-            return [...baseItems, ...childItems];
+            return [...baseItems, ...childItems, ...climateItems];
     }
+}
+
+function normalizeName(name: string) {
+    return name.trim().toLowerCase();
+}
+
+export function getKidsClimatePackingItems({
+    tripDays,
+    ageGroup = "child",
+    climate,
+    existingItems,
+}: {
+    tripDays: number;
+    ageGroup?: KidsAgeGroup;
+    climate: string[];
+    existingItems: PackingListItem[];
+}) {
+    const existingNames = new Set(
+        existingItems.map((item) => normalizeName(item.name))
+    );
+
+    const generatedNames = new Set<string>();
+
+    return getKidsStarterItems({
+        tripDays,
+        ageGroup,
+        climate,
+    })
+        .filter((item) => item.category === "Kids Weather")
+        .filter((item) => {
+            const normalized = normalizeName(item.name);
+
+            if (existingNames.has(normalized)) return false;
+            if (generatedNames.has(normalized)) return false;
+
+            generatedNames.add(normalized);
+            return true;
+        });
 }
 
 export const kidsStarterItems = getKidsStarterItems({
