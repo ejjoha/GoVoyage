@@ -23,12 +23,12 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     title: "GoVoyage",
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
   },
 };
 
 export const viewport = {
-  themeColor: "#f43f5e",
+  themeColor: "#F6F1E9",
 };
 
 export default function RootLayout({
