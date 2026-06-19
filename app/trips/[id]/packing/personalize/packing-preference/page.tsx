@@ -160,20 +160,25 @@ export default function PackingPreferencePage() {
                             );
                         })}
                     </div>
+
+                    <div className="mx-5 h-px bg-black/10" />
+
+                    <div className="px-5 pb-5 pt-5">
+                        <button
+                            type="button"
+                            disabled={!hasChanges || Boolean(successMessage)}
+                            onClick={handleSave}
+                            className={
+                                hasChanges && !successMessage
+                                    ? "w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                                    : "w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
+                            }
+                        >
+                            Save Preference
+                        </button>
+                    </div>
                 </div>
 
-                <button
-                    type="button"
-                    disabled={!hasChanges || Boolean(successMessage)}
-                    onClick={handleSave}
-                    className={
-                        hasChanges && !successMessage
-                            ? "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
-                            : "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
-                    }
-                >
-                    Save Preference
-                </button>
                 {successMessage && (
                     <>
                         <div className="fixed inset-0 z-[70] bg-black/10 backdrop-blur-[3px]" />

@@ -264,63 +264,69 @@ export default function ActivitiesPage() {
 
                     <div className="mx-5 h-px bg-black/10" />
 
-                    {activityOptions.map((activity, index) => {
-                        const active = selected.includes(activity.value);
-                        const isLast = index === activityOptions.length - 1;
+                    <div>
+                        {activityOptions.map((activity, index) => {
+                            const active = selected.includes(activity.value);
+                            const isLast = index === activityOptions.length - 1;
 
-                        return (
-                            <button
-                                key={activity.value}
-                                type="button"
-                                onClick={() => toggleActivity(activity.value)}
-                                className="relative flex min-h-[72px] w-full items-center bg-white px-5 text-left transition active:bg-neutral-50"
-                            >
-                                <div className="mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-neutral-100">
-                                    <span className="text-[24px] leading-none">
-                                        {activity.emoji}
-                                    </span>
-                                </div>
-
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[16px] font-bold tracking-[-0.015em] text-neutral-950 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]">
-                                        {activity.value}
-                                    </p>
-
-                                    <p className="mt-1.5 truncate text-[13px] font-normal text-black">
-                                        {activity.description}
-                                    </p>
-                                </div>
-
-                                <span
-                                    className={
-                                        active
-                                            ? "ml-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-500 text-sm font-bold text-white"
-                                            : "ml-3 h-6 w-6 shrink-0 rounded-full bg-neutral-100"
-                                    }
+                            return (
+                                <button
+                                    key={activity.value}
+                                    type="button"
+                                    onClick={() => toggleActivity(activity.value)}
+                                    className="relative flex min-h-[72px] w-full items-center bg-white px-5 text-left transition active:bg-neutral-50"
                                 >
-                                    {active ? "✓" : ""}
-                                </span>
+                                    <div className="mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-neutral-100">
+                                        <span className="text-[24px] leading-none">
+                                            {activity.emoji}
+                                        </span>
+                                    </div>
 
-                                {!isLast && (
-                                    <div className="absolute bottom-0 left-5 right-5 h-px bg-black/10" />
-                                )}
-                            </button>
-                        );
-                    })}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[16px] font-bold tracking-[-0.015em] text-neutral-950 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]">
+                                            {activity.value}
+                                        </p>
+
+                                        <p className="mt-1.5 truncate text-[13px] font-normal text-black">
+                                            {activity.description}
+                                        </p>
+                                    </div>
+
+                                    <span
+                                        className={
+                                            active
+                                                ? "ml-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-500 text-sm font-bold text-white"
+                                                : "ml-3 h-6 w-6 shrink-0 rounded-full bg-neutral-100"
+                                        }
+                                    >
+                                        {active ? "✓" : ""}
+                                    </span>
+
+                                    {!isLast && (
+                                        <div className="absolute bottom-0 left-5 right-5 h-px bg-black/10" />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="mx-5 h-px bg-black/10" />
+
+                    <div className="px-5 pb-5 pt-5">
+                        <button
+                            type="button"
+                            disabled={!hasChanges || saving || Boolean(successMessage)}
+                            onClick={handleSave}
+                            className={
+                                hasChanges && !saving && !successMessage
+                                    ? "w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                                    : "w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
+                            }
+                        >
+                            {saving || successMessage ? "Saved" : "Save Activities"}
+                        </button>
+                    </div>
                 </div>
-
-                <button
-                    type="button"
-                    disabled={!hasChanges || saving || Boolean(successMessage)}
-                    onClick={handleSave}
-                    className={
-                        hasChanges && !saving && !successMessage
-                            ? "mt-12 w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
-                            : "mt-12 w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
-                    }
-                >
-                    {saving || successMessage ? "Saved" : "Save Activities"}
-                </button>
 
                 {successMessage && toastRoot &&
                     createPortal(

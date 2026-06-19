@@ -186,81 +186,85 @@ export default function LaundryPage() {
                     </div>
 
                     <div className="mx-5 h-px bg-black/10" />
-                    {laundryOptions.map((option, index) => {
-                        const active = selected === option.value;
-                        const isLast = index === laundryOptions.length - 1;
+                    <div>
+                        {laundryOptions.map((option, index) => {
+                            const active = selected === option.value;
+                            const isLast = index === laundryOptions.length - 1;
 
-                        return (
-                            <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => setSelected(option.value)}
-                                className="relative flex min-h-[72px] w-full items-center bg-white px-5 text-left transition active:bg-neutral-50"
-                            >
-                                <div className="mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-neutral-100">
-                                    <span className="text-[24px] leading-none">
-                                        {option.emoji}
-                                    </span>
-                                </div>
-
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[16px] font-bold tracking-[-0.015em] text-neutral-950 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]">
-                                        {option.value}
-                                    </p>
-
-                                    <p className="mt-1.5 truncate text-[13px] font-normal text-black">
-                                        {option.description}
-                                    </p>
-                                </div>
-
-                                <span
-                                    className={
-                                        active
-                                            ? "ml-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-500 text-sm font-bold text-white"
-                                            : "ml-3 h-6 w-6 shrink-0 rounded-full bg-neutral-100"
-                                    }
+                            return (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => setSelected(option.value)}
+                                    className="relative flex min-h-[72px] w-full items-center bg-white px-5 text-left transition active:bg-neutral-50"
                                 >
-                                    {active ? "✓" : ""}
-                                </span>
+                                    <div className="mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-neutral-100">
+                                        <span className="text-[24px] leading-none">
+                                            {option.emoji}
+                                        </span>
+                                    </div>
 
-                                {!isLast && (
-                                    <div className="absolute bottom-0 left-5 right-5 h-px bg-black/10" />
-                                )}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[16px] font-bold tracking-[-0.015em] text-neutral-950 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]">
+                                            {option.value}
+                                        </p>
+
+                                        <p className="mt-1.5 truncate text-[13px] font-normal text-black">
+                                            {option.description}
+                                        </p>
+                                    </div>
+
+                                    <span
+                                        className={
+                                            active
+                                                ? "ml-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-500 text-sm font-bold text-white"
+                                                : "ml-3 h-6 w-6 shrink-0 rounded-full bg-neutral-100"
+                                        }
+                                    >
+                                        {active ? "✓" : ""}
+                                    </span>
+
+                                    {!isLast && (
+                                        <div className="absolute bottom-0 left-5 right-5 h-px bg-black/10" />
+                                    )}
+                                </button>
+                            );
+                        })}
+                        <div className="mx-5 h-px bg-black/10" />
+                        <div className="px-5 pb-5 pt-5">
+                            <button
+                                type="button"
+                                disabled={!hasChanges || Boolean(successMessage)}
+                                onClick={handleSave}
+                                className={
+                                    hasChanges && !successMessage
+                                        ? "w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                                        : "w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
+                                }
+                            >
+                                {successMessage ? "Saved" : "Save Laundry"}
                             </button>
-                        );
-                    })}
-                </div>
-
-                <button
-                    type="button"
-                    disabled={!hasChanges || Boolean(successMessage)}
-                    onClick={handleSave}
-                    className={
-                        hasChanges && !successMessage
-                            ? "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
-                            : "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
-                    }
-                >
-                    {successMessage ? "Saved" : "Save Laundry"}
-                </button>
-
-                {successMessage && (
-                    <>
-                        <div className="fixed inset-0 z-[70] bg-black/10 backdrop-blur-[3px]" />
-
-                        <div className="fixed inset-0 z-[80] flex items-center justify-center px-5">
-                            <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
-                                <p className="text-base font-extrabold tracking-[-0.03em] text-neutral-950">
-                                    Laundry saved
-                                </p>
-
-                                <p className="mt-2 text-sm font-medium leading-5 text-neutral-500">
-                                    {successMessage}
-                                </p>
-                            </div>
                         </div>
-                    </>
-                )}
+
+                        {successMessage && (
+                            <>
+                                <div className="fixed inset-0 z-[70] bg-black/10 backdrop-blur-[3px]" />
+
+                                <div className="fixed inset-0 z-[80] flex items-center justify-center px-5">
+                                    <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
+                                        <p className="text-base font-extrabold tracking-[-0.03em] text-neutral-950">
+                                            Laundry saved
+                                        </p>
+
+                                        <p className="mt-2 text-sm font-medium leading-5 text-neutral-500">
+                                            {successMessage}
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
             </div>
         </main>
     );
