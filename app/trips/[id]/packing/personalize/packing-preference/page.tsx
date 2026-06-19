@@ -1,6 +1,6 @@
 "use client";
 
-import BackButton from "@/components/ui/back-button";
+import PersonalizeHero from "@/features/packing/components/personalize-hero";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, type MouseEvent } from "react";
 
@@ -86,82 +86,90 @@ export default function PackingPreferencePage() {
             className={`${isLeaving ? "packing-slide-down-page" : "packing-slide-up-page"
                 } min-h-screen bg-[#f6f1e8] text-neutral-950`}
         >
-            <div className="mx-auto max-w-md px-5 py-8">
-                <div
-                    className="flex items-center justify-between"
-                    onClickCapture={handleBack}
-                >
-                    <BackButton
+            <div className="mx-auto max-w-md pb-24">
+                <div onClickCapture={handleBack}>
+                    <PersonalizeHero
                         href={`/trips/${tripId}/packing/personalize`}
-                        ariaLabel="Go back"
+                        title="Packing Preference"
+                        description="Tell us how much you like to prepare."
+                        imageSrc="/images/packing-personalize/packing-preference.png"
+                        imageAlt="Packing preference"
+                        isLeaving={isLeaving}
                     />
                 </div>
 
-                <h1 className="mt-12 text-[22px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.06)]">
-                    Packing Preference
-                </h1>
+                <div className="relative z-20 mx-5 -mt-16 overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_70px_rgba(70,55,35,0.16)]">
+                    <div className="px-5 pb-4 pt-6">
+                        <h1 className="text-[24px] font-extrabold leading-none tracking-[-0.06em] text-neutral-950 drop-shadow-[0_8px_12px_rgba(70,55,35,0.10)]">
+                            Packing Preference
+                        </h1>
 
-                <p className="mt-4 text-[16px] leading-7 text-black">
-                    How much do you like to prepare?
-                </p>
+                        <p className="mt-3 text-[15px] leading-6 text-neutral-500">
+                            How much do you like to prepare?
+                        </p>
+                    </div>
 
-                <div className="mt-10 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
-                    {options.map((option, index) => {
-                        const active = selected === option.value;
-                        const isLast = index === options.length - 1;
+                    <div className="mx-5 h-px bg-black/10" />
 
-                        return (
-                            <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => setSelected(option.value)}
-                                className="relative flex min-h-[72px] w-full items-center bg-white px-5 text-left transition active:bg-neutral-50"
-                            >
-                                <div
-                                    className="mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-neutral-100"
+                    <div>
+                        {options.map((option, index) => {
+                            const active = selected === option.value;
+                            const isLast = index === options.length - 1;
+
+                            return (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => setSelected(option.value)}
+                                    className="relative flex min-h-[72px] w-full items-center bg-white px-5 text-left transition active:bg-neutral-50"
                                 >
-                                    <span className="text-[24px] leading-none">
-                                        {option.emoji}
-                                    </span>
-                                </div>
-
-                                <div className="min-w-0 flex-1">
-                                    <p
-                                        className="text-[16px] font-bold tracking-[-0.015em] text-neutral-950 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]"
+                                    <div
+                                        className="mr-[18px] flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-neutral-100"
                                     >
-                                        {option.value}
-                                    </p>
+                                        <span className="text-[24px] leading-none">
+                                            {option.emoji}
+                                        </span>
+                                    </div>
 
-                                    <p className="mt-1.5 truncate text-[13px] font-normal text-black">
-                                        {option.description}
-                                    </p>
-                                </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p
+                                            className="text-[16px] font-bold tracking-[-0.015em] text-neutral-950 drop-shadow-[0_4px_4px_rgba(70,55,35,0.12)]"
+                                        >
+                                            {option.value}
+                                        </p>
 
-                                <span
-                                    className={
-                                        active
-                                            ? "ml-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-500 text-sm font-bold text-white"
-                                            : "ml-3 h-6 w-6 shrink-0 rounded-full bg-neutral-100"
-                                    }
-                                >
-                                    {active ? "✓" : ""}
-                                </span>
+                                        <p className="mt-1.5 truncate text-[13px] font-normal text-black">
+                                            {option.description}
+                                        </p>
+                                    </div>
 
-                                {!isLast && (
-                                    <div className="absolute bottom-0 left-5 right-5 h-px bg-black/10" />
-                                )}
-                            </button>
-                        );
-                    })}
+                                    <span
+                                        className={
+                                            active
+                                                ? "ml-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-500 text-sm font-bold text-white"
+                                                : "ml-3 h-6 w-6 shrink-0 rounded-full bg-neutral-100"
+                                        }
+                                    >
+                                        {active ? "✓" : ""}
+                                    </span>
+
+                                    {!isLast && (
+                                        <div className="absolute bottom-0 left-5 right-5 h-px bg-black/10" />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
+
                 <button
                     type="button"
                     disabled={!hasChanges || Boolean(successMessage)}
                     onClick={handleSave}
                     className={
                         hasChanges && !successMessage
-                            ? "mt-12 w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
-                            : "mt-12 w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
+                            ? "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                            : "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
                     }
                 >
                     Save Preference

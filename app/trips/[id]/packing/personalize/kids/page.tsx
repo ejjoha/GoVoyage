@@ -1,6 +1,6 @@
 "use client";
 
-import BackButton from "@/components/ui/back-button";
+import PersonalizeHero from "@/features/packing/components/personalize-hero";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -132,89 +132,95 @@ export default function KidsPackingPage() {
 
     return (
         <main className="packing-slide-up-page min-h-screen bg-[#f6f1e8] text-neutral-950">
-            <div className="mx-auto max-w-md px-5 py-14">
-                <BackButton
+            <div className="mx-auto max-w-md pb-24">
+                <PersonalizeHero
                     href={`/trips/${tripId}/packing/personalize`}
-                    ariaLabel="Go back"
+                    title="Traveling with Kids"
+                    description="Create a dedicated packing list for your child and tailor it to their age and trip needs."
+                    imageSrc="/images/packing-personalize/kids.png"
+                    imageAlt="Traveling with kids packing"
                 />
 
-                <div className="mt-12 rounded-[2rem] bg-white p-6 shadow-[0_14px_40px_rgba(0,0,0,0.08)]">
-                    <div className="text-6xl drop-shadow-[0_12px_6px_rgba(70,55,35,0.22)]">
-                        🧸
+                <div className="relative z-20 mx-5 -mt-16 overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_70px_rgba(70,55,35,0.16)]">
+                    <div className="px-5 pb-4 pt-6">
+                        <h1 className="text-[24px] font-extrabold leading-none tracking-[-0.06em] text-neutral-950 drop-shadow-[0_8px_12px_rgba(70,55,35,0.10)]">
+                            Traveling with Kids
+                        </h1>
+
+                        <p className="mt-3 text-[15px] leading-6 text-neutral-500">
+                            Create a dedicated packing list for your child and tailor it to their age and trip needs.
+                        </p>
                     </div>
 
-                    <h1 className="mt-8 text-[18px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.06)]">
-                        Traveling with Kids
-                    </h1>
+                    <div className="mx-5 h-px bg-black/10" />
 
-                    <p className="mt-2 text-[14px] leading-7 text-neutral-black">
-                        Create a dedicated packing list for your child and invite someone to help.
-                    </p>
+                    <div className="p-6">
 
-                    <label className="mt-8 block text-sm font-bold text-neutral-700">
-                        Child name
-                    </label>
+                        <label className="block text-sm font-bold text-neutral-700">
+                            Child name
+                        </label>
 
-                    <input
-                        type="text"
-                        value={childName}
-                        onChange={(event) => {
-                            setChildName(event.target.value);
-                            setErrorMessage(null);
-                        }}
-                        placeholder="e.g. Emma"
-                        className="mt-3 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-[13px] font-regular text-neutral-950 outline-none placeholder:text-neutral-300 focus:border-rose-300 focus:bg-white"
-                    />
+                        <input
+                            type="text"
+                            value={childName}
+                            onChange={(event) => {
+                                setChildName(event.target.value);
+                                setErrorMessage(null);
+                            }}
+                            placeholder="e.g. Emma"
+                            className="mt-3 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-[13px] font-regular text-neutral-950 outline-none placeholder:text-neutral-300 focus:border-rose-300 focus:bg-white"
+                        />
 
-                    {errorMessage && (
-                        <p className="mt-3 text-sm font-semibold text-rose-600">
-                            {errorMessage}
-                        </p>
-                    )}
-                    <div className="mt-8">
-                        <p className="text-sm font-bold text-neutral-700">
-                            Age group
-                        </p>
+                        {errorMessage && (
+                            <p className="mt-3 text-sm font-semibold text-rose-600">
+                                {errorMessage}
+                            </p>
+                        )}
+                        <div className="mt-8">
+                            <p className="text-sm font-bold text-neutral-700">
+                                Age group
+                            </p>
 
-                        <div className="mt-3 grid gap-2">
-                            {ageOptions.map((option) => {
-                                const active = ageGroup === option.value;
+                            <div className="mt-3 grid gap-2">
+                                {ageOptions.map((option) => {
+                                    const active = ageGroup === option.value;
 
-                                return (
-                                    <button
-                                        key={option.value}
-                                        type="button"
-                                        onClick={() => setAgeGroup(option.value)}
-                                        className={
-                                            active
-                                                ? "rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-left shadow-[0_10px_24px_rgba(244,63,94,0.12)]"
-                                                : "rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-left"
-                                        }
-                                    >
-                                        <p className="text-sm font-extrabold text-neutral-950">
-                                            {option.label}
-                                        </p>
+                                    return (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() => setAgeGroup(option.value)}
+                                            className={
+                                                active
+                                                    ? "rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-left shadow-[0_10px_24px_rgba(244,63,94,0.12)]"
+                                                    : "rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-left"
+                                            }
+                                        >
+                                            <p className="text-sm font-extrabold text-neutral-950">
+                                                {option.label}
+                                            </p>
 
-                                        <p className="mt-1 text-xs font-medium leading-5 text-neutral-500">
-                                            {option.description}
-                                        </p>
-                                    </button>
-                                );
-                            })}
+                                            <p className="mt-1 text-xs font-medium leading-5 text-neutral-500">
+                                                {option.description}
+                                            </p>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
+                        <button
+                            type="button"
+                            disabled={!canCreate}
+                            onClick={handleCreateKidsList}
+                            className={
+                                canCreate
+                                    ? "mt-12 w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                                    : "mt-12 w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
+                            }
+                        >
+                            {saving ? "Creating..." : "Create Kids List"}
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        disabled={!canCreate}
-                        onClick={handleCreateKidsList}
-                        className={
-                            canCreate
-                                ? "mt-12 w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
-                                : "mt-12 w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
-                        }
-                    >
-                        {saving ? "Creating..." : "Create Kids List"}
-                    </button>
                 </div>
             </div>
         </main>
