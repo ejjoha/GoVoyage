@@ -97,7 +97,7 @@ export default function PackingPreferencePage() {
                     />
                 </div>
 
-                <h1 className="mt-12 text-[22px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.12)]">
+                <h1 className="mt-12 text-[22px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.06)]">
                     Packing Preference
                 </h1>
 

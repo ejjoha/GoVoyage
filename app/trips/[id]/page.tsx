@@ -897,7 +897,7 @@ export default function TripPage() {
               className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px- py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center gap">
-                <span className="text-[15px] font-semibold text-stone-950">
+                <span className="text-[14px] font-semibold text-stone-950">
                   Add booking
                 </span>
               </span>
@@ -908,7 +908,7 @@ export default function TripPage() {
               className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px- py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center">
-                <span className="text-[15px] font-semibold text-stone-950">
+                <span className="text-[14px] font-semibold text-stone-950">
                   Pack List
                 </span>
               </span>
@@ -919,7 +919,7 @@ export default function TripPage() {
               className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px- py-3 text-center shadow-sm transition active:scale-[0.97]"
             >
               <span className="flex items-center">
-                <span className="text-[15px] font-semibold text-stone-950">
+                <span className="text-[14px] font-semibold text-stone-950">
                   Expenses
                 </span>
               </span>

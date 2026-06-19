@@ -67,9 +67,9 @@ export function getKidsStarterItems({
 
     const laundryFactor =
         laundry === "Available"
-            ? 0.65
+            ? 0.5
             : laundry === "Hotel service"
-                ? 0.8
+                ? 0.7
                 : 1;
 
     const dailyClothing = Math.ceil(fullDailyClothing * laundryFactor);

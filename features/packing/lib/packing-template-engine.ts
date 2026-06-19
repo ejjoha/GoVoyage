@@ -419,11 +419,11 @@ export function getLaundryAwareQuantity({
     }
 
     if (laundry === "Available") {
-        return Math.max(item.minQuantity ?? 1, Math.ceil(normalQuantity * 0.6));
+        return Math.max(item.minQuantity ?? 1, Math.ceil(normalQuantity * 0.45));
     }
 
     if (laundry === "Hotel service") {
-        return Math.max(item.minQuantity ?? 1, Math.ceil(normalQuantity * 0.75));
+        return Math.max(item.minQuantity ?? 1, Math.ceil(normalQuantity * 0.65));
     }
 
     return normalQuantity;

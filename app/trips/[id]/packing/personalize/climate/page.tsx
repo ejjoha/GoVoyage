@@ -1,5 +1,6 @@
 "use client";
 
+import PersonalizeHero from "@/features/packing/components/personalize-hero";
 import BackButton from "@/components/ui/back-button";
 import { createSuggestedPackingItems } from "@/features/packing/lib/packing-mutations";
 import {
@@ -278,23 +279,27 @@ export default function ClimatePage() {
 
     return (
         <main className="packing-slide-up-page min-h-screen bg-[#f6f1e8] text-neutral-950">
-            <div className="mx-auto max-w-md px-5 py-8">
-                <div className="flex items-center justify-between">
-                    <BackButton
-                        href={`/trips/${tripId}/packing/personalize`}
-                        ariaLabel="Go back"
-                    />
-                </div>
+            <div className="mx-auto max-w-md pb-24">
+                <PersonalizeHero
+                    href={`/trips/${tripId}/packing/personalize`}
+                    title="Climate & Conditions"
+                    description="Select the weather and conditions you expect during this trip."
+                    imageSrc="/images/packing-personalize/climate.png"
+                    imageAlt="Climate and weather packing"
+                />
 
-                <h1 className="mt-12 text-[22px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.12)]">
-                    Climate & Conditions
-                </h1>
+                <div className="relative z-20 mx-5 -mt-16 overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_70px_rgba(70,55,35,0.16)]">
+                    <div className="px-5 pb-4 pt-6">
+                        <h1 className="text-[24px] font-extrabold leading-none tracking-[-0.06em] text-neutral-950 drop-shadow-[0_8px_12px_rgba(70,55,35,0.10)]">
+                            Climate & Conditions
+                        </h1>
 
-                <p className="mt-4 text-[16px] leading-7 text-black">
-                    Select the conditions you expect during this trip.
-                </p>
+                        <p className="mt-3 text-[15px] leading-6 text-neutral-500">
+                            Select the weather and conditions you expect during this trip.
+                        </p>
+                    </div>
 
-                <div className="mt-10 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
+                    <div className="mx-5 h-px bg-black/10" />
                     <div className="px-5 pb-3 pt-5">
                         <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8C6F45]">
                             Temperature
@@ -334,8 +339,8 @@ export default function ClimatePage() {
                     onClick={handleSave}
                     className={
                         hasChanges && !saving && !successMessage
-                            ? "mt-12 w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
-                            : "mt-12 w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
+                            ? "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                            : "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
                     }
                 >
                     {saving || successMessage ? "Saved" : "Save Climate"}

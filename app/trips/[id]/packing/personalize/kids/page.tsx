@@ -143,7 +143,7 @@ export default function KidsPackingPage() {
                         🧸
                     </div>
 
-                    <h1 className="mt-8 text-[18px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.12)]">
+                    <h1 className="mt-8 text-[18px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.06)]">
                         Traveling with Kids
                     </h1>
 

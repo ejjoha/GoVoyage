@@ -1,5 +1,6 @@
 "use client";
 
+import PersonalizeHero from "@/features/packing/components/personalize-hero";
 import BackButton from "@/components/ui/back-button";
 import { createSuggestedPackingItems } from "@/features/packing/lib/packing-mutations";
 import {
@@ -238,26 +239,31 @@ export default function ActivitiesPage() {
             className={`${isLeaving ? "packing-slide-down-page" : "packing-slide-up-page"
                 } min-h-screen bg-[#f6f1e8] text-neutral-950`}
         >
-            <div className="mx-auto max-w-md px-5 py-8">
-                <div
-                    className="flex items-center justify-between"
-                    onClickCapture={handleBack}
-                >
-                    <BackButton
+            <div className="mx-auto max-w-md pb-24">
+                <div onClickCapture={handleBack}>
+                    <PersonalizeHero
                         href={`/trips/${tripId}/packing/personalize`}
-                        ariaLabel="Go back"
+                        title="Activities"
+                        description="Select what you plan to do, and we’ll add the right extras."
+                        imageSrc="/images/packing-personalize/activities.png"
+                        imageAlt="Activities packing"
+                        isLeaving={isLeaving}
                     />
                 </div>
 
-                <h1 className="mt-12 text-[22px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.12)]">
-                    Activities
-                </h1>
+                <div className="relative z-20 mx-5 -mt-16 overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_70px_rgba(70,55,35,0.16)]">
+                    <div className="px-5 pb-4 pt-6">
+                        <h1 className="text-[24px] font-extrabold leading-none tracking-[-0.06em] text-neutral-950 drop-shadow-[0_8px_12px_rgba(70,55,35,0.10)]">
+                            Activities
+                        </h1>
 
-                <p className="mt-4 text-[16px] leading-7 text-black">
-                    Select everything that applies.
-                </p>
+                        <p className="mt-3 text-[15px] leading-6 text-neutral-500">
+                            Select what you plan to do, and we’ll add the right extras.
+                        </p>
+                    </div>
 
-                <div className="mt-10 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
+                    <div className="mx-5 h-px bg-black/10" />
+
                     {activityOptions.map((activity, index) => {
                         const active = selected.includes(activity.value);
                         const isLast = index === activityOptions.length - 1;

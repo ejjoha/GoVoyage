@@ -238,7 +238,7 @@ export default function PackingSpaceSelector({
                 </div>
             )}
 
-            <div className="space-y-3 pb-3">
+            <div className="space-y-3 pb-2">
                 <Link
                     href={`/trips/${tripId}/packing/personalize`}
                     className="flex min-h-[4.5rem] w-full items-center justify-center rounded-[1.25rem] bg-white/60 px-5 text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"

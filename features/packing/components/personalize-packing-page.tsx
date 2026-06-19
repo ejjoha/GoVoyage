@@ -176,7 +176,7 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                         <div className="flex items-center gap-3">
                             <span className="text-xl">✨</span>
 
-                            <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8C6F45] drop-shadow-[0_3px_6px_rgba(70,55,35,0.40)]">
+                            <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8C6F45] drop-shadow-[0_3px_6px_rgba(70,55,35,0.08)]">
                                 These are your current stats
                             </p>
                         </div>
@@ -198,7 +198,7 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                 </section>
 
                 <p className="mx-8 max-w-[17rem] text-[12px] font-extrabold uppercase leading-5 tracking-[0.12em] text-[#8C6F45] drop-shadow-[0_2px_14px_rgba(70,55,35,0.40)]">
-                    Choose your trip profile for a tailored packing list
+                    Choose your trip profile for your tailored packing list
                 </p>
 
                 <section className="mx-6 mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
@@ -235,11 +235,6 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                             )}
                         </Link>
                     ))}
-                </section>
-                <section className="mx-6 mt-6 rounded-[1rem] bg-white/70 p-5 shadow-[0_18px_45px_rgba(70,55,35,0.04)]">
-                    <p className="text-sm font-medium leading-6 text-neutral-500">
-                        Changes will update your packing list.
-                    </p>
                 </section>
             </div>
         </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import BackButton from "@/components/ui/back-button";
+import PersonalizeHero from "@/features/packing/components/personalize-hero";
 import { updatePackingItemQuantity } from "@/features/packing/lib/packing-mutations";
 import {
     getPackingItems,
@@ -165,23 +165,27 @@ export default function LaundryPage() {
 
     return (
         <main className="packing-slide-up-page min-h-screen bg-[#f6f1e8] text-neutral-950">
-            <div className="mx-auto max-w-md px-5 py-8">
-                <div className="flex items-center justify-between">
-                    <BackButton
-                        href={`/trips/${tripId}/packing/personalize`}
-                        ariaLabel="Go back"
-                    />
-                </div>
+            <div className="mx-auto max-w-md pb-24">
+                <PersonalizeHero
+                    href={`/trips/${tripId}/packing/personalize`}
+                    title="Laundry"
+                    description="Tell us if you can wash clothes during the trip."
+                    imageSrc="/images/packing-personalize/laundry.png"
+                    imageAlt="Laundry packing"
+                />
 
-                <h1 className="mt-12 text-[22px] font-bold tracking-[-0.06em] text-neutral-950 drop-shadow-[0_10px_4px_rgba(70,55,35,0.12)]">
-                    Laundry
-                </h1>
+                <div className="relative z-20 mx-5 -mt-16 overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_70px_rgba(70,55,35,0.16)]">
+                    <div className="px-5 pb-4 pt-6">
+                        <h1 className="text-[24px] font-extrabold leading-none tracking-[-0.06em] text-neutral-950 drop-shadow-[0_8px_12px_rgba(70,55,35,0.10)]">
+                            Laundry
+                        </h1>
 
-                <p className="mt-4 text-[16px] leading-7 text-black">
-                    Will you be able to do laundry during this trip?
-                </p>
+                        <p className="mt-3 text-[15px] leading-6 text-neutral-500">
+                            Tell us if you can wash clothes during the trip.
+                        </p>
+                    </div>
 
-                <div className="mt-10 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_18px_45px_rgba(70,55,35,0.06)]">
+                    <div className="mx-5 h-px bg-black/10" />
                     {laundryOptions.map((option, index) => {
                         const active = selected === option.value;
                         const isLast = index === laundryOptions.length - 1;
@@ -233,8 +237,8 @@ export default function LaundryPage() {
                     onClick={handleSave}
                     className={
                         hasChanges && !successMessage
-                            ? "mt-12 w-full rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
-                            : "mt-12 w-full rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
+                            ? "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-rose-500 px-5 py-3 text-base font-bold text-white shadow-[0_14px_28px_rgba(70,55,35,0.22)] active:scale-[0.98]"
+                            : "mx-5 mt-10 w-[calc(100%-2.5rem)] rounded-2xl bg-neutral-300 px-5 py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(70,55,35,0.12)]"
                     }
                 >
                     {successMessage ? "Saved" : "Save Laundry"}
