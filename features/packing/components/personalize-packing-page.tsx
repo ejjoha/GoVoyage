@@ -156,7 +156,7 @@ export default function PersonalizePackingPage({ tripId }: Props) {
                     <div className="relative overflow-hidden rounded-b-[2.75rem] bg-neutral-200">
                         {trip?.image_url ? (
                             <img
-                                src={trip.image_url}
+                                src="/images/packing-personalize/personalize.png"
                                 alt={trip.title ?? "Trip"}
                                 className="h-[18rem] w-full object-cover"
                             />
