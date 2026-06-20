@@ -72,8 +72,8 @@ export default function HomePage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([
     "NOK",
+    "SEK",
     "EUR",
-    "GBP",
   ]);
   const [customCurrency, setCustomCurrency] = useState("");
 

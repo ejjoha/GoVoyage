@@ -9,10 +9,10 @@ type TripCurrenciesSheetProps = {
 
 const AVAILABLE_CURRENCIES = [
     "NOK",
-    "EUR",
-    "USD",
-    "GBP",
     "SEK",
+    "EUR",
+    "GBP",
+    "USD",
     "DKK",
     "CHF",
     "JPY",
