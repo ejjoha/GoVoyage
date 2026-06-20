@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Currency, TripMember } from "../types";
 import { formatAmount } from "../formatters";
 
@@ -60,6 +61,12 @@ export default function ExpenseForm({
     onCancel,
     expenseFormBottomRef,
 }: ExpenseFormProps) {
+    const [isPaidByPickerOpen, setIsPaidByPickerOpen] = useState(false);
+
+    const paidByMemberName = paidByMemberId
+        ? tripMembers.find((member) => member.id === paidByMemberId)?.name
+        : null;
+
     const isPaidOnBehalf =
         selectedParticipantIds.length > 0 &&
         paidByMemberId !== null &&
@@ -121,21 +128,43 @@ export default function ExpenseForm({
 
                 <div className="space-y-1.5">
                     <label className="text-sm font-medium text-stone-700">Paid by</label>
-                    <select
-                        value={paidByMemberId ?? ""}
-                        onChange={(e) =>
-                            setPaidByMemberId(e.target.value ? Number(e.target.value) : null)
-                        }
-                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
-                        disabled={tripMembers.length === 0}
-                    >
-                        <option value="">Choose traveller</option>
-                        {tripMembers.map((member) => (
-                            <option key={member.id} value={member.id}>
-                                {member.name}
-                            </option>
-                        ))}
-                    </select>
+
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => setIsPaidByPickerOpen((open) => !open)}
+                            className="flex w-full items-center justify-between rounded-xl border border-stone-300 bg-white px-3 py-3 text-left text-sm text-stone-800 disabled:bg-stone-100 disabled:text-stone-400"
+                            disabled={tripMembers.length === 0}
+                        >
+                            <span className={paidByMemberName ? "text-stone-800" : "text-stone-400"}>
+                                {paidByMemberName || "Choose traveller"}
+                            </span>
+                            <span className="text-stone-400">⌄</span>
+                        </button>
+
+                        {isPaidByPickerOpen && (
+                            <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg">
+                                {tripMembers.map((member) => {
+                                    const selected = member.id === paidByMemberId;
+
+                                    return (
+                                        <button
+                                            key={member.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setPaidByMemberId(member.id);
+                                                setIsPaidByPickerOpen(false);
+                                            }}
+                                            className="flex w-full items-center justify-between px-3 py-3 text-left text-sm text-stone-800 transition hover:bg-stone-50"
+                                        >
+                                            <span>{member.name}</span>
+                                            {selected && <span className="text-rose-500">✓</span>}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
