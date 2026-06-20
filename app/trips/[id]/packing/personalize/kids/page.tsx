@@ -137,7 +137,7 @@ export default function KidsPackingPage() {
                     href={`/trips/${tripId}/packing/personalize`}
                     title="Traveling with Kids"
                     description="Create a dedicated packing list for your child and tailor it to their age and trip needs."
-                    imageSrc="/images/packing-personalize/kids.png"
+                    imageSrc="/images/packing-personalize/kids.jpg"
                     imageAlt="Traveling with kids packing"
                 />
 

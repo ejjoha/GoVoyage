@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 
 const temperatureOptions = [
     {
-        value: "Hot weather",
+        value: "Hot",
         emoji: "🔥",
         description: "Sun, heat and light clothing",
     },
@@ -28,12 +28,12 @@ const temperatureOptions = [
         description: "Comfortable temperatures and light layers",
     },
     {
-        value: "Cool weather",
+        value: "Cool",
         emoji: "🌤️",
         description: "Mild but cooler days",
     },
     {
-        value: "Cold weather",
+        value: "Cold",
         emoji: "❄️",
         description: "Warm layers and jacket weather",
     },
@@ -283,8 +283,8 @@ export default function ClimatePage() {
                 <PersonalizeHero
                     href={`/trips/${tripId}/packing/personalize`}
                     title="Climate & Conditions"
-                    description="Select the weather and conditions you expect during this trip."
-                    imageSrc="/images/packing-personalize/climate.png"
+                    description="Let's pack for the weather and conditions ahead."
+                    imageSrc="/images/packing-personalize/climate.jpg"
                     imageAlt="Climate and weather packing"
                 />
 
@@ -295,7 +295,7 @@ export default function ClimatePage() {
                         </h1>
 
                         <p className="mt-3 text-[15px] leading-6 text-neutral-500">
-                            Select the weather and conditions you expect during this trip.
+                            Let's pack for the weather and conditions ahead.
                         </p>
                     </div>
 

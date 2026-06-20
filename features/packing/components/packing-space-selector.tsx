@@ -268,8 +268,8 @@ export default function PackingSpaceSelector({
                                     onClick={() => onSelectList(list.id)}
                                     className={
                                         active
-                                            ? "flex min-h-[4.5rem] min-w-[8.5rem] items-center justify-center rounded-[1.25rem] bg-neutral-950 px-5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition active:scale-[0.98]"
-                                            : "flex min-h-[4.5rem] min-w-[8.5rem] items-center justify-center rounded-[1.25rem] bg-white/60 px-5 text-neutral-950 shadow-[0_8px_24px_rgba(0,0,0,0.07)] transition active:scale-[0.98]"
+                                            ? "flex min-h-[4.75rem] min-w-[9.25rem] scale-100 items-center justify-center rounded-[1.5rem] bg-white px-5 text-neutral-950 shadow-[0_6px_18px_rgba(70,55,35,0.02)] transition active:scale-[0.98]"
+                                            : "flex min-h-[4.25rem] min-w-[8.25rem] scale-[0.94] items-center justify-center rounded-[1.35rem] border border-white/50 bg-white/55 px-5 text-neutral-500 opacity-70 shadow-none transition active:scale-[0.96]"
                                     }
                                 >
                                     <div className="text-center">
@@ -280,7 +280,7 @@ export default function PackingSpaceSelector({
                                         <p
                                             className={
                                                 active
-                                                    ? "mt-2 text-xs leading-none text-white/60"
+                                                    ? "mt-2 text-xs font-semibold leading-none text-neutral-500"
                                                     : "mt-2 text-xs leading-none text-neutral-400"
                                             }
                                         >

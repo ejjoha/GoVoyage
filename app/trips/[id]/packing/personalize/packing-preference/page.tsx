@@ -92,7 +92,7 @@ export default function PackingPreferencePage() {
                         href={`/trips/${tripId}/packing/personalize`}
                         title="Packing Preference"
                         description="Tell us how much you like to prepare."
-                        imageSrc="/images/packing-personalize/packing-preference.png"
+                        imageSrc="/images/packing-personalize/packing-preference.jpg"
                         imageAlt="Packing preference"
                         isLeaving={isLeaving}
                     />
