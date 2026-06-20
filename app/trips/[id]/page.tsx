@@ -857,7 +857,7 @@ export default function TripPage() {
               setEditTripStartDate(formatForDateInput(trip.start_date));
               setEditTripEndDate(formatForDateInput(trip.end_date));
               setEditCurrencies(
-                trip.currencies?.length ? trip.currencies : ["NOK", "EUR", "USD"]
+                trip.currencies?.length ? trip.currencies : ["NOK", "SEK", "EUR"]
               );
             }
 

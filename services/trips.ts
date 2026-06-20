@@ -143,7 +143,7 @@ export async function createTrip({
         p_start_date: start_date,
         p_end_date: end_date,
         p_image_url: image_url || null,
-        p_currencies: currencies || ["NOK", "EUR", "USD"],
+        p_currencies: currencies || ["NOK", "SEK", "EUR"],
     });
 
     if (error || !data) {

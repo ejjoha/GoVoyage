@@ -18,7 +18,7 @@ export function getTripFormValuesFromTrip(trip: Trip): TripFormValues {
         imageUrl: trip.image_url || "",
         startDate: formatForDateInput(trip.start_date),
         endDate: formatForDateInput(trip.end_date),
-        currencies: trip.currencies?.length ? trip.currencies : ["NOK", "EUR", "USD"],
+        currencies: trip.currencies?.length ? trip.currencies : ["NOK", "SEK", "EUR"],
     };
 }
 

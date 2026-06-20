@@ -106,8 +106,9 @@ export default function TripCostSharingPage() {
       return trip.currencies;
     }
 
-    return ["NOK", "EUR", "USD"];
+    return ["NOK", "SEK", "EUR"];
   }, [trip]);
+  const defaultExpenseCurrency = tripCurrencyOptions[0] ?? "NOK";
 
   const [isLoadingTrip, setIsLoadingTrip] = useState(true);
   const [showTravellers, setShowTravellers] = useState(false);
@@ -492,13 +493,19 @@ export default function TripCostSharingPage() {
   function resetForm() {
     setTitle("");
     setAmount("");
-    setCurrency("NOK");
+    setCurrency(defaultExpenseCurrency);
     setDate(getTodayDateString());
     setPaidByMemberId(null);
     setSelectedParticipantIds(tripMembers.map((member) => member.id));
     setEditingExpenseId(null);
     setExpenseFormError("");
   }
+
+  useEffect(() => {
+    if (!tripCurrencyOptions.includes(currency)) {
+      setCurrency(defaultExpenseCurrency);
+    }
+  }, [currency, defaultExpenseCurrency, tripCurrencyOptions]);
 
   function closeExpenseForm() {
     resetForm();
