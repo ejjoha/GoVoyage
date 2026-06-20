@@ -34,6 +34,9 @@ export default function ExpenseItem({
 
   const isSinglePersonPaidOnBehalf =
     isPaidOnBehalf && participantIds.length === 1;
+  const isPersonalExpense =
+    participantIds.length === 1 &&
+    participantIds[0] === expense.paid_by_member_id;
 
   return (
     <div className="rounded-[1.25rem] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
@@ -88,26 +91,31 @@ export default function ExpenseItem({
                 </span>
               </div>
 
-              <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
-                <span className="text-stone-500">
-                  {isPaidOnBehalf ? "For" : "Shared between"}
-                </span>
-                <span className="break-words text-right font-medium text-stone-800">
-                  {participantNames.join(", ")}
-                </span>
-              </div>
+              {!isPersonalExpense && (
+                <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
+                  <span className="text-stone-500">
+                    {isPaidOnBehalf ? "For" : "Shared between"}
+                  </span>
+                  <span className="break-words text-right font-medium text-stone-800">
+                    {participantNames.join(", ")}
+                  </span>
+                </div>
+              )}
 
               <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
                 <span className="text-stone-500">
-                  {isSinglePersonPaidOnBehalf
-                    ? `${participantNames[0]} owes`
-                    : "Each person pays"}
+                  {isPersonalExpense
+                    ? "Status"
+                    : isSinglePersonPaidOnBehalf
+                      ? `${participantNames[0]} owes`
+                      : "Each person pays"}
                 </span>
                 <span className="break-words text-right font-medium text-stone-800">
-                  {formatAmount(
-                    isSinglePersonPaidOnBehalf ? Number(expense.amount) : sharePerPerson
-                  )}{" "}
-                  {expense.currency}
+                  {isPersonalExpense
+                    ? "Personal expense"
+                    : `${formatAmount(
+                      isSinglePersonPaidOnBehalf ? Number(expense.amount) : sharePerPerson
+                    )} ${expense.currency}`}
                 </span>
               </div>
             </div>

@@ -75,6 +75,10 @@ export default function ExpenseForm({
     const isSinglePersonPaidOnBehalf =
         isPaidOnBehalf && selectedParticipantIds.length === 1;
 
+    const isPersonalExpense =
+        paidByMemberId !== null &&
+        selectedParticipantIds.length === 1 &&
+        selectedParticipantIds[0] === paidByMemberId;
     return (
         <form onSubmit={onSubmit} className="space-y-4 pb-2">
             <div className="space-y-3">
@@ -215,7 +219,7 @@ export default function ExpenseForm({
                         Expense summary
                     </h3>
 
-                    {!isSinglePersonPaidOnBehalf && (
+                    {!isSinglePersonPaidOnBehalf && !isPersonalExpense && (
                         <p className="text-sm text-stone-600">
                             Each person pays:{" "}
                             <span className="font-semibold text-stone-900">
@@ -231,9 +235,13 @@ export default function ExpenseForm({
                         </p>
                     )}
 
-                    {currentPreview.oweLines.length === 0 ? (
+                    {isPersonalExpense ? (
                         <p className="rounded-xl bg-blue-50 px-3 py-2 text-sm text-blue-800">
-                            No one owes anything yet.
+                            Personal expense
+                        </p>
+                    ) : currentPreview.oweLines.length === 0 ? (
+                        <p className="rounded-xl bg-blue-50 px-3 py-2 text-sm text-blue-800">
+                            No one owes anything for this expense.
                         </p>
                     ) : (
                         <div className="space-y-2">
