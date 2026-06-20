@@ -93,8 +93,8 @@ export default function TripPage() {
   const [editTripEndDate, setEditTripEndDate] = useState("");
   const [editCurrencies, setEditCurrencies] = useState<string[]>([
     "NOK",
+    "SEK",
     "EUR",
-    "USD",
   ]);
 
   const {
