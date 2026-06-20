@@ -1280,17 +1280,9 @@ export default function TripPage() {
             setShowTripSetupSheet(true);
           }}
           onSave={async () => {
-            const { error } = await updateTrip(
-              id,
-              getUpdateTripPayload({
-                title: editTripTitle,
-                destination: editTripDestination,
-                imageUrl: editTripImageUrl,
-                startDate: editTripStartDate,
-                endDate: editTripEndDate,
-                currencies: editCurrencies,
-              })
-            );
+            const { error } = await updateTrip(id, {
+              currencies: editCurrencies,
+            });
 
             if (error) {
               console.error("Error updating currencies:", error);

@@ -160,7 +160,7 @@ export type UpdateTripPayload = {
 
 export async function updateTrip(
     tripId: number,
-    payload: UpdateTripPayload
+    payload: Partial<UpdateTripPayload>
 ) {
     return supabase
         .from("trips")
