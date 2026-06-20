@@ -192,8 +192,8 @@ export default function KidsPackingPage() {
                                             onClick={() => setAgeGroup(option.value)}
                                             className={
                                                 active
-                                                    ? "rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-left shadow-[0_10px_24px_rgba(244,63,94,0.12)]"
-                                                    : "rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-left"
+                                                    ? "rounded-2xl border border-black/10 bg-white px-4 py-3 text-left shadow-[0_8px_20px_rgba(70,55,35,0.08)]"
+                                                    : "rounded-2xl border border-black/5 bg-neutral-50 px-4 py-3 text-left opacity-65 scale-[0.96]"
                                             }
                                         >
                                             <p className="text-sm font-extrabold text-neutral-950">
