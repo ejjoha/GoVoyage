@@ -24,6 +24,17 @@ export default function ExpenseItem({
   getMemberName,
   getExpenseIcon,
 }: ExpenseItemProps) {
+  const participantIds = expense.participants.map(
+    (participant) => participant.member_id
+  );
+
+  const isPaidOnBehalf =
+    participantIds.length > 0 &&
+    !participantIds.includes(expense.paid_by_member_id);
+
+  const isSinglePersonPaidOnBehalf =
+    isPaidOnBehalf && participantIds.length === 1;
+
   return (
     <div className="rounded-[1.25rem] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
       <button type="button" onClick={onToggle} className="w-full px-4 py-4 text-left">
@@ -78,16 +89,25 @@ export default function ExpenseItem({
               </div>
 
               <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
-                <span className="text-stone-500">Shared between</span>
+                <span className="text-stone-500">
+                  {isPaidOnBehalf ? "For" : "Shared between"}
+                </span>
                 <span className="break-words text-right font-medium text-stone-800">
                   {participantNames.join(", ")}
                 </span>
               </div>
 
               <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
-                <span className="text-stone-500">Each person pays</span>
+                <span className="text-stone-500">
+                  {isSinglePersonPaidOnBehalf
+                    ? `${participantNames[0]} owes`
+                    : "Each person pays"}
+                </span>
                 <span className="break-words text-right font-medium text-stone-800">
-                  {formatAmount(sharePerPerson)} {expense.currency}
+                  {formatAmount(
+                    isSinglePersonPaidOnBehalf ? Number(expense.amount) : sharePerPerson
+                  )}{" "}
+                  {expense.currency}
                 </span>
               </div>
             </div>

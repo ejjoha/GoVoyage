@@ -60,6 +60,14 @@ export default function ExpenseForm({
     onCancel,
     expenseFormBottomRef,
 }: ExpenseFormProps) {
+    const isPaidOnBehalf =
+        selectedParticipantIds.length > 0 &&
+        paidByMemberId !== null &&
+        !selectedParticipantIds.includes(paidByMemberId);
+
+    const isSinglePersonPaidOnBehalf =
+        isPaidOnBehalf && selectedParticipantIds.length === 1;
+
     return (
         <form onSubmit={onSubmit} className="space-y-4 pb-2">
             <div className="space-y-3">
@@ -133,7 +141,7 @@ export default function ExpenseForm({
                 <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-4">
                     <div className="flex items-center justify-between gap-3">
                         <label className="text-sm font-semibold text-stone-900">
-                            Shared between
+                            {isPaidOnBehalf ? "Cost belongs to" : "Shared between"}
                         </label>
 
                         {tripMembers.length > 0 && (
@@ -178,17 +186,19 @@ export default function ExpenseForm({
                         Expense summary
                     </h3>
 
-                    <p className="text-sm text-stone-600">
-                        Each person pays:{" "}
-                        <span className="font-semibold text-stone-900">
-                            {formatAmount(currentPreview.sharePerPerson)}{" "}
-                            {currentPreview.currency}
-                        </span>
-                    </p>
+                    {!isSinglePersonPaidOnBehalf && (
+                        <p className="text-sm text-stone-600">
+                            Each person pays:{" "}
+                            <span className="font-semibold text-stone-900">
+                                {formatAmount(currentPreview.sharePerPerson)}{" "}
+                                {currentPreview.currency}
+                            </span>
+                        </p>
+                    )}
 
                     {!currentPreview.payerIncluded && (
                         <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                            Note: the payer is not included in “Shared between”.
+                            This expense was paid on behalf of another traveller.
                         </p>
                     )}
 
