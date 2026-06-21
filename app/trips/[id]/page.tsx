@@ -16,13 +16,10 @@ import { getUpdateTripPayload } from "./lib/trip-form-state";
 import { useTripData } from "./hooks/useTripData";
 import { useTripPermissions } from "./hooks/useTripPermissions";
 import {
-  createBooking,
   createTripInvite,
-  deleteBookingById,
   deleteTrip,
   deleteTripInvite,
   leaveTripAsCollaborator,
-  updateBooking,
   updateTrip,
   removeTripCollaborator,
   transferTripOwnership,
@@ -140,6 +137,10 @@ export default function TripPage() {
   const {
     bookings,
     fetchBookings,
+    saveBookingOfflineFirst,
+    deleteBookingOfflineFirst,
+    pendingMutationCount,
+    syncStatus,
   } = useTripBookings(id);
 
   const [activeFilter, setActiveFilter] = useState<BookingFilter>("all");
@@ -640,13 +641,7 @@ export default function TripPage() {
   async function deleteBookingConfirmed(bookingId: number) {
     setBookingFormError("");
 
-    const { error } = await deleteBookingById(bookingId);
-
-    if (error) {
-      console.error("Error deleting booking:", error);
-      setBookingFormError("We couldn’t delete this booking. Please try again.");
-      return;
-    }
+    await deleteBookingOfflineFirst(bookingId);
 
     if (expandedId === bookingId) {
       setExpandedId(null);
@@ -658,8 +653,6 @@ export default function TripPage() {
     setTimeout(() => {
       setDeleteSuccessMessage("");
     }, 3000);
-
-    await fetchBookings();
   }
 
   function startEditingBooking(booking: Booking) {
@@ -700,25 +693,12 @@ export default function TripPage() {
 
     const payload = getSaveBookingPayload(bookingFormValues);
 
-    let error = null;
-
-    if (editingBookingId) {
-      const response = await updateBooking(editingBookingId, payload);
-      error = response.error;
-    } else {
-      const response = await createBooking(id, payload);
-      error = response.error;
-    }
-
-    if (error) {
-      console.error("Error saving booking:", error);
-      setBookingFormError("We couldn’t save that booking. Please try again.");
-      return;
-    }
-
     const wasEditing = Boolean(editingBookingId);
 
-    await fetchBookings();
+    await saveBookingOfflineFirst({
+      editingBookingId,
+      payload,
+    });
 
     setBookingSuccessMessage(wasEditing ? "Booking updated" : "Booking saved");
     setBookingFormError("");
@@ -797,6 +777,16 @@ export default function TripPage() {
       },
     ];
   }, [tripMembers.length, tripInvites, bookings.length, tripNights, hotelStays.length]);
+
+  const itinerarySyncLabel =
+    pendingMutationCount > 0
+      ? `${pendingMutationCount} itinerary change${pendingMutationCount === 1 ? "" : "s"
+      } pending sync`
+      : syncStatus === "syncing"
+        ? "Syncing itinerary…"
+        : syncStatus === "failed"
+          ? "Itinerary sync failed"
+          : "";
 
   if (isTripLoading) {
     return (
@@ -978,6 +968,11 @@ export default function TripPage() {
             <p className="text-lg font-semibold text-stone-800">
               No bookings yet
             </p>
+            {itinerarySyncLabel && (
+              <p className="text-sm font-medium text-amber-700">
+                {itinerarySyncLabel}
+              </p>
+            )}
             <p className="mt-2 text-sm text-stone-500">
               Start building your itinerary by adding your first booking.
             </p>

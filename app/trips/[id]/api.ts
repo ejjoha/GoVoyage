@@ -197,10 +197,14 @@ export async function createBooking(
     tripId: number,
     payload: SaveBookingPayload
 ) {
-    return supabase.from("bookings").insert({
-        trip_id: tripId,
-        ...payload,
-    });
+    return supabase
+        .from("bookings")
+        .insert({
+            trip_id: tripId,
+            ...payload,
+        })
+        .select()
+        .single();
 }
 
 export async function updateBooking(
@@ -210,7 +214,9 @@ export async function updateBooking(
     return supabase
         .from("bookings")
         .update(payload)
-        .eq("id", bookingId);
+        .eq("id", bookingId)
+        .select()
+        .single();
 }
 
 export async function deleteBookingById(bookingId: number) {
