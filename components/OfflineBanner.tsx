@@ -33,7 +33,7 @@ export default function OfflineBanner() {
 
   return (
     <div className="sticky top-0 z-[100] border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-sm font-medium text-amber-800">
-      You’re offline. You can view cached content, but changes require an internet connection.
+      You’re offline. Itinerary changes will be saved on this device and synced when you’re back online.
     </div>
   );
 }

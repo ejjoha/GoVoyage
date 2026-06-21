@@ -778,15 +778,31 @@ export default function TripPage() {
     ];
   }, [tripMembers.length, tripInvites, bookings.length, tripNights, hotelStays.length]);
 
+  const [showItinerarySyncedMessage, setShowItinerarySyncedMessage] =
+    useState(false);
+
+  useEffect(() => {
+    if (syncStatus !== "synced") return;
+
+    setShowItinerarySyncedMessage(true);
+
+    const timeout = window.setTimeout(() => {
+      setShowItinerarySyncedMessage(false);
+    }, 2500);
+
+    return () => window.clearTimeout(timeout);
+  }, [syncStatus]);
+
   const itinerarySyncLabel =
-    pendingMutationCount > 0
-      ? `${pendingMutationCount} itinerary change${pendingMutationCount === 1 ? "" : "s"
-      } pending sync`
-      : syncStatus === "syncing"
-        ? "Syncing itinerary…"
-        : syncStatus === "failed"
-          ? "Itinerary sync failed"
-          : "";
+    syncStatus === "syncing"
+      ? "Syncing itinerary…"
+      : syncStatus === "failed"
+        ? "Couldn’t sync itinerary. We’ll retry when you’re online."
+        : pendingMutationCount > 0
+          ? "Saved offline — will sync when you’re back online."
+          : syncStatus === "synced" && showItinerarySyncedMessage
+            ? "Itinerary synced."
+            : "";
 
   if (isTripLoading) {
     return (
@@ -946,6 +962,12 @@ export default function TripPage() {
           </div>
         )}
 
+        {itinerarySyncLabel && (
+          <div className="mb-4 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-100">
+            {itinerarySyncLabel}
+          </div>
+        )}
+
         {filteredBookings.length === 0 && bookings.length > 0 && (
           <div className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50 p-8 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white text-xl shadow-sm">
@@ -968,11 +990,6 @@ export default function TripPage() {
             <p className="text-lg font-semibold text-stone-800">
               No bookings yet
             </p>
-            {itinerarySyncLabel && (
-              <p className="text-sm font-medium text-amber-700">
-                {itinerarySyncLabel}
-              </p>
-            )}
             <p className="mt-2 text-sm text-stone-500">
               Start building your itinerary by adding your first booking.
             </p>
