@@ -807,13 +807,15 @@ export default function TripPage() {
   const itinerarySyncLabel =
     syncStatus === "syncing"
       ? "Syncing itinerary…"
-      : syncStatus === "failed"
-        ? "Couldn’t sync itinerary. We’ll retry when you’re online."
-        : pendingMutationCount > 0
-          ? "Saved offline — will sync when you’re back online."
-          : syncStatus === "synced" && showItinerarySyncedMessage
-            ? "Itinerary synced."
-            : "";
+      : syncStatus === "conflict"
+        ? "This itinerary changed elsewhere. Refresh and review before syncing."
+        : syncStatus === "failed"
+          ? "Couldn’t sync itinerary. We’ll retry when you’re online."
+          : pendingMutationCount > 0
+            ? "Saved offline — will sync when you’re back online."
+            : syncStatus === "synced" && showItinerarySyncedMessage
+              ? "Itinerary synced."
+              : "";
 
   if (isTripLoading) {
     return (

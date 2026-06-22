@@ -8,7 +8,13 @@ import {
 } from "../api";
 import type { Booking } from "../types";
 
-type SyncStatus = "idle" | "saved-offline" | "syncing" | "synced" | "failed";
+type SyncStatus =
+    | "idle"
+    | "saved-offline"
+    | "syncing"
+    | "synced"
+    | "failed"
+    | "conflict";
 
 type BookingMutation =
     | {
@@ -25,6 +31,7 @@ type BookingMutation =
         tripId: number;
         bookingId: number;
         payload: SaveBookingPayload;
+        baseUpdatedAt?: string | null;
         createdAt: string;
     }
     | {
@@ -32,6 +39,7 @@ type BookingMutation =
         type: "delete_booking";
         tripId: number;
         bookingId: number;
+        baseUpdatedAt?: string | null;
         createdAt: string;
     };
 
@@ -216,10 +224,16 @@ export function useTripBookings(tripId: number) {
                 if (mutation.type === "update_booking") {
                     const { data, error } = await updateBooking(
                         mutation.bookingId,
-                        mutation.payload
+                        mutation.payload,
+                        mutation.baseUpdatedAt
                     );
 
                     if (error) throw error;
+
+                    if (!data) {
+                        setSyncStatus("conflict");
+                        return;
+                    }
 
                     if (data) {
                         updateBookingsLocally((current) =>
@@ -233,11 +247,17 @@ export function useTripBookings(tripId: number) {
                 }
 
                 if (mutation.type === "delete_booking") {
-                    const { error } = await deleteBookingById(
-                        mutation.bookingId
+                    const { data, error } = await deleteBookingById(
+                        mutation.bookingId,
+                        mutation.baseUpdatedAt
                     );
 
                     if (error) throw error;
+
+                    if (!data) {
+                        setSyncStatus("conflict");
+                        return;
+                    }
                 }
 
                 pendingMutations = pendingMutations.filter(
@@ -272,6 +292,12 @@ export function useTripBookings(tripId: number) {
         const now = new Date().toISOString();
 
         if (editingBookingId) {
+            const existingBooking =
+                bookings.find((booking) => booking.id === editingBookingId) ||
+                readCachedBookings().find((booking) => booking.id === editingBookingId);
+
+            const baseUpdatedAt = existingBooking?.updated_at || null;
+
             const updatedLocalBooking = createLocalBooking(
                 editingBookingId,
                 payload
@@ -321,6 +347,7 @@ export function useTripBookings(tripId: number) {
                         tripId,
                         bookingId: editingBookingId,
                         payload,
+                        baseUpdatedAt,
                         createdAt: now,
                     },
                 ];
@@ -358,6 +385,12 @@ export function useTripBookings(tripId: number) {
     }
 
     async function deleteBookingOfflineFirst(bookingId: number) {
+        const existingBooking =
+            bookings.find((booking) => booking.id === bookingId) ||
+            readCachedBookings().find((booking) => booking.id === bookingId);
+
+        const baseUpdatedAt = existingBooking?.updated_at || null;
+
         updateBookingsLocally((current) =>
             current.filter((booking) => booking.id !== bookingId)
         );
@@ -411,6 +444,7 @@ export function useTripBookings(tripId: number) {
                 type: "delete_booking",
                 tripId,
                 bookingId,
+                baseUpdatedAt,
                 createdAt: new Date().toISOString(),
             },
         ];

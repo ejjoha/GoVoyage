@@ -74,6 +74,19 @@ export async function getBookings(tripId: number) {
     };
 }
 
+export async function getBookingSyncState(bookingId: number) {
+    const response = await supabase
+        .from("bookings")
+        .select("id, updated_at, deleted_at")
+        .eq("id", bookingId)
+        .maybeSingle();
+
+    return response as {
+        data: Pick<Booking, "id" | "updated_at" | "deleted_at"> | null;
+        error: unknown;
+    };
+}
+
 export async function getTripInvites(tripId: number) {
     const response = await supabase
         .from("trip_invites")
@@ -86,6 +99,7 @@ export async function getTripInvites(tripId: number) {
         error: unknown;
     };
 }
+
 export async function createTripInvite(
     tripId: number,
     name: string,
@@ -215,13 +229,14 @@ export async function createBooking(
 
 export async function updateBooking(
     bookingId: number,
-    payload: SaveBookingPayload
+    payload: SaveBookingPayload,
+    baseUpdatedAt?: string | null
 ) {
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    return supabase
+    let query = supabase
         .from("bookings")
         .update({
             ...payload,
@@ -229,17 +244,24 @@ export async function updateBooking(
             updated_by: user?.id || null,
         })
         .eq("id", bookingId)
-        .is("deleted_at", null)
-        .select()
-        .single();
+        .is("deleted_at", null);
+
+    if (baseUpdatedAt) {
+        query = query.eq("updated_at", baseUpdatedAt);
+    }
+
+    return query.select().maybeSingle();
 }
 
-export async function deleteBookingById(bookingId: number) {
+export async function deleteBookingById(
+    bookingId: number,
+    baseUpdatedAt?: string | null
+) {
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    return supabase
+    let query = supabase
         .from("bookings")
         .update({
             deleted_at: new Date().toISOString(),
@@ -249,6 +271,12 @@ export async function deleteBookingById(bookingId: number) {
         })
         .eq("id", bookingId)
         .is("deleted_at", null);
+
+    if (baseUpdatedAt) {
+        query = query.eq("updated_at", baseUpdatedAt);
+    }
+
+    return query.select("id").maybeSingle();
 }
 
 export async function deleteTripInvite(inviteId: number) {
