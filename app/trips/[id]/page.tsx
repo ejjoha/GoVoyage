@@ -45,6 +45,10 @@ import BookingTimeline from "./components/BookingTimeline";
 import BookingForm from "./components/BookingForm";
 import TripHero from "./components/TripHero";
 import EditTripModal from "./components/EditTripModal";
+type SuccessToast = {
+  title: string;
+  subtitle: string;
+};
 import ConfirmModal from "./components/ConfirmModal";
 import type {
   TripMember,
@@ -81,7 +85,6 @@ export default function TripPage() {
   const id = Number(params.id);
 
   const [showTripForm, setShowTripForm] = useState(false);
-  const [tripSuccessMessage, setTripSuccessMessage] = useState("");
 
   const [editTripTitle, setEditTripTitle] = useState("");
   const [editTripDestination, setEditTripDestination] = useState("");
@@ -148,9 +151,8 @@ export default function TripPage() {
 
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [editingBookingId, setEditingBookingId] = useState<number | null>(null);
-  const [bookingSuccessMessage, setBookingSuccessMessage] = useState("");
   const [bookingFormError, setBookingFormError] = useState("");
-  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState("");
+  const [successToast, setSuccessToast] = useState<SuccessToast | null>(null);
 
   const [bookingFormValues, setBookingFormValues] =
     useState<BookingFormValues>(emptyBookingFormValues);
@@ -405,7 +407,10 @@ export default function TripPage() {
     }
 
     setShowTripForm(false);
-    setTripSuccessMessage("Trip updated");
+    setSuccessToast({
+      title: "Trip updated",
+      subtitle: "Your trip details have been updated.",
+    });
     setTripFormError("");
 
     await fetchTrip();
@@ -419,7 +424,7 @@ export default function TripPage() {
     }
 
     setTimeout(() => {
-      setTripSuccessMessage("");
+      setSuccessToast(null);
     }, 2000);
   }
 
@@ -648,10 +653,13 @@ export default function TripPage() {
     }
 
     closeConfirm();
-    setDeleteSuccessMessage("Booking deleted successfully.");
+    setSuccessToast({
+      title: "Booking deleted successfully.",
+      subtitle: "The booking has been removed.",
+    });
 
     setTimeout(() => {
-      setDeleteSuccessMessage("");
+      setSuccessToast(null);
     }, 3000);
   }
 
@@ -700,12 +708,15 @@ export default function TripPage() {
       payload,
     });
 
-    setBookingSuccessMessage(wasEditing ? "Booking updated" : "Booking saved");
+    setSuccessToast({
+      title: wasEditing ? "Booking updated" : "Booking saved",
+      subtitle: "Your itinerary has been updated.",
+    });
     setBookingFormError("");
     resetBookingForm();
 
     setTimeout(() => {
-      setBookingSuccessMessage("");
+      setSuccessToast(null);
     }, 2000);
   }
 
@@ -875,7 +886,7 @@ export default function TripPage() {
           stats={heroStats}
         />
 
-        {(tripSuccessMessage || bookingSuccessMessage || deleteSuccessMessage) && (
+        {successToast && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-6 backdrop-blur-[2px] pointer-events-none">
             <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl shadow-sm">
@@ -883,15 +894,11 @@ export default function TripPage() {
               </div>
 
               <p className="text-lg font-semibold tracking-[-0.02em] text-stone-900">
-                {bookingSuccessMessage || tripSuccessMessage || deleteSuccessMessage}
+                {successToast.title}
               </p>
 
               <p className="mt-1 text-sm text-stone-500">
-                {deleteSuccessMessage
-                  ? "The booking has been removed."
-                  : bookingSuccessMessage
-                    ? "Your itinerary has been updated."
-                    : "Your trip details have been updated."}
+                {successToast.subtitle}
               </p>
             </div>
           </div>
