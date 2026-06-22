@@ -45,10 +45,6 @@ import BookingTimeline from "./components/BookingTimeline";
 import BookingForm from "./components/BookingForm";
 import TripHero from "./components/TripHero";
 import EditTripModal from "./components/EditTripModal";
-type SuccessToast = {
-  title: string;
-  subtitle: string;
-};
 import ConfirmModal from "./components/ConfirmModal";
 import type {
   TripMember,
@@ -63,6 +59,7 @@ import {
   formatForDateInput,
   formatTripDateRange,
 } from "./utils";
+import { SuccessToast, type SuccessToastData } from "@/components/SuccessToast";
 
 type ConfirmState =
   | {
@@ -153,7 +150,7 @@ export default function TripPage() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [editingBookingId, setEditingBookingId] = useState<number | null>(null);
   const [bookingFormError, setBookingFormError] = useState("");
-  const [successToast, setSuccessToast] = useState<SuccessToast | null>(null);
+  const [successToast, setSuccessToast] = useState<SuccessToastData | null>(null);
 
   const [bookingFormValues, setBookingFormValues] =
     useState<BookingFormValues>(emptyBookingFormValues);
@@ -889,23 +886,7 @@ export default function TripPage() {
           stats={heroStats}
         />
 
-        {successToast && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-6 backdrop-blur-[2px] pointer-events-none">
-            <div className="toast-in pointer-events-auto w-full max-w-sm rounded-[2rem] border border-white/70 bg-white/90 px-6 py-5 text-center shadow-[0_24px_80px_rgba(0,0,0,0.20)] backdrop-blur-xl">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl shadow-sm">
-                ✓
-              </div>
-
-              <p className="text-lg font-semibold tracking-[-0.02em] text-stone-900">
-                {successToast.title}
-              </p>
-
-              <p className="mt-1 text-sm text-stone-500">
-                {successToast.subtitle}
-              </p>
-            </div>
-          </div>
-        )}
+        <SuccessToast toast={successToast} />
 
         <section className="mb-2 -mx-2 overflow-x-auto px-4 scrollbar-hide">
           <div className="flex gap-2 pb-1">
