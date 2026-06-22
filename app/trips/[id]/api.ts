@@ -65,6 +65,7 @@ export async function getBookings(tripId: number) {
         .from("bookings")
         .select("*")
         .eq("trip_id", tripId)
+        .is("deleted_at", null)
         .order("start_time", { ascending: true });
 
     return response as {
@@ -197,11 +198,16 @@ export async function createBooking(
     tripId: number,
     payload: SaveBookingPayload
 ) {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
     return supabase
         .from("bookings")
         .insert({
             trip_id: tripId,
             ...payload,
+            updated_by: user?.id || null,
         })
         .select()
         .single();
@@ -211,19 +217,38 @@ export async function updateBooking(
     bookingId: number,
     payload: SaveBookingPayload
 ) {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
     return supabase
         .from("bookings")
-        .update(payload)
+        .update({
+            ...payload,
+            updated_at: new Date().toISOString(),
+            updated_by: user?.id || null,
+        })
         .eq("id", bookingId)
+        .is("deleted_at", null)
         .select()
         .single();
 }
 
 export async function deleteBookingById(bookingId: number) {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
     return supabase
         .from("bookings")
-        .delete()
-        .eq("id", bookingId);
+        .update({
+            deleted_at: new Date().toISOString(),
+            deleted_by: user?.id || null,
+            updated_at: new Date().toISOString(),
+            updated_by: user?.id || null,
+        })
+        .eq("id", bookingId)
+        .is("deleted_at", null);
 }
 
 export async function deleteTripInvite(inviteId: number) {
