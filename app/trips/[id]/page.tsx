@@ -60,6 +60,7 @@ import {
   formatTripDateRange,
 } from "./utils";
 import { SuccessToast, type SuccessToastData } from "@/components/SuccessToast";
+import { ItinerarySyncStatus } from "@/components/ItinerarySyncStatus";
 
 type ConfirmState =
   | {
@@ -955,21 +956,11 @@ export default function TripPage() {
           </div>
         )}
 
-        {itinerarySyncLabel && (
-          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-            <span>{itinerarySyncLabel}</span>
-
-            {syncStatus === "conflict" && (
-              <button
-                type="button"
-                onClick={refreshItineraryAfterConflict}
-                className="rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
-              >
-                Refresh itinerary
-              </button>
-            )}
-          </div>
-        )}
+        <ItinerarySyncStatus
+          label={itinerarySyncLabel}
+          syncStatus={syncStatus}
+          onRefresh={refreshItineraryAfterConflict}
+        />
 
         {filteredBookings.length === 0 && bookings.length > 0 && (
           <div className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50 p-8 text-center">
