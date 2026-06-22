@@ -32,8 +32,8 @@ export default function CreateTripModal({
     onCreateTrip,
 }: CreateTripModalProps) {
     return (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 pb-3 pt-12 backdrop-blur-[2px] sm:items-center sm:p-6">
-            <div className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-black/45 px-3 pb-3 pt-12 backdrop-blur-[2px] sm:items-center sm:p-6">
+            <div className="flex max-h-full w-full max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)] sm:max-w-2xl">
                 <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
                     <div>
                         <h2 className="text-xl font-semibold tracking-[-0.02em] text-stone-900">
@@ -65,7 +65,7 @@ export default function CreateTripModal({
                                     type="text"
                                     value={newTitle}
                                     onChange={(e) => setNewTitle(e.target.value)}
-                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                                    className="w-full min-w-0 rounded-xl border border-stone-300 bg-white px-3 py-3 text-base text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
                                 />
                             </div>
 
@@ -77,7 +77,7 @@ export default function CreateTripModal({
                                     type="text"
                                     value={newDestination}
                                     onChange={(e) => setNewDestination(e.target.value)}
-                                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                                    className="w-full min-w-0 rounded-xl border border-stone-300 bg-white px-3 py-3 text-base text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
                                 />
                             </div>
 
@@ -90,7 +90,7 @@ export default function CreateTripModal({
                                         type="date"
                                         value={newStartDate}
                                         onChange={(e) => setNewStartDate(e.target.value)}
-                                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                                        className="w-full min-w-0 rounded-xl border border-stone-300 bg-white px-3 py-3 text-base text-stone-800 transition-all duration-200 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
                                     />
                                 </div>
 
@@ -102,7 +102,7 @@ export default function CreateTripModal({
                                         type="date"
                                         value={newEndDate}
                                         onChange={(e) => setNewEndDate(e.target.value)}
-                                        className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-800"
+                                        className="w-full min-w-0 rounded-xl border border-stone-300 bg-white px-3 py-3 text-base text-stone-800"
                                     />
                                 </div>
                             </div>
