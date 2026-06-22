@@ -889,7 +889,9 @@ export default function TripPage() {
               <p className="mt-1 text-sm text-stone-500">
                 {deleteSuccessMessage
                   ? "The booking has been removed."
-                  : "Your itinerary has been updated."}
+                  : bookingSuccessMessage
+                    ? "Your itinerary has been updated."
+                    : "Your trip details have been updated."}
               </p>
             </div>
           </div>
