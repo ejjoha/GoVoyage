@@ -8,10 +8,10 @@ import InviteFriendsSheet from "./components/InviteFriendsSheet";
 import TripCurrenciesSheet from "./components/TripCurrenciesSheet";
 import { useTripMembers } from "./hooks/useTripMembers";
 import { useTripBookings } from "./hooks/useTripBookings";
-import Link from "next/link";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import TripSetupSheet from "./components/TripSetupSheet";
 import { getUpdateTripPayload } from "./lib/trip-form-state";
+import { TripQuickActions } from "@/components/TripQuickActions";
 
 import { useTripData } from "./hooks/useTripData";
 import { useTripPermissions } from "./hooks/useTripPermissions";
@@ -889,44 +889,10 @@ export default function TripPage() {
 
         <SuccessToast toast={successToast} />
 
-        <section className="mb-2 -mx-2 overflow-x-auto px-4 scrollbar-hide">
-          <div className="flex gap-2 pb-1">
-            <button
-              type="button"
-              onClick={openNewBookingForm}
-              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px- py-3 text-center shadow-sm transition active:scale-[0.97]"
-            >
-              <span className="flex items-center gap">
-                <span className="text-[14px] font-semibold text-stone-950">
-                  Add booking
-                </span>
-              </span>
-            </button>
-
-            <Link
-              href={`/trips/${trip.id}/packing`}
-              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px- py-3 text-center shadow-sm transition active:scale-[0.97]"
-            >
-              <span className="flex items-center">
-                <span className="text-[14px] font-semibold text-stone-950">
-                  Pack List
-                </span>
-              </span>
-            </Link>
-
-            <Link
-              href={`/trips/${trip.id}/cost-sharing`}
-              className="flex min-w-[105px] flex-col items-center justify-center rounded-xl border border-stone-200 bg-white px- py-3 text-center shadow-sm transition active:scale-[0.97]"
-            >
-              <span className="flex items-center">
-                <span className="text-[14px] font-semibold text-stone-950">
-                  Expenses
-                </span>
-              </span>
-            </Link>
-
-          </div>
-        </section>
+        <TripQuickActions
+          tripId={trip.id}
+          onAddBooking={openNewBookingForm}
+        />
 
         {bookings.length > 0 && (
           <div className="mb-3 w-full min-w-0 overflow-hidden">
