@@ -12,6 +12,7 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import TripSetupSheet from "./components/TripSetupSheet";
 import { getUpdateTripPayload } from "./lib/trip-form-state";
 import { TripQuickActions } from "@/components/TripQuickActions";
+import { BookingFilterTabs } from "@/components/BookingFilterTabs";
 
 import { useTripData } from "./hooks/useTripData";
 import { useTripPermissions } from "./hooks/useTripPermissions";
@@ -895,31 +896,11 @@ export default function TripPage() {
         />
 
         {bookings.length > 0 && (
-          <div className="mb-3 w-full min-w-0 overflow-hidden">
-            <div className="grid w-full min-w-0 grid-cols-4 gap-2 overflow-hidden rounded-[1rem] border border-stone-200 bg-white/10 p-2 backdrop-blur-sm">
-              {filterOptions.map((filter) => {
-                const isActive = activeFilter === filter;
-
-                return (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setActiveFilter(filter)}
-                    aria-label={getFilterLabel(filter)}
-                    className={`flex h-10 items-center justify-center rounded-xl px-3 text-sm font-medium transition-all duration-200 ${isActive
-                      ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                      : "bg-transparent text-stone-500 hover:bg-stone-200 hover:text-stone-700"
-                      }`}
-                  >
-                    {filter === "all" && <span>All</span>}
-                    {filter === "flight" && <span>Flights</span>}
-                    {filter === "hotel" && <span>Hotels</span>}
-                    {filter === "plans" && <span>Plans</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <BookingFilterTabs
+            filters={filterOptions}
+            activeFilter={activeFilter}
+            onChange={setActiveFilter}
+          />
         )}
 
         <ItinerarySyncStatus
