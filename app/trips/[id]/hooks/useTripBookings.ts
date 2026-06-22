@@ -463,6 +463,13 @@ export function useTripBookings(tripId: number) {
         refreshPendingMutationCount();
     }, [refreshPendingMutationCount]);
 
+    async function refreshItineraryAfterConflict() {
+        writePendingMutations([]);
+        setPendingMutationCount(0);
+        setSyncStatus("idle");
+        await fetchBookings();
+    }
+
     useEffect(() => {
         function handleOnline() {
             syncPendingBookingMutations();
@@ -482,6 +489,7 @@ export function useTripBookings(tripId: number) {
         saveBookingOfflineFirst,
         deleteBookingOfflineFirst,
         syncPendingBookingMutations,
+        refreshItineraryAfterConflict,
         pendingMutationCount,
         syncStatus,
     };

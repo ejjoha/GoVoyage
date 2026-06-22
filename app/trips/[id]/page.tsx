@@ -142,6 +142,7 @@ export default function TripPage() {
     fetchBookings,
     saveBookingOfflineFirst,
     deleteBookingOfflineFirst,
+    refreshItineraryAfterConflict,
     pendingMutationCount,
     syncStatus,
   } = useTripBookings(id);
@@ -974,8 +975,18 @@ export default function TripPage() {
         )}
 
         {itinerarySyncLabel && (
-          <div className="mb-4 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-100">
-            {itinerarySyncLabel}
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+            <span>{itinerarySyncLabel}</span>
+
+            {syncStatus === "conflict" && (
+              <button
+                type="button"
+                onClick={refreshItineraryAfterConflict}
+                className="rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              >
+                Refresh itinerary
+              </button>
+            )}
           </div>
         )}
 
