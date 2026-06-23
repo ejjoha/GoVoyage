@@ -109,6 +109,19 @@ export default function TripCostSharingPage() {
     return ["NOK", "SEK", "EUR"];
   }, [trip]);
   const defaultExpenseCurrency = tripCurrencyOptions[0] ?? "NOK";
+  const costSharingCurrencies = useMemo(() => {
+    const currencies = new Set<Currency>();
+
+    for (const currencyCode of tripCurrencyOptions) {
+      currencies.add(currencyCode);
+    }
+
+    for (const expense of expenses) {
+      currencies.add(expense.currency);
+    }
+
+    return Array.from(currencies);
+  }, [tripCurrencyOptions, expenses]);
 
   const [isLoadingTrip, setIsLoadingTrip] = useState(true);
   const [showTravellers, setShowTravellers] = useState(false);
@@ -689,10 +702,10 @@ export default function TripCostSharingPage() {
   const groupedSummary = useMemo(() => {
     return calculateGroupedSummary({
       expenses,
-      currencies: currencyOptions,
+      currencies: costSharingCurrencies,
       getMemberName,
     });
-  }, [expenses, tripMembers]);
+  }, [expenses, costSharingCurrencies, tripMembers]);
 
   function getCurrencyDotColor(currency: Currency) {
     switch (currency) {
@@ -725,13 +738,13 @@ export default function TripCostSharingPage() {
       totals[currencyCode] = (totals[currencyCode] || 0) + amountValue;
     }
 
-    return currencyOptions
+    return costSharingCurrencies
       .map((currencyCode) => ({
         currency: currencyCode,
         total: totals[currencyCode] || 0,
       }))
       .filter((item) => item.total > 0);
-  }, [expenses]);
+  }, [expenses, costSharingCurrencies]);
 
   const totalLabel = useMemo(() => {
     if (totalCostByCurrency.length === 0) return "€0";
@@ -912,7 +925,7 @@ export default function TripCostSharingPage() {
             </div>
           ) : (
             <div className="space-y-1">
-              {currencyOptions.map((currencyCode) => {
+              {costSharingCurrencies.map((currencyCode) => {
                 const items = groupedSummary[currencyCode];
 
                 if (items.length === 0) return null;

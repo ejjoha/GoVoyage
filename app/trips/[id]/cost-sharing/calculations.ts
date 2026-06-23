@@ -96,15 +96,14 @@ export function calculateGroupedSummary(params: {
   const grouped: Record<
     Currency,
     { from: string; to: string; currency: Currency; amount: number }[]
-  > = {
-    EUR: [],
-    GBP: [],
-    IDR: [],
-    NOK: [],
-    SDG: [],
-    THB: [],
-    USD: [],
-  };
+  > = {} as Record<
+    Currency,
+    { from: string; to: string; currency: Currency; amount: number }[]
+  >;
+
+  for (const currencyCode of currencies) {
+    grouped[currencyCode] = [];
+  }
 
   const processedPairs = new Set<string>();
 
@@ -133,6 +132,7 @@ export function calculateGroupedSummary(params: {
         amount: netAmount,
       });
     } else {
+      grouped[debt.currency] = grouped[debt.currency] ?? [];
       grouped[debt.currency].push({
         from: getMemberName(debt.toId),
         to: getMemberName(debt.fromId),
