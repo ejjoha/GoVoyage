@@ -385,7 +385,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setShowAccountMenu((current) => !current)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03234b] text-sm font-semibold text-white shadow-sm transition hover:bg-[#05356f]"
                 >
                   {userEmail ? userEmail.charAt(0).toUpperCase() : "?"}
                 </button>
