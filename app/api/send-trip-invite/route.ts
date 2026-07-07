@@ -21,7 +21,7 @@ export async function POST(request: Request) {
         const inviteUrl = `${appUrl}/invite`;
 
         const { error } = await resend.emails.send({
-            from: "Voyome <onboarding@resend.dev>",
+            from: "Voyome <hello@voyome.com>",
             to: email,
             subject: `You're invited to join "${tripTitle}" on Voyome`,
             html: `
