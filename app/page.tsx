@@ -383,9 +383,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen overflow-x-clip px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto w-full max-w-2xl min-w-0">
-        {isLoading ? (
-          <HomeHeroSkeleton />
-        ) : (
+        {isLoading ? null : (
           <section className="relative mb-5 overflow-visible rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
             <div className="absolute right-4 top-4 z-10">
               <div className="relative group">
