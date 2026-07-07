@@ -56,6 +56,7 @@ export default function HomePage() {
 
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [pendingInvites, setPendingInvites] = useState<PendingTripInvite[]>([]);
 
@@ -177,6 +178,7 @@ export default function HomePage() {
       if (error || !user) {
         console.error("User is not signed in:", error);
         setIsLoading(false);
+        setIsCheckingAuth(false);
         router.replace("/login");
         return;
       }
@@ -192,6 +194,7 @@ export default function HomePage() {
 
       await fetchTrips();
       await fetchPendingInvites();
+      setIsCheckingAuth(false);
     }
 
     loadUserAndTrips();
@@ -372,6 +375,10 @@ export default function HomePage() {
   }, [trips]);
 
   const hasAnyTrips = trips.length > 0 || pendingInvites.length > 0;
+
+  if (isCheckingAuth) {
+    return null;
+  }
 
   return (
     <main className="min-h-screen overflow-x-clip px-4 py-6 sm:px-6 sm:py-8">
