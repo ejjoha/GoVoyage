@@ -406,7 +406,7 @@ export default function HomePage() {
                           {userEmail || "Unknown user"}
                         </p>
                         <p className="mt-0.5 text-xs text-stone-500">
-                          GoVoyage account
+                          Voyome account
                         </p>
                       </div>
                     </div>

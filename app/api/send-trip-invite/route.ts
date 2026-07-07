@@ -21,12 +21,12 @@ export async function POST(request: Request) {
         const inviteUrl = `${appUrl}/invite`;
 
         const { error } = await resend.emails.send({
-            from: "GoVoyage <onboarding@resend.dev>",
+            from: "Voyome <onboarding@resend.dev>",
             to: email,
-            subject: `You're invited to join "${tripTitle}" on GoVoyage`,
+            subject: `You're invited to join "${tripTitle}" on Voyome`,
             html: `
         <div style="font-family: sans-serif; padding: 24px;">
-          <h2>You're invited to a trip on GoVoyage ✈️</h2>
+          <h2>You're invited to a trip on Voyome ✈️</h2>
 
           <p>
             ${inviterName || "Someone"} invited you to collaborate on:
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
               font-weight: 600;
             "
           >
-            Open GoVoyage
+            Open Voyome
           </a>
         </div>
       `,

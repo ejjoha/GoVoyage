@@ -88,14 +88,14 @@ export default function LoginPage() {
         <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 py-10">
             <div className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm">
                 <div className="mb-6">
-                    <p className="text-sm font-semibold text-rose-500">GoVoyage</p>
+                    <p className="text-sm font-semibold text-rose-500">Voyome</p>
                     <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-stone-900">
                         {mode === "signIn" ? "Sign in" : "Create account"}
                     </h1>
                     <p className="mt-2 text-sm text-stone-500">
                         {mode === "signIn"
                             ? "Access your trips, itinerary and shared expenses."
-                            : "Create your GoVoyage account and start planning."}
+                            : "Create your Voyome account and start planning."}
                     </p>
                 </div>
 

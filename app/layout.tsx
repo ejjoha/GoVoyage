@@ -15,14 +15,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "GoVoyage",
+  title: "Voyome",
   description: "Plan it. See it. Enjoy it.",
 
   manifest: "/manifest.json",
 
   appleWebApp: {
     capable: true,
-    title: "GoVoyage",
+    title: "Voyome",
     statusBarStyle: "black-translucent",
   },
 };

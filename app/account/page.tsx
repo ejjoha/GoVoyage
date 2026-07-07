@@ -171,7 +171,7 @@ export default function AccountPage() {
                 </button>
 
                 <section className="rounded-[2rem] border border-stone-200/60 bg-white p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
-                    <p className="text-sm font-semibold text-rose-500">GoVoyage</p>
+                    <p className="text-sm font-semibold text-rose-500">Voyome</p>
 
                     <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-stone-900">
                         Account
