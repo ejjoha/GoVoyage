@@ -37,24 +37,8 @@ export default function LoginPage() {
             setMessage(error.message);
             return;
         }
-
-        try {
-            await fetch("/api/send-welcome-email", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: email.trim().toLowerCase(),
-                    displayName: displayName.trim(),
-                }),
-            });
-        } catch (welcomeEmailError) {
-            console.error("Failed to send welcome email:", welcomeEmailError);
-        }
-
         localStorage.removeItem("cached-trips");
-        setMessage("Account created. Redirecting...");
+        setMessage("Signed in. Redirecting...");
 
         window.location.href = "/";
     }
@@ -93,7 +77,28 @@ export default function LoginPage() {
                 console.error("Error creating profile:", profileError);
             }
         }
+        try {
+            const welcomeResponse = await fetch("/api/send-welcome-email", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: email.trim().toLowerCase(),
+                    displayName: displayName.trim(),
+                }),
+            });
 
+            const welcomeResult = await welcomeResponse.json().catch(() => null);
+
+            console.log("WELCOME EMAIL STATUS:", welcomeResponse.status, welcomeResult);
+
+            if (!welcomeResponse.ok) {
+                console.error("Welcome email request failed:", welcomeResult);
+            }
+        } catch (welcomeEmailError) {
+            console.error("Failed to send welcome email:", welcomeEmailError);
+        }
         localStorage.removeItem("cached-trips");
         setMessage("Account created. Redirecting...");
 
