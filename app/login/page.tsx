@@ -99,6 +99,11 @@ export default function LoginPage() {
         } catch (welcomeEmailError) {
             console.error("Failed to send welcome email:", welcomeEmailError);
         }
+        localStorage.setItem(
+            "signup-success-message",
+            "Thanks for signing up. We’ve sent a welcome email to your address. If you don’t see it, check your spam folder."
+        );
+
         localStorage.removeItem("cached-trips");
         setMessage("Account created. Redirecting...");
 

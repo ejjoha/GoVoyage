@@ -53,6 +53,7 @@ export default function HomePage() {
   const [userDisplayName, setUserDisplayName] = useState("");
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [signupSuccessMessage, setSignupSuccessMessage] = useState("");
 
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,6 +78,7 @@ export default function HomePage() {
     "EUR",
   ]);
   const [customCurrency, setCustomCurrency] = useState("");
+
 
   async function fetchTrips() {
     setIsLoading(true);
@@ -167,6 +169,15 @@ export default function HomePage() {
       );
     }
   }
+
+  useEffect(() => {
+    const storedMessage = localStorage.getItem("signup-success-message");
+
+    if (storedMessage) {
+      setSignupSuccessMessage(storedMessage);
+      localStorage.removeItem("signup-success-message");
+    }
+  }, []);
 
   useEffect(() => {
     async function loadUserAndTrips() {
@@ -383,6 +394,11 @@ export default function HomePage() {
   return (
     <main className="min-h-screen overflow-x-clip px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto w-full max-w-2xl min-w-0">
+        {signupSuccessMessage && (
+          <div className="mb-4 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-700 shadow-sm">
+            {signupSuccessMessage}
+          </div>
+        )}
         {isLoading ? null : (
           <section className="relative mb-5 overflow-visible rounded-[2rem] border border-stone-200/60 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:p-5">
             <div className="absolute right-4 top-4 z-10">
