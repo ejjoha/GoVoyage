@@ -37,8 +37,23 @@ export default function LoginPage() {
             return;
         }
 
+        try {
+            await fetch("/api/send-welcome-email", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: email.trim().toLowerCase(),
+                    displayName: displayName.trim(),
+                }),
+            });
+        } catch (welcomeEmailError) {
+            console.error("Failed to send welcome email:", welcomeEmailError);
+        }
+
         localStorage.removeItem("cached-trips");
-        setMessage("Signed in. Redirecting...");
+        setMessage("Account created. Redirecting...");
 
         window.location.href = "/";
     }
