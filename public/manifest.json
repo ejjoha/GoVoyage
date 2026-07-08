@@ -1,6 +1,6 @@
 {
-    "name": "GoVoyage",
-    "short_name": "GoVoyage",
+    "name": "Voyome",
+    "short_name": "Voyome",
     "description": "Plan it. See it. Enjoy it. Where every journey comes together.",
     "start_url": "/",
     "display": "standalone",
