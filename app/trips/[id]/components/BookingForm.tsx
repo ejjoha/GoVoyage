@@ -44,6 +44,7 @@ type BookingFormProps = {
   newDestinationPoint: string;
   setNewDestinationPoint: React.Dispatch<React.SetStateAction<string>>;
   bookingFormError: string;
+  isSaving: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
 };
@@ -57,16 +58,16 @@ function SectionCard({
   tone?: "neutral" | "flight" | "hotel" | "dining" | "activity";
   children: React.ReactNode;
 }) {
-const toneClass =
-  tone === "flight"
-    ? "border-[#5FA8FF]/30 bg-[#5FA8FF]/8"
-    : tone === "hotel"
-      ? "border-[#F4B266]/30 bg-[#F4B266]/8"
-      : tone === "dining"
-        ? "border-[#E97A73]/30 bg-[#E97A73]/8"
-        : tone === "activity"
-          ? "border-[#58C7B2]/30 bg-[#58C7B2]/8"
-          : "border-stone-200 bg-stone-50";
+  const toneClass =
+    tone === "flight"
+      ? "border-[#5FA8FF]/30 bg-[#5FA8FF]/8"
+      : tone === "hotel"
+        ? "border-[#F4B266]/30 bg-[#F4B266]/8"
+        : tone === "dining"
+          ? "border-[#E97A73]/30 bg-[#E97A73]/8"
+          : tone === "activity"
+            ? "border-[#58C7B2]/30 bg-[#58C7B2]/8"
+            : "border-stone-200 bg-stone-50";
   return (
     <div className={`rounded-[1.5rem] border p-4 sm:p-5 ${toneClass}`}>
       <h3 className="text-sm font-semibold text-stone-800">{title}</h3>
@@ -129,6 +130,7 @@ export default function BookingForm({
   newDestinationPoint,
   setNewDestinationPoint,
   bookingFormError,
+  isSaving,
   onSubmit,
   onCancel,
 }: BookingFormProps) {
@@ -516,9 +518,15 @@ export default function BookingForm({
 
         <button
           type="submit"
-          className="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+          disabled={isSaving}
+          aria-disabled={isSaving}
+          className="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-rose-500"
         >
-          {editingBookingId ? "Save changes" : "Save booking"}
+          {isSaving
+            ? "Saving…"
+            : editingBookingId
+              ? "Save changes"
+              : "Save booking"}
         </button>
       </div>
     </form>

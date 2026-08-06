@@ -152,6 +152,8 @@ export default function TripPage() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [editingBookingId, setEditingBookingId] = useState<number | null>(null);
   const [bookingFormError, setBookingFormError] = useState("");
+  const [isBookingSaving, setIsBookingSaving] = useState(false);
+  const bookingSaveLockRef = useRef(false);
   const [successToast, setSuccessToast] = useState<SuccessToastData | null>(null);
 
   const [bookingFormValues, setBookingFormValues] =
@@ -687,6 +689,11 @@ export default function TripPage() {
 
   async function handleSaveBooking(e: React.FormEvent) {
     e.preventDefault();
+
+    if (bookingSaveLockRef.current) {
+      return;
+    }
+
     setBookingFormError("");
 
     const validationError = validateBookingFormValues(
@@ -699,25 +706,36 @@ export default function TripPage() {
       return;
     }
 
-    const payload = getSaveBookingPayload(bookingFormValues);
+    bookingSaveLockRef.current = true;
+    setIsBookingSaving(true);
 
-    const wasEditing = Boolean(editingBookingId);
+    try {
+      const payload = getSaveBookingPayload(bookingFormValues);
+      const wasEditing = Boolean(editingBookingId);
 
-    await saveBookingOfflineFirst({
-      editingBookingId,
-      payload,
-    });
+      await saveBookingOfflineFirst({
+        editingBookingId,
+        payload,
+      });
 
-    setSuccessToast({
-      title: wasEditing ? "Booking updated" : "Booking saved",
-      subtitle: "Your itinerary has been updated.",
-    });
-    setBookingFormError("");
-    resetBookingForm();
+      setSuccessToast({
+        title: wasEditing ? "Booking updated" : "Booking saved",
+        subtitle: "Your itinerary has been updated.",
+      });
 
-    setTimeout(() => {
-      setSuccessToast(null);
-    }, 2000);
+      setBookingFormError("");
+      resetBookingForm();
+
+      setTimeout(() => {
+        setSuccessToast(null);
+      }, 2000);
+    } catch (error) {
+      console.error("Error saving booking:", error);
+      setBookingFormError("We couldn’t save that booking. Please try again.");
+    } finally {
+      bookingSaveLockRef.current = false;
+      setIsBookingSaving(false);
+    }
   }
 
   const filteredBookings = useMemo(
@@ -1032,6 +1050,7 @@ export default function TripPage() {
                 bookingFormRef={bookingFormRef}
                 editingBookingId={editingBookingId}
                 bookingFormError={bookingFormError}
+                isSaving={isBookingSaving}
                 newTitle={bookingFormValues.title}
                 setNewTitle={(value) =>
                   updateBookingFormField(
