@@ -312,7 +312,7 @@ export default function HomePage() {
       const invite = inviteEmail.trim().toLowerCase();
 
       if (invite) {
-        const { error: inviteError } = await createTripInvite(
+        const { data: inviteRow, error: inviteError } = await createTripInvite(
           data.id,
           invite,
           invite,
@@ -320,19 +320,22 @@ export default function HomePage() {
           userDisplayName || user.email || "Someone"
         );
 
-        if (inviteError) {
+        if (inviteError || !inviteRow) {
           console.error("Error saving trip invite:", inviteError);
         } else {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
           const emailResponse = await fetch("/api/send-trip-invite", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              ...(session?.access_token
+                ? { Authorization: `Bearer ${session.access_token}` }
+                : {}),
             },
-            body: JSON.stringify({
-              email: invite,
-              tripTitle: newTitle.trim() || "a trip",
-              inviterName: "Someone",
-            }),
+            body: JSON.stringify({ inviteId: inviteRow.id }),
           });
 
           if (!emailResponse.ok) {

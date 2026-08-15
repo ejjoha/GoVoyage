@@ -107,14 +107,18 @@ export async function createTripInvite(
     inviterUserId: string,
     inviterName: string
 ) {
-    return supabase.from("trip_invites").insert({
-        trip_id: tripId,
-        name,
-        email,
-        role: "editor",
-        inviter_user_id: inviterUserId,
-        inviter_name: inviterName,
-    });
+    return supabase
+        .from("trip_invites")
+        .insert({
+            trip_id: tripId,
+            name,
+            email,
+            role: "editor",
+            inviter_user_id: inviterUserId,
+            inviter_name: inviterName,
+        })
+        .select("id")
+        .single();
 }
 
 export async function createTripMember(

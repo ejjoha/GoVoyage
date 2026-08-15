@@ -242,7 +242,7 @@ export default function TripPage() {
       return;
     }
 
-    const { error } = await createTripInvite(
+    const { data: inviteRow, error } = await createTripInvite(
       id,
       name,
       email,
@@ -250,21 +250,24 @@ export default function TripPage() {
       currentUserDisplayName || user.email || "Someone"
     );
 
-    if (error) {
-      setInviteMessage(error.message);
+    if (error || !inviteRow) {
+      setInviteMessage(error?.message || "We couldn’t save this invite. Please try again.");
       return;
     }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     const emailResponse = await fetch("/api/send-trip-invite", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : {}),
       },
-      body: JSON.stringify({
-        email,
-        tripTitle: trip?.title || "a trip",
-        inviterName: "Someone",
-      }),
+      body: JSON.stringify({ inviteId: inviteRow.id }),
     });
 
     if (!emailResponse.ok) {
@@ -552,16 +555,19 @@ export default function TripPage() {
 
   async function handleResendInvite(invite: TripInvite) {
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       const emailResponse = await fetch("/api/send-trip-invite", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {}),
         },
-        body: JSON.stringify({
-          email: invite.email,
-          tripTitle: trip?.title || "a trip",
-          inviterName: "Someone",
-        }),
+        body: JSON.stringify({ inviteId: invite.id }),
       });
 
       if (!emailResponse.ok) {
