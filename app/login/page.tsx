@@ -77,27 +77,25 @@ export default function LoginPage() {
                 console.error("Error creating profile:", profileError);
             }
         }
-        try {
-            const welcomeResponse = await fetch("/api/send-welcome-email", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: email.trim().toLowerCase(),
-                    displayName: displayName.trim(),
-                }),
-            });
+        if (data.session?.access_token) {
+            try {
+                const welcomeResponse = await fetch("/api/send-welcome-email", {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${data.session.access_token}`,
+                    },
+                });
 
-            const welcomeResult = await welcomeResponse.json().catch(() => null);
+                const welcomeResult = await welcomeResponse.json().catch(() => null);
 
-            console.log("WELCOME EMAIL STATUS:", welcomeResponse.status, welcomeResult);
+                console.log("WELCOME EMAIL STATUS:", welcomeResponse.status, welcomeResult);
 
-            if (!welcomeResponse.ok) {
-                console.error("Welcome email request failed:", welcomeResult);
+                if (!welcomeResponse.ok) {
+                    console.error("Welcome email request failed:", welcomeResult);
+                }
+            } catch (welcomeEmailError) {
+                console.error("Failed to send welcome email:", welcomeEmailError);
             }
-        } catch (welcomeEmailError) {
-            console.error("Failed to send welcome email:", welcomeEmailError);
         }
         localStorage.removeItem("cached-trips");
         setMessage("Account created. Redirecting...");

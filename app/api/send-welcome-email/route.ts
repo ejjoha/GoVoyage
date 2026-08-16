@@ -1,21 +1,50 @@
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
+    const authHeader = request.headers.get("authorization");
+
+    if (!authHeader?.startsWith("Bearer ")) {
+        return NextResponse.json(
+            { error: "Missing authorization token" },
+            { status: 401 }
+        );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !anonKey) {
+        return NextResponse.json(
+            { error: "Server is missing Supabase configuration" },
+            { status: 500 }
+        );
+    }
+
+    const supabase = createClient(supabaseUrl, anonKey);
+
+    const {
+        data: { user },
+        error: userError,
+    } = await supabase.auth.getUser(token);
+
+    if (userError || !user?.email) {
+        return NextResponse.json(
+            { error: "Invalid or expired session" },
+            { status: 401 }
+        );
+    }
+
+    // The recipient is strictly the authenticated caller's own verified
+    // address - never taken from the request body.
+    const email = user.email;
+
     try {
-        const body = await request.json();
-
-        const { email } = body;
-
-        if (!email) {
-            return NextResponse.json(
-                { error: "Missing email" },
-                { status: 400 }
-            );
-        }
-
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.voyome.com";
 
         const text = `Hello,
