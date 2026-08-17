@@ -54,6 +54,6 @@ All three scripts used today (`qa-active-collaborator-check.mjs`, `qa-diagnose-i
 
 This document closes out the `active = true` remediation arc only. The broader D7 audit is **not** complete:
 
-- **Queued, not started**: the "Invited users can accept their own invites" UPDATE policy has no column restriction beyond the email match — an invitee could in principle directly modify `role`, `trip_id`, or `inviter_user_id` on their own pending invite before accepting it. Whether this is exploitable depends on what `accept_trip_invite()` trusts afterward (it reads `trip_invites.role` when creating the collaborator record). This needs its own dedicated, read-only investigation before any conclusion is drawn — not started as part of this arc.
+- **Resolved separately**: the "Invited users can accept their own invites" UPDATE policy's missing column restriction was investigated, confirmed exploitable (trip-scope manipulation and self-reinstatement replay), and fixed in a dedicated follow-up arc — see [D7_TRIP_INVITES_UPDATE_AUTHORIZATION_REMEDIATION.md](./D7_TRIP_INVITES_UPDATE_AUTHORIZATION_REMEDIATION.md).
 - **D2** (public `journal-images` storage bucket undermining the app's private-visibility model, identified in the original D7 report) remains queued, separate, unstarted work.
 - Any other findings from the original D7 audit not explicitly addressed above remain outstanding.
