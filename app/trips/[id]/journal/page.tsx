@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 
+const JOURNAL_IMAGE_SIGNED_URL_TTL_SECONDS = 600; // 10 min; tune during QA
+
 type JournalEntry = {
     id: number;
     title: string;
@@ -65,13 +67,37 @@ export default function TravelJournalPage() {
             return;
         }
 
+        const imagePaths = (data || [])
+            .map((entry) => entry.image_path)
+            .filter((path): path is string => Boolean(path));
+
+        let signedUrlByPath = new Map<string, string>();
+
+        if (imagePaths.length > 0) {
+            const { data: signedUrls, error: signError } = await supabase.storage
+                .from("journal-images")
+                .createSignedUrls(imagePaths, JOURNAL_IMAGE_SIGNED_URL_TTL_SECONDS);
+
+            if (signError) {
+                console.error(signError);
+            } else {
+                signedUrlByPath = new Map(
+                    (signedUrls || [])
+                        .filter((entry) => entry.signedUrl && entry.path)
+                        .map((entry) => [entry.path as string, entry.signedUrl])
+                );
+            }
+        }
+
         const formattedEntries: JournalEntry[] =
             data?.map((entry) => ({
                 id: entry.id,
                 title: entry.title,
                 body: entry.body,
                 mood: entry.mood || undefined,
-                image: entry.image_url || undefined,
+                image: entry.image_path
+                    ? signedUrlByPath.get(entry.image_path) || undefined
+                    : undefined,
                 imagePositionY: entry.image_position_y ?? 50,
                 visibility: entry.visibility,
                 createdAt: new Date(entry.created_at).toLocaleString(),
@@ -86,11 +112,11 @@ export default function TravelJournalPage() {
         loadJournalEntries();
     }, [tripId]);
 
-    async function uploadJournalImage() {
-        if (!selectedImageFile) return selectedImage;
+    async function uploadJournalImage(entryId: number) {
+        if (!selectedImageFile) return null;
 
         const fileExt = selectedImageFile.name.split(".").pop() || "jpg";
-        const fileName = `${tripId}/${Date.now()}.${fileExt}`;
+        const fileName = `${tripId}/${entryId}/${crypto.randomUUID()}.${fileExt}`;
 
         const { error } = await supabase.storage
             .from("journal-images")
@@ -98,48 +124,64 @@ export default function TravelJournalPage() {
 
         if (error) {
             console.error(error);
-            return selectedImage;
+            return null;
         }
 
-        const { data } = supabase.storage
-            .from("journal-images")
-            .getPublicUrl(fileName);
-
-        return data.publicUrl;
+        return fileName;
     }
 
     async function saveEntry() {
         if (!entryBody.trim()) return;
-        const imageUrl = await uploadJournalImage();
-        const entryData = {
+
+        const baseEntryData = {
             trip_id: tripId,
             title: entryTitle || "Untitled memory",
             body: entryBody,
             mood: selectedMood || null,
-            image_url: imageUrl,
             image_position_y: Math.round(selectedImagePositionY),
             visibility: "private",
             updated_at: new Date().toISOString(),
         };
 
-        if (editingEntryId) {
+        let entryId = editingEntryId;
+
+        if (entryId) {
             const { error } = await supabase
                 .from("journal_entries")
-                .update(entryData)
-                .eq("id", editingEntryId);
+                .update(baseEntryData)
+                .eq("id", entryId);
 
             if (error) {
                 console.error(error);
                 return;
             }
         } else {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from("journal_entries")
-                .insert(entryData);
+                .insert(baseEntryData)
+                .select("id")
+                .single();
 
             if (error) {
                 console.error(error);
                 return;
+            }
+
+            entryId = data.id;
+        }
+
+        if (selectedImageFile && entryId) {
+            const imagePath = await uploadJournalImage(entryId);
+
+            if (imagePath) {
+                const { error } = await supabase
+                    .from("journal_entries")
+                    .update({ image_path: imagePath })
+                    .eq("id", entryId);
+
+                if (error) {
+                    console.error(error);
+                }
             }
         }
 
