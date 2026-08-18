@@ -2,7 +2,7 @@
 
 import PackingBoardSkeleton from "./packing-board-skeleton";
 import PackingTripHero from "./packing-trip-hero";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AddPackingCategoriesModal from "./add-packing-categories-modal";
 import PackingSpaceSelector from "./packing-space-selector";
@@ -106,10 +106,14 @@ export default function PackingBoard({ tripId }: Props) {
 
     const [resetSwipeKey, setResetSwipeKey] = useState(0);
 
+    const initializingFirstListLockRef = useRef(false);
+    const listActionLockRef = useRef(false);
+    const [isProcessingListAction, setIsProcessingListAction] = useState(false);
 
     async function initializeFirstPackingList() {
-        if (initializingFirstList) return;
+        if (initializingFirstListLockRef.current) return;
 
+        initializingFirstListLockRef.current = true;
         setInitializingFirstList(true);
 
         const startedAt = Date.now();
@@ -171,6 +175,7 @@ export default function PackingBoard({ tripId }: Props) {
             const remaining = Math.max(0, 1600 - elapsed);
 
             window.setTimeout(() => {
+                initializingFirstListLockRef.current = false;
                 setInitializingFirstList(false);
             }, remaining);
         }
@@ -522,13 +527,20 @@ export default function PackingBoard({ tripId }: Props) {
 
                                 <button
                                     type="button"
+                                    disabled={isProcessingListAction}
                                     onClick={async () => {
+                                        if (listActionLockRef.current) {
+                                            return;
+                                        }
+
                                         const action = listActionPending;
                                         if (!action) return;
 
                                         const list = action.list;
                                         const listId = list.id;
 
+                                        listActionLockRef.current = true;
+                                        setIsProcessingListAction(true);
                                         setListActionPending(null);
 
                                         try {
@@ -632,9 +644,12 @@ export default function PackingBoard({ tripId }: Props) {
                                         } catch (error) {
                                             console.error(error);
                                             await loadPacking();
+                                        } finally {
+                                            listActionLockRef.current = false;
+                                            setIsProcessingListAction(false);
                                         }
                                     }}
-                                    className="flex-1 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white"
+                                    className="flex-1 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {listActionPending.type === "delete" ? "Delete" : "Reset"}
                                 </button>
