@@ -142,6 +142,7 @@ export default function TripCostSharingPage() {
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState("");
   const [expenseFormError, setExpenseFormError] = useState("");
   const [isSavingExpense, setIsSavingExpense] = useState(false);
+  const saveExpenseLockRef = useRef(false);
   const [editingExpenseId, setEditingExpenseId] = useState<number | null>(null);
   const [expandedExpenseId, setExpandedExpenseId] = useState<number | null>(
     null
@@ -557,6 +558,10 @@ export default function TripCostSharingPage() {
   async function handleSaveExpense(e: React.FormEvent) {
     e.preventDefault();
 
+    if (saveExpenseLockRef.current) {
+      return;
+    }
+
     setExpenseFormError("");
 
     const parsedAmount = Number(amount);
@@ -588,47 +593,50 @@ export default function TripCostSharingPage() {
 
     const participantIds = [...new Set(selectedParticipantIds)];
 
+    saveExpenseLockRef.current = true;
     setIsSavingExpense(true);
 
-    const result = editingExpenseId
-      ? await updateExpense({
-        expenseId: editingExpenseId,
-        tripId: id,
-        title: title.trim(),
-        amount: parsedAmount,
-        currency,
-        expenseDate: date,
-        paidByMemberId,
-        participantIds,
-      })
-      : await createExpense({
-        tripId: id,
-        title: title.trim(),
-        amount: parsedAmount,
-        currency,
-        expenseDate: date,
-        paidByMemberId,
-        participantIds,
-      });
+    try {
+      const result = editingExpenseId
+        ? await updateExpense({
+          expenseId: editingExpenseId,
+          title: title.trim(),
+          amount: parsedAmount,
+          currency,
+          expenseDate: date,
+          paidByMemberId,
+          participantIds,
+        })
+        : await createExpense({
+          tripId: id,
+          title: title.trim(),
+          amount: parsedAmount,
+          currency,
+          expenseDate: date,
+          paidByMemberId,
+          participantIds,
+        });
 
-    if (!result.success) {
-      setExpenseFormError(result.message);
+      if (!result.success) {
+        setExpenseFormError(result.message);
+        return;
+      }
+
+      setSuccessMessage(editingExpenseId ? "Expense updated" : "Expense added");
+
+      await fetchExpenses();
+      resetForm();
+      setExpandedExpenseId(null);
+      setShowExpenseForm(false);
+      setShowExpenses(true);
+
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 2000);
+    } finally {
+      saveExpenseLockRef.current = false;
       setIsSavingExpense(false);
-      return;
     }
-
-    setSuccessMessage(editingExpenseId ? "Expense updated" : "Expense added");
-
-    await fetchExpenses();
-    resetForm();
-    setExpandedExpenseId(null);
-    setShowExpenseForm(false);
-    setShowExpenses(true);
-
-    setTimeout(() => {
-      setSuccessMessage("");
-    }, 2000);
-    setIsSavingExpense(false);
   }
 
   async function handleDeleteExpense(expenseId: number) {
