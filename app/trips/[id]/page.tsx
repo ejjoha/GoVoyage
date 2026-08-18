@@ -102,6 +102,7 @@ export default function TripPage() {
     setNewTravellerName,
     travellerFormError,
     setTravellerFormError,
+    isAddingTraveller,
     fetchTripMembers,
     addTraveller,
     deleteTraveller,
@@ -1007,6 +1008,7 @@ export default function TripPage() {
           tripMembers={tripMembers}
           newTravellerName={newTravellerName}
           setNewTravellerName={setNewTravellerName}
+          isAddingTraveller={isAddingTraveller}
           inviteName={inviteName}
           setInviteName={setInviteName}
           inviteEmail={inviteEmail}
@@ -1227,6 +1229,7 @@ export default function TripPage() {
                 canTransferOwnership={isTripOwner}
                 newTravellerName={newTravellerName}
                 setNewTravellerName={setNewTravellerName}
+                isAddingTraveller={isAddingTraveller}
                 travellerFormError={travellerFormError}
                 inviteName={inviteName}
                 setInviteName={setInviteName}

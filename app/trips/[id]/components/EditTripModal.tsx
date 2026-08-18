@@ -34,6 +34,7 @@ type EditTripModalProps = {
     tripMembers: TripMember[];
     newTravellerName: string;
     setNewTravellerName: (value: string) => void;
+    isAddingTraveller?: boolean;
 
     inviteName: string;
     setInviteName: (value: string) => void;
@@ -79,6 +80,7 @@ export default function EditTripModal({
     tripMembers,
     newTravellerName,
     setNewTravellerName,
+    isAddingTraveller,
     inviteName,
     setInviteName,
     inviteEmail,
@@ -212,6 +214,7 @@ export default function EditTripModal({
                                     canTransferOwnership={isTripOwner}
                                     newTravellerName={newTravellerName}
                                     setNewTravellerName={setNewTravellerName}
+                                    isAddingTraveller={isAddingTraveller}
                                     travellerFormError={travellerFormError}
                                     inviteName={inviteName}
                                     setInviteName={setInviteName}

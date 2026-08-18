@@ -12,6 +12,7 @@ type TripPeopleListProps = {
     canInvitePeople: boolean;
     newTravellerName?: string;
     setNewTravellerName?: (value: string) => void;
+    isAddingTraveller?: boolean;
     travellerFormError?: string;
 
     inviteName?: string;
@@ -50,6 +51,7 @@ export default function TripPeopleList({
     canTransferOwnership = false,
     newTravellerName,
     setNewTravellerName,
+    isAddingTraveller,
     travellerFormError,
     inviteName,
     setInviteName,
@@ -281,15 +283,17 @@ export default function TripPeopleList({
                                 placeholder="Traveller name"
                                 value={newTravellerName}
                                 onChange={(e) => setNewTravellerName(e.target.value)}
-                                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400"
+                                disabled={isAddingTraveller}
+                                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400 disabled:cursor-not-allowed disabled:opacity-60"
                             />
 
                             <button
                                 type="button"
                                 onClick={onAddTraveller}
-                                className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+                                disabled={isAddingTraveller}
+                                className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-stone-900"
                             >
-                                Add
+                                {isAddingTraveller ? "Adding…" : "Add"}
                             </button>
                         </div>
 
