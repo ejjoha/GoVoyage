@@ -82,4 +82,4 @@ The captured rejection error was: `new row for relation "journal_entries" violat
 
 ## What's still open
 
-- D2 itself is closed. Remaining, separate, unstarted work from the original D7 audit (documented in [D7_ACTIVE_COLLABORATOR_REMEDIATION.md](./D7_ACTIVE_COLLABORATOR_REMEDIATION.md)): a post-fix integrity review of existing `trip_collaborators`/`trip_invites` provenance, and `supabase/reference/` housekeeping.
+- D2 itself is closed. Remaining, separate, unstarted work from the original D7 audit (documented in [D7_ACTIVE_COLLABORATOR_REMEDIATION.md](./D7_ACTIVE_COLLABORATOR_REMEDIATION.md)): a post-fix integrity review of existing `trip_collaborators`/`trip_invites` provenance. (`supabase/reference/` housekeeping, previously listed here, is resolved; the D7 evidence snapshot is now tracked and explicitly classified as historical audit evidence.)
