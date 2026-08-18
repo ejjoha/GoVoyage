@@ -67,6 +67,6 @@ This migration prevents **future** exploitation of all three paths. It does **no
 ## What's still open
 
 - **Queued, not started**: a review of existing `trip_collaborators`/`trip_invites` rows for provenance consistent with past exploitation of the paths described above (see "Historical limitation").
-- **D2** (public `journal-images` storage bucket undermining the app's private-visibility model) remains queued, separate, unstarted work.
-- `supabase/reference/` (D7 evidence snapshot) remains untracked housekeeping, unrelated to this fix, not touched here.
+- **Resolved separately**: D2 (the public `journal-images` storage bucket undermining the app's private-visibility model) was remediated and production-verified; see [D2_JOURNAL_IMAGE_STORAGE_REMEDIATION.md](./D2_JOURNAL_IMAGE_STORAGE_REMEDIATION.md).
+- **Resolved separately**: `supabase/reference/` (D7 evidence snapshot) is now tracked and reframed as historical audit evidence, with its README documenting the areas superseded since capture.
 - Any other findings from the original D7 audit not explicitly addressed here or in [D7_ACTIVE_COLLABORATOR_REMEDIATION.md](./D7_ACTIVE_COLLABORATOR_REMEDIATION.md) remain outstanding.
