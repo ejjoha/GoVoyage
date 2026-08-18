@@ -108,48 +108,19 @@ export async function createExpense(input: {
     participantIds,
   } = input;
 
-  const { data, error: insertError } = await supabase
-    .from("expenses")
-    .insert({
-      trip_id: tripId,
-      title,
-      amount,
-      currency,
-      expense_date: expenseDate,
-      paid_by_member_id: paidByMemberId,
-    })
-    .select()
-    .single();
+  const { error } = await supabase.rpc("create_expense_with_participants", {
+    p_trip_id: tripId,
+    p_title: title,
+    p_amount: amount,
+    p_currency: currency,
+    p_expense_date: expenseDate,
+    p_paid_by_member_id: paidByMemberId,
+    p_participant_member_ids: participantIds,
+  });
 
-  if (insertError || !data) {
-    console.error("Error saving expense:", insertError);
+  if (error) {
+    console.error("Error saving expense:", error);
     return { success: false as const, message: "Could not save expense" };
-  }
-
-  const participantRows = participantIds.map((memberId) => ({
-    expense_id: data.id,
-    member_id: memberId,
-  }));
-
-  const { error: participantInsertError } = await supabase
-    .from("expense_participants")
-    .insert(participantRows);
-
-  if (participantInsertError) {
-    console.error(
-      "Error saving expense participants:",
-      participantInsertError
-    );
-
-    await supabase
-      .from("expenses")
-      .delete()
-      .eq("id", data.id);
-
-    return {
-      success: false as const,
-      message: "Expense could not be saved. Please try again.",
-    };
   }
 
   return { success: true as const };
@@ -157,7 +128,6 @@ export async function createExpense(input: {
 
 export async function updateExpense(input: {
   expenseId: number;
-  tripId: number;
   title: string;
   amount: number;
   currency: Expense["currency"];
@@ -167,7 +137,6 @@ export async function updateExpense(input: {
 }) {
   const {
     expenseId,
-    tripId,
     title,
     amount,
     currency,
@@ -176,57 +145,19 @@ export async function updateExpense(input: {
     participantIds,
   } = input;
 
-  const { error: updateError } = await supabase
-    .from("expenses")
-    .update({
-      trip_id: tripId,
-      title,
-      amount,
-      currency,
-      expense_date: expenseDate,
-      paid_by_member_id: paidByMemberId,
-    })
-    .eq("id", expenseId);
+  const { error } = await supabase.rpc("update_expense_with_participants", {
+    p_expense_id: expenseId,
+    p_title: title,
+    p_amount: amount,
+    p_currency: currency,
+    p_expense_date: expenseDate,
+    p_paid_by_member_id: paidByMemberId,
+    p_participant_member_ids: participantIds,
+  });
 
-  if (updateError) {
-    console.error("Error updating expense:", updateError);
+  if (error) {
+    console.error("Error updating expense:", error);
     return { success: false as const, message: "Could not update expense" };
-  }
-
-  const { error: deleteParticipantsError } = await supabase
-    .from("expense_participants")
-    .delete()
-    .eq("expense_id", expenseId);
-
-  if (deleteParticipantsError) {
-    console.error(
-      "Error replacing expense participants:",
-      deleteParticipantsError
-    );
-    return {
-      success: false as const,
-      message: "Expense updated, but participants could not be updated",
-    };
-  }
-
-  const participantRows = participantIds.map((memberId) => ({
-    expense_id: expenseId,
-    member_id: memberId,
-  }));
-
-  const { error: insertParticipantsError } = await supabase
-    .from("expense_participants")
-    .insert(participantRows);
-
-  if (insertParticipantsError) {
-    console.error(
-      "Error adding expense participants:",
-      insertParticipantsError
-    );
-    return {
-      success: false as const,
-      message: "Expense updated, but participants could not be saved",
-    };
   }
 
   return { success: true as const };
