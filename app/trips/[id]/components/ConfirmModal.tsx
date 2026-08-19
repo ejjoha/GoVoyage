@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef, useState } from "react";
+
 type ConfirmModalProps = {
   open: boolean;
   title: string;
@@ -7,7 +9,7 @@ type ConfirmModalProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   tone?: "default" | "danger";
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   onCancel: () => void;
 };
 
@@ -21,12 +23,35 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  // This component instance is kept mounted by callers (they render it
+  // unconditionally and toggle `open`), so these hooks must run on every
+  // render regardless of `open` - hence they're declared before the early
+  // return below, not after it.
+  const confirmLockRef = useRef(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+
   if (!open) return null;
 
   const confirmClass =
     tone === "danger"
       ? "bg-red-500 text-white hover:bg-red-600"
       : "bg-stone-900 text-white hover:bg-stone-800";
+
+  async function handleConfirm() {
+    if (confirmLockRef.current) {
+      return;
+    }
+
+    confirmLockRef.current = true;
+    setIsConfirming(true);
+
+    try {
+      await onConfirm();
+    } finally {
+      confirmLockRef.current = false;
+      setIsConfirming(false);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/45 p-3 backdrop-blur-[2px] sm:items-center sm:p-6">
@@ -47,17 +72,19 @@ export default function ConfirmModal({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl bg-stone-100 px-5 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-200"
+            disabled={isConfirming}
+            className="rounded-xl bg-stone-100 px-5 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {cancelLabel}
           </button>
 
           <button
             type="button"
-            onClick={onConfirm}
-            className={`rounded-xl px-5 py-3 text-sm font-semibold transition ${confirmClass}`}
+            onClick={handleConfirm}
+            disabled={isConfirming}
+            className={`rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${confirmClass}`}
           >
-            {confirmLabel}
+            {isConfirming ? "Working…" : confirmLabel}
           </button>
         </div>
       </div>
