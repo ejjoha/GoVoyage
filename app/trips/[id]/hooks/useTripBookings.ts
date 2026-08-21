@@ -89,6 +89,9 @@ export function useTripBookings(tripId: number) {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
     const [pendingMutationCount, setPendingMutationCount] = useState(0);
+    const [conflictingMutationId, setConflictingMutationId] = useState<
+        string | null
+    >(null);
 
     const bookingsCacheKey = getBookingsCacheKey(tripId);
     const mutationsCacheKey = getMutationsCacheKey(tripId);
@@ -231,6 +234,7 @@ export function useTripBookings(tripId: number) {
                     if (error) throw error;
 
                     if (!data) {
+                        setConflictingMutationId(mutation.mutationId);
                         setSyncStatus("conflict");
                         return;
                     }
@@ -255,6 +259,7 @@ export function useTripBookings(tripId: number) {
                     if (error) throw error;
 
                     if (!data) {
+                        setConflictingMutationId(mutation.mutationId);
                         setSyncStatus("conflict");
                         return;
                     }
@@ -464,10 +469,51 @@ export function useTripBookings(tripId: number) {
     }, [refreshPendingMutationCount]);
 
     async function refreshItineraryAfterConflict() {
-        writePendingMutations([]);
-        setPendingMutationCount(0);
+        // Captured up front, before any await - this is the one specific
+        // mutation we're allowed to remove below, nothing else, no matter
+        // what else changes in the queue while this function is running.
+        const conflictIdToResolve = conflictingMutationId;
+
+        const { data, error } = await getBookings(tripId);
+
+        if (error) {
+            // Fetch itself failed - stop here. The queue (including the
+            // still-conflicting mutation) is left completely untouched;
+            // the user can try "Refresh itinerary" again.
+            console.error("Error refreshing itinerary after conflict:", error);
+            return;
+        }
+
+        setBookings(data || []);
+        writeCachedBookings(data || []);
+
+        if (conflictIdToResolve) {
+            // Read fresh from storage, not a stale closure/state copy - a
+            // newer edit to the same booking queued while the conflict
+            // banner was showing would already have replaced this exact
+            // mutationId with a new one (traced: every write path that
+            // supersedes a pending update_booking/delete_booking always
+            // generates a fresh mutationId, never reuses the old one), so
+            // reading fresh is what makes the exact-match-or-do-nothing
+            // check below correct.
+            const currentMutations = readPendingMutations();
+            const filteredMutations = currentMutations.filter(
+                (mutation) => mutation.mutationId !== conflictIdToResolve
+            );
+
+            // Exact match only. If the recorded id is no longer present -
+            // a legitimate case, e.g. the user re-edited that same booking
+            // before clicking Refresh - do nothing here. No fallback
+            // removal of any kind.
+            if (filteredMutations.length !== currentMutations.length) {
+                writePendingMutations(filteredMutations);
+            }
+        }
+
+        setConflictingMutationId(null);
         setSyncStatus("idle");
-        await fetchBookings();
+
+        await syncPendingBookingMutations();
     }
 
     useEffect(() => {
