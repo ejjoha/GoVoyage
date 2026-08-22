@@ -1,10 +1,4 @@
 import {
-    togglePackedItem,
-    updatePackingItemQuantity,
-    hidePackingItem,
-} from "./packing-mutations";
-
-import {
     updateCachedPackingItem,
     removeCachedPackingItem,
 } from "./packing-cache";
@@ -13,32 +7,32 @@ import {
     enqueueTogglePackedMutation,
     enqueueUpdateQuantityMutation,
     enqueueHideItemMutation,
+    syncPendingPackingMutations,
 } from "./packing-sync-queue";
 
+// Every packing write goes through the queue, online or not - there is no
+// direct-write path. A direct-write bypass would mean two independent
+// routes to the server for the same row, which can race against the
+// queue's own sequential, single-flighted worker (an in-flight direct write
+// for an old value could still land after a newer edit has already
+// superseded it locally). Routing everything through the queue means the
+// worker is the only thing that ever talks to the server, and it only ever
+// does so one mutation at a time.
 async function executeOfflineAwarePackingMutation({
     optimisticUpdate,
     enqueue,
-    serverMutation,
-    warningMessage,
 }: {
     optimisticUpdate: () => void;
     enqueue: () => void;
-    serverMutation: () => Promise<void>;
-    warningMessage: string;
 }) {
     optimisticUpdate();
+    enqueue();
 
     if (typeof navigator !== "undefined" && !navigator.onLine) {
-        enqueue();
         return;
     }
 
-    try {
-        await serverMutation();
-    } catch (error) {
-        console.warn(warningMessage, error);
-        enqueue();
-    }
+    await syncPendingPackingMutations();
 }
 
 export async function togglePackedOfflineAware({
@@ -67,13 +61,6 @@ export async function togglePackedOfflineAware({
                 packed,
             });
         },
-        serverMutation: () =>
-            togglePackedItem({
-                itemId,
-                packed,
-            }),
-        warningMessage:
-            "Packing change saved locally and will sync later.",
     });
 }
 
@@ -102,13 +89,6 @@ export async function updateQuantityOfflineAware({
                 quantity,
             });
         },
-        serverMutation: () =>
-            updatePackingItemQuantity({
-                itemId,
-                quantity,
-            }),
-        warningMessage:
-            "Quantity change saved locally and will sync later.",
     });
 }
 
@@ -129,8 +109,5 @@ export async function hideItemOfflineAware({
                 itemId,
             });
         },
-        serverMutation: () => hidePackingItem(itemId),
-        warningMessage:
-            "Item removal saved locally and will sync later.",
     });
 }

@@ -84,12 +84,12 @@ export async function togglePackedItem({
 }: {
     itemId: string;
     packed: boolean;
-}) {
+}): Promise<boolean> {
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from("packing_list_items")
         .update({
             packed,
@@ -97,12 +97,16 @@ export async function togglePackedItem({
             packed_by: packed ? user?.id ?? null : null,
             updated_at: new Date().toISOString(),
         })
-        .eq("id", itemId);
+        .eq("id", itemId)
+        .select("id")
+        .maybeSingle();
 
     if (error) {
         console.error(error);
         throw error;
     }
+
+    return Boolean(data);
 }
 
 export async function archivePackingList(listId: string) {
@@ -238,32 +242,40 @@ export async function updatePackingItemQuantity({
 }: {
     itemId: string;
     quantity: number;
-}) {
-    const { error } = await supabase
+}): Promise<boolean> {
+    const { data, error } = await supabase
         .from("packing_list_items")
         .update({
             quantity,
             updated_at: new Date().toISOString(),
         })
-        .eq("id", itemId);
+        .eq("id", itemId)
+        .select("id")
+        .maybeSingle();
 
     if (error) {
         console.error(error);
         throw error;
     }
+
+    return Boolean(data);
 }
 
-export async function hidePackingItem(itemId: string) {
-    const { error } = await supabase
+export async function hidePackingItem(itemId: string): Promise<boolean> {
+    const { data, error } = await supabase
         .from("packing_list_items")
         .update({
             hidden: true,
             updated_at: new Date().toISOString(),
         })
-        .eq("id", itemId);
+        .eq("id", itemId)
+        .select("id")
+        .maybeSingle();
 
     if (error) {
         console.error(error);
         throw error;
     }
+
+    return Boolean(data);
 }

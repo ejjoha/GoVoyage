@@ -2,7 +2,7 @@
 
 import PackingBoardSkeleton from "./packing-board-skeleton";
 import PackingTripHero from "./packing-trip-hero";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AddPackingCategoriesModal from "./add-packing-categories-modal";
 import PackingSpaceSelector from "./packing-space-selector";
@@ -49,6 +49,12 @@ import {
     updateQuantityOfflineAware,
     hideItemOfflineAware,
 } from "../lib/packing-offline-service";
+
+import {
+    getPackingMutationStatusCounts,
+    onPackingReconciled,
+    onPackingQueueChanged,
+} from "../lib/packing-sync-queue";
 
 type Props = {
     tripId: number;
@@ -105,6 +111,37 @@ export default function PackingBoard({ tripId }: Props) {
         } | null>(null);
 
     const [resetSwipeKey, setResetSwipeKey] = useState(0);
+    const [mutationStatusCounts, setMutationStatusCounts] = useState({
+        pending: 0,
+        reconciling: 0,
+        failed: 0,
+    });
+
+    const refreshMutationStatusCounts = useCallback(() => {
+        setMutationStatusCounts(getPackingMutationStatusCounts(tripId));
+    }, [tripId]);
+
+    useEffect(() => {
+        refreshMutationStatusCounts();
+
+        const unsubscribeReconciled = onPackingReconciled((reconciledTripId) => {
+            if (reconciledTripId !== tripId) return;
+            refreshMutationStatusCounts();
+        });
+
+        // Separate from onPackingReconciled - an ordinary successful
+        // background sync (e.g. draining the queue on mount or via the
+        // online event) never triggers reconciliation at all, but still
+        // changes this trip's counts.
+        const unsubscribeQueueChanged = onPackingQueueChanged(() => {
+            refreshMutationStatusCounts();
+        });
+
+        return () => {
+            unsubscribeReconciled();
+            unsubscribeQueueChanged();
+        };
+    }, [tripId, refreshMutationStatusCounts]);
 
     const initializingFirstListLockRef = useRef(false);
     const listActionLockRef = useRef(false);
@@ -252,6 +289,29 @@ export default function PackingBoard({ tripId }: Props) {
                     packedCount={packedCount}
                     totalCount={totalCount}
                 />
+            )}
+
+            {(mutationStatusCounts.pending > 0 ||
+                mutationStatusCounts.reconciling > 0 ||
+                mutationStatusCounts.failed > 0) && (
+                <div className="mb-4 space-y-1">
+                    {mutationStatusCounts.pending + mutationStatusCounts.reconciling > 0 && (
+                        <p className="text-sm font-semibold text-amber-600">
+                            {mutationStatusCounts.pending + mutationStatusCounts.reconciling}{" "}
+                            {mutationStatusCounts.pending + mutationStatusCounts.reconciling === 1
+                                ? "change"
+                                : "changes"}{" "}
+                            not yet synced
+                        </p>
+                    )}
+                    {mutationStatusCounts.failed > 0 && (
+                        <p className="text-sm font-semibold text-rose-600">
+                            {mutationStatusCounts.failed}{" "}
+                            {mutationStatusCounts.failed === 1 ? "change" : "changes"} could not
+                            be applied
+                        </p>
+                    )}
+                </div>
             )}
 
             {loading && <PackingBoardSkeleton />}
