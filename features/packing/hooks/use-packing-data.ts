@@ -18,6 +18,7 @@ import {
 
 import {
     syncPendingPackingMutations,
+    onPackingReconciled,
 } from "../lib/packing-sync-queue";
 
 import type {
@@ -148,7 +149,18 @@ export function usePackingData({
     }, [tripId, requestedListId]);
 
     useEffect(() => {
-        loadPacking();
+        async function mountSync() {
+            // Drain any work already queued from a previous session before
+            // this one's first fetch - reopening the app already online
+            // must not require a future online transition to retry it.
+            if (typeof navigator !== "undefined" && navigator.onLine) {
+                await syncPendingPackingMutations();
+            }
+
+            await loadPacking();
+        }
+
+        mountSync();
 
         async function handleOnline() {
             if (!window.navigator.onLine) return;
@@ -159,10 +171,27 @@ export function usePackingData({
 
         window.addEventListener("online", handleOnline);
 
+        const unsubscribeReconciled = onPackingReconciled(
+            (reconciledTripId, reconciledLists, reconciledItemsByList) => {
+                if (reconciledTripId !== tripId) return;
+
+                setLists(reconciledLists);
+                setItemsByList(
+                    Object.fromEntries(
+                        Object.entries(reconciledItemsByList).map(([listId, items]) => [
+                            listId,
+                            items.filter((item) => !item.hidden),
+                        ])
+                    )
+                );
+            }
+        );
+
         return () => {
             window.removeEventListener("online", handleOnline);
+            unsubscribeReconciled();
         };
-    }, [loadPacking]);
+    }, [loadPacking, tripId]);
 
     return {
         trip,
