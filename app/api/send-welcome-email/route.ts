@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { consumeRateLimits, getClientIp } from "@/lib/rate-limit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -43,6 +44,43 @@ export async function POST(request: Request) {
     // The recipient is strictly the authenticated caller's own verified
     // address - never taken from the request body.
     const email = user.email;
+
+    // Rate-limit only after identity is established above - abuse control
+    // on top of D6's existing auth requirement, never a substitute for it.
+    // IP is the dimension that actually matters for the signup-abuse path:
+    // a script creating many distinct accounts gets a different user.id
+    // each time, so per-actor alone can't catch it.
+    const clientIp = getClientIp(request);
+
+    if (!clientIp) {
+        console.error("Missing client IP for rate limiting on send-welcome-email");
+        return NextResponse.json(
+            { error: "Unable to process request" },
+            { status: 503 }
+        );
+    }
+
+    const rateLimitResult = await consumeRateLimits([
+        { dimension: "welcome_actor", rawKey: user.id, maxCount: 3, windowSeconds: 3600 },
+        { dimension: "welcome_ip", rawKey: clientIp, maxCount: 8, windowSeconds: 3600 },
+    ]);
+
+    if (rateLimitResult.outcome === "error") {
+        return NextResponse.json(
+            { error: "Unable to process request" },
+            { status: 503 }
+        );
+    }
+
+    if (rateLimitResult.outcome === "blocked") {
+        return NextResponse.json(
+            { error: "Too many requests. Please try again later." },
+            {
+                status: 429,
+                headers: { "Retry-After": String(rateLimitResult.retryAfterSeconds) },
+            }
+        );
+    }
 
     try {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.voyome.com";
