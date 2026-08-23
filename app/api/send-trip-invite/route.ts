@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { consumeRateLimits, getClientIp } from "@/lib/rate-limit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -100,6 +101,43 @@ export async function POST(request: Request) {
         return NextResponse.json(
             { error: "Invite not found" },
             { status: 404 }
+        );
+    }
+
+    // Rate-limit only after the invite has been authorized above - this is
+    // an abuse-control layer on top of that authorization, never a
+    // replacement for it. The recipient dimension needs the server-derived
+    // invite.email from the authorized read, not anything client-supplied.
+    const clientIp = getClientIp(request);
+
+    if (!clientIp) {
+        console.error("Missing client IP for rate limiting on send-trip-invite");
+        return NextResponse.json(
+            { error: "Unable to process request" },
+            { status: 503 }
+        );
+    }
+
+    const rateLimitResult = await consumeRateLimits([
+        { dimension: "invite_actor", rawKey: user.id, maxCount: 20, windowSeconds: 3600 },
+        { dimension: "invite_recipient", rawKey: invite.email.toLowerCase(), maxCount: 5, windowSeconds: 3600 },
+        { dimension: "invite_ip", rawKey: clientIp, maxCount: 40, windowSeconds: 3600 },
+    ]);
+
+    if (rateLimitResult.outcome === "error") {
+        return NextResponse.json(
+            { error: "Unable to process request" },
+            { status: 503 }
+        );
+    }
+
+    if (rateLimitResult.outcome === "blocked") {
+        return NextResponse.json(
+            { error: "Too many invite emails sent recently. Please try again later." },
+            {
+                status: 429,
+                headers: { "Retry-After": String(rateLimitResult.retryAfterSeconds) },
+            }
         );
     }
 

@@ -339,9 +339,16 @@ export default function HomePage() {
           });
 
           if (!emailResponse.ok) {
-            console.error(
-              "Invite saved, but the email could not be sent."
-            );
+            if (emailResponse.status === 429) {
+              console.error("Invite saved, but the email was rate-limited.");
+              alert(
+                "Trip created, but the invite email couldn't be sent right now (too many sent recently). You can resend it from the trip's traveller list in a few minutes."
+              );
+            } else {
+              console.error(
+                "Invite saved, but the email could not be sent."
+              );
+            }
           }
         }
       }

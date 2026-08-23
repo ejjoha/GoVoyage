@@ -155,6 +155,7 @@ export default function TripPage() {
   const [bookingFormError, setBookingFormError] = useState("");
   const [isBookingSaving, setIsBookingSaving] = useState(false);
   const bookingSaveLockRef = useRef(false);
+  const resendInviteLockRef = useRef(false);
   const [successToast, setSuccessToast] = useState<SuccessToastData | null>(null);
 
   const [bookingFormValues, setBookingFormValues] =
@@ -275,7 +276,9 @@ export default function TripPage() {
       setInviteEmail("");
       setInviteName("");
       setInviteMessage(
-        "Invite saved, but the email could not be sent. You may need to tell them manually."
+        emailResponse.status === 429
+          ? "Invite saved, but too many invite emails were sent recently. You can resend it in a few minutes."
+          : "Invite saved, but the email could not be sent. You may need to tell them manually."
       );
 
       fetchTripInvites();
@@ -555,6 +558,12 @@ export default function TripPage() {
   }
 
   async function handleResendInvite(invite: TripInvite) {
+    if (resendInviteLockRef.current) {
+      return;
+    }
+
+    resendInviteLockRef.current = true;
+
     try {
       const {
         data: { session },
@@ -572,6 +581,11 @@ export default function TripPage() {
       });
 
       if (!emailResponse.ok) {
+        if (emailResponse.status === 429) {
+          setInviteMessage("You're resending too quickly. Please try again in a few minutes.");
+          return;
+        }
+
         setInviteMessage("Could not resend email. Please try again.");
         return;
       }
@@ -580,6 +594,8 @@ export default function TripPage() {
     } catch (err) {
       console.error("Error resending invite:", err);
       setInviteMessage("Something went wrong while resending.");
+    } finally {
+      resendInviteLockRef.current = false;
     }
   }
 
