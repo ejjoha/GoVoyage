@@ -4,6 +4,14 @@ import type {
 
 export type ItemsByList = Record<string, PackingListItem[]>;
 
+export function getItemFromList(
+    itemsByList: ItemsByList,
+    listId: string,
+    itemId: string
+): PackingListItem | undefined {
+    return (itemsByList[listId] ?? []).find((item) => item.id === itemId);
+}
+
 export function appendItemToList(
     itemsByList: ItemsByList,
     listId: string,
