@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
     loadPackingCache,
@@ -20,6 +20,8 @@ import {
     syncPendingPackingMutations,
     onPackingReconciled,
 } from "../lib/packing-sync-queue";
+
+import { getItemFromList } from "../lib/packing-state";
 
 import type {
     PackingList,
@@ -47,9 +49,44 @@ export function usePackingData({
     requestedListId: string | null;
 }) {
     const [lists, setLists] = useState<PackingList[]>([]);
-    const [itemsByList, setItemsByList] = useState<
+    const [itemsByList, setItemsByListState] = useState<
         Record<string, PackingListItem[]>
     >({});
+    // Mirrors itemsByList synchronously, ahead of React's own commit, so a
+    // second synchronous call in the same tick (e.g. a double-tap on the
+    // same toggle/quantity control) can read the value the first call just
+    // applied instead of a stale render-time prop. Every write to
+    // itemsByList must go through setItemsByList below, which is the only
+    // thing that keeps this ref in sync - it is not written anywhere else.
+    // Kept private to this hook - callers read it only through
+    // getLatestItem below, never the ref itself.
+    const itemsByListRef = useRef<Record<string, PackingListItem[]>>({});
+
+    const setItemsByList = useCallback(
+        (
+            updater:
+                | Record<string, PackingListItem[]>
+                | ((
+                    prev: Record<string, PackingListItem[]>
+                ) => Record<string, PackingListItem[]>)
+        ) => {
+            const next =
+                typeof updater === "function"
+                    ? updater(itemsByListRef.current)
+                    : updater;
+
+            itemsByListRef.current = next;
+            setItemsByListState(next);
+        },
+        []
+    );
+
+    const getLatestItem = useCallback(
+        (listId: string, itemId: string) =>
+            getItemFromList(itemsByListRef.current, listId, itemId),
+        []
+    );
+
     const [loading, setLoading] = useState(true);
     const [hasCheckedServer, setHasCheckedServer] = useState(false);
     const [trip, setTrip] = useState<TripForPacking | null>(null);
@@ -199,6 +236,7 @@ export function usePackingData({
         setLists,
         itemsByList,
         setItemsByList,
+        getLatestItem,
         loading,
         hasCheckedServer,
         activeListId,

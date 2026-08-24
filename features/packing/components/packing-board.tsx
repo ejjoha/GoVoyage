@@ -82,6 +82,7 @@ export default function PackingBoard({ tripId }: Props) {
         setLists,
         itemsByList,
         setItemsByList,
+        getLatestItem,
         loading,
         hasCheckedServer,
         activeListId,
@@ -246,7 +247,10 @@ export default function PackingBoard({ tripId }: Props) {
     const activeList = lists.find((list) => list.id === activeListId) ?? lists[0] ?? null;
 
     async function handleToggleItem(item: PackingListItem) {
-        const nextPacked = !item.packed;
+        const latest = getLatestItem(item.packing_list_id, item.id);
+        if (!latest) return;
+
+        const nextPacked = !latest.packed;
         const now = new Date().toISOString();
 
         setItemsByList((current) =>
@@ -347,12 +351,15 @@ export default function PackingBoard({ tripId }: Props) {
                             );
                         }}
                         onDecreaseQuantity={async (item) => {
-                            if (item.quantity <= 1) {
-                                setItemPendingRemove(item);
+                            const latest = getLatestItem(item.packing_list_id, item.id);
+                            if (!latest) return;
+
+                            if (latest.quantity <= 1) {
+                                setItemPendingRemove(latest);
                                 return;
                             }
 
-                            const nextQuantity = Math.max(1, item.quantity - 1);
+                            const nextQuantity = Math.max(1, latest.quantity - 1);
                             const now = new Date().toISOString();
 
                             setItemsByList((current) =>
@@ -370,7 +377,10 @@ export default function PackingBoard({ tripId }: Props) {
                             });
                         }}
                         onIncreaseQuantity={async (item) => {
-                            const nextQuantity = item.quantity + 1;
+                            const latest = getLatestItem(item.packing_list_id, item.id);
+                            if (!latest) return;
+
+                            const nextQuantity = latest.quantity + 1;
                             const now = new Date().toISOString();
 
                             setItemsByList((current) =>
